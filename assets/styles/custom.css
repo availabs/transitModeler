@@ -1,0 +1,66 @@
+body {
+  font-weight: normal;
+  padding-bottom: 100px;
+  background-color: rgba(74, 121, 147, 0.89);
+  background: radial-gradient(farthest-side ellipse at 10% 0, rgba(255,255,255, 0.89), rgba(226, 226, 226, 0.87), rgba(200,200,200, 0.87)), url("../img/bgnoise_lg_dark.png");
+  background: -webkit-radial-gradient(10% 0, farthest-side ellipse, rgba(255,255,255, 0.89), rgba(226, 226, 226, 0.87), rgba(200,200,200, 0.87)), url("../img/bgnoise_lg_dark.png");
+  background: -moz-radial-gradient(10% 0, farthest-side ellipse, rgba(255,255,255, 0.89), rgba(226, 226, 226, 0.87), rgba(200,200,200, 0.87)), url("../img/bgnoise_lg_dark.png");
+}
+
+.page-title {
+	color: #666;
+}
+
+.page-title small{
+	color: #aaa;
+}
+
+.logo a{
+	color: #000;
+	
+}
+.logo a strong{
+	color: #000;
+}
+
+.sidebar{
+	color: #000;
+}
+
+
+/*
+ censusMap
+*/
+.ma-tract {
+    fill: #fff;
+    fill-opacity: 0.5;
+    stroke: #4ab0ce;
+    stroke-width: 1;
+}
+.ma-tract:hover {
+    fill: #4ab0ce;
+    stroke: #0f0;
+}
+.ma-active {
+    fill-opacity: 1.0;
+}
+
+
+#overview-popup {
+    background: #fff;
+    position: fixed;
+    display: none;
+    border: 5px solid #080;
+    width: 250px;
+    z-index: 20;
+}
+.widget{
+	overflow: :auto;
+}
+/*
+* CensusGraph
+*/
+#graphDiv svg{
+	height:400px;
+	width:100%;
+}
