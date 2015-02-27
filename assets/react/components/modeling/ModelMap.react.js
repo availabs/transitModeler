@@ -1,27 +1,40 @@
-'use strict';
+ 'use strict';
 
 var React = require('react'),
-    
+    d3 = require('d3'),
+    colorbrewer  = require('colorbrewer'),
+    deepEqual = require('deep-equal'),
+
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
-    //--Utils
+    
+    //--Component Globals
     tractlayerID = 0,
     prevTractLength,
     routeLayerID = 0,
-    prevRouteLength;    
+    prevRouteLength,
+    odScale = d3.scale.quantile().range(colorbrewer.PuBu[9]);    
 
 
 
-var EditMap = React.createClass({
+var ModelMap = React.createClass({
     
-    getInitialState: function() {
+    getDefaultProps: function() {
         return {
-            tooltip:{
-                x:0,
-                y:0,
-                display:'none'
-            }
+            mode:'origin'
         };
+    },
+
+    _reduceTripTable:function(){
+        var ttTractCount= {};
+        this.props.currentTripTable.tt.forEach(function(trip){
+            if(!ttTractCount[trip.from_geoid]){ ttTractCount[trip.from_geoid] = {o:0,d:0} }
+            if(!ttTractCount[trip.to_geoid]){ ttTractCount[trip.to_geoid] = {o:0,d:0} }
+            
+            ttTractCount[trip.from_geoid].o++;
+            ttTractCount[trip.to_geoid].d++;
+        });
+        return ttTractCount;
     },
 
     processLayers:function(){
@@ -34,6 +47,31 @@ var EditMap = React.createClass({
             routeLayerID++;
             prevRouteLength = this.props.tracts.features.length
         }
+        var tractCounts = this._reduceTripTable()
+        
+        var flatTrips = Object.keys(tractCounts).map(function(key){
+            return scope.props.mode === 'origin' ? tractCounts[key].o : tractCounts[key].d
+        }).sort(function(a, b) { return a - b; });
+
+        
+        if( !deepEqual(odScale.domain(),flatTrips) ){
+            
+            odScale.domain(flatTrips);
+            d3.selectAll('.ma-tract')
+                .attr('fill',function(feature){
+                    
+                   
+                    var geoid = d3.select(this).attr('class').split('_')[1];
+                    var scaleValue = 0; 
+
+                    if(tractCounts[geoid]){
+                        scaleValue = scope.props.mode === 'origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
+                    }
+                    return odScale(scaleValue);
+                })
+
+        }
+
         return {
             tractsLayer:{
                 id:tractlayerID,
@@ -41,8 +79,11 @@ var EditMap = React.createClass({
                 options:{
                     zoomOnLoad:true,
                     style:function (feature) {
+
+                        
+                        //console.log(scaleValue,feature.properties.geoid, tractCounts[feature.properties.geoid])
                         return {
-                            className: 'ma-tract'
+                            className: 'ma-tract geo_'+feature.properties.geoid+'_',
                         };
                     },
                     onEachFeature: function (feature, layer) {
@@ -53,23 +94,10 @@ var EditMap = React.createClass({
                                 console.log('station_click',e.target.feature.properties);
                             },
                             mouseover: function(e){
-                                //e.target.setStyle({stroke:true});
-                                // if (scope.isMounted()) {
-                                //     scope.setState({
-                                //         tooltip:{
-                                //             x:e.originalEvent.clientX,
-                                //             y:e.originalEvent.clientY,
-                                //             content:'test123',
-                                //             title:e.target.feature.properties.address,
-                                //             display:'block'
-                                //         }
-                                //     });
-                                // }
+                             
                             },
                             mouseout: function(e){
-                                //e.target.setStyle({stroke:false})
-                                //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
-                                //console.log('mouseout tract');
+                                
                             }
                         });
                         
@@ -85,7 +113,8 @@ var EditMap = React.createClass({
                             className: 'route_'+feature.properties.short_name,
                             weight:5,
                             opacity:0.3,
-                            color : d3.select('.route_color_'+feature.properties.short_name).style('background-color')
+                            color:'#333',
+                            fillColor:'#999'
                         };
                     },
                     onEachFeature: function (feature, layer) {
@@ -96,23 +125,17 @@ var EditMap = React.createClass({
                                 console.log('station_click',e.target.feature.properties);
                             },
                             mouseover: function(e){
-                                var classColor = d3.select('.route_color_'+feature.properties.short_name).style('background-color');
                                 e.target.setStyle({opacity:0.7});
                                 d3.select('.ToolTip').style({
                                     left:e.originalEvent.clientX+'px',
                                     top:e.originalEvent.clientY+'px',
                                     display:'block',
-                                    opacity:1.0,
-                                    'border-top':'5px solid '+classColor
+                                    opacity:1.0
                                 }).select('h4')
                                     .attr('class','TT_Title')
-                                    .style({
-                                        color:classColor
-                                    })
                                     .html('Route '+feature.properties.short_name)
                             },
                             mouseout: function(e){
-                                console.log('mouseout1')
                                 //scope._updateTooltip({ x:0,y:0,display:'none'});
                                 d3.select('.ToolTip').style({opacity:0});
                                 e.target.setStyle({opacity :0.3})
@@ -142,7 +165,7 @@ var EditMap = React.createClass({
         return (
               
             <div>
-                <LeafletMap layers={this.processLayers()}   ToolTip={this.state.tooltip} height="800px" />
+                <LeafletMap layers={this.processLayers()}  height="800px" />
             </div>
                             
         );
@@ -151,4 +174,4 @@ var EditMap = React.createClass({
 
 });
 
-module.exports = EditMap;
+module.exports = ModelMap;

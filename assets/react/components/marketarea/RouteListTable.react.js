@@ -24,9 +24,10 @@ var RouteListTable= React.createClass({
             "width":'10px',
             "background-color" : d3.scale.category20().range()[i] 
         }
+        var colorClass='route_color_'+route;
         return (
           <tr key={i}>
-            <td style={divStyle}></td>
+            <td style={divStyle} className={colorClass}></td>
             <td>{route}</td>
             <td></td>
           </tr>

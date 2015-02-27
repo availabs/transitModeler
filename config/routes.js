@@ -19,6 +19,15 @@ module.exports.routes = {
 
   //------DataSources Routes-----------------------
   '/datasources/acs/:marketareaId/:year':'DataSourceController.getACS',
-  '/dataSources/gtfs/routes/:tablename':'DataSourceController.getRoutes'
+  '/datasources/gtfs/routes/:tablename':'DataSourceController.getRoutes',
+  
+  //routes Geo :id is datasource id for gtfs 
+  '/datasources/gtfs/geo/:id': 'DataSourceController.getRouteGeo',
 
+  //---------Triptable--------------------------------
+  '/triptable':'TriptableController.calculateTripTable',
+  '/triptable/run':'TriptableController.runModel',
+  '/triptable/list':'TriptableController.finishedModels',
+  '/triptable/:id/modeldata':'TriptableController.modelData'
+  
 };

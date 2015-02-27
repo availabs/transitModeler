@@ -42,7 +42,6 @@ module.exports = {
   //-----------------------------------
   receiveRawCensus:function(marketareaId,year,rawData){
     
-    console.log('RECEIVE_RAW_CENSUS_DATA');
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_RAW_CENSUS_DATA,
       marketareaId: marketareaId,
@@ -68,10 +67,11 @@ module.exports = {
   //------------------------------------
 
   receiveData: function(type,data) {
+    
     //handles Create,Read & Update
     var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
+    ///console.log(actiontype,data);
 
-    console.log(actiontype)
     AppDispatcher.handleServerAction({
       type: ActionTypes[actiontype],
       data: data
@@ -81,7 +81,7 @@ module.exports = {
   receiveDataWithId: function(type,id,data) {
     //handles Create,Read & Update
     var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
-    console.log('receiveDataWithId / '+actiontype);
+    //console.log('receiveDataWithId / '+actiontype,data);
     AppDispatcher.handleServerAction({
       type: ActionTypes[actiontype],
       data: data,

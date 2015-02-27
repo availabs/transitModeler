@@ -17,7 +17,6 @@ var RouteListTable= React.createClass({
     render:function(){
       
       //if(this.state.marketarea.routes)
-      console.log('RouteListTable / render',this.props)
       var selectData = this.props.routeList.map(function(route,id){
         if(route.route_short_name){
           return {"id":route.route_short_name,"text":route.route_short_name};

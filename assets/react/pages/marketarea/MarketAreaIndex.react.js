@@ -68,7 +68,6 @@ var MarketAreaIndex = React.createClass({
     },
 
     _onChange:function(){
-        console.log('MA Index / On Change')
         this.setState(getStatefromStore())
     },
     censusCategorySelections: function (e, selections) {
@@ -128,18 +127,16 @@ var MarketAreaIndex = React.createClass({
                 </div>
                 <div className="row">
                 	<div className="col-lg-7">
-                        <section className="widget">
-                            <div className="body no-margin">
-                             <CensusMap />
-                            </div>
-                        </section>
+                       
+                        <CensusMap />
+            
                     </div>
                     <div className="col-lg-5">
-                        <section className="widget">
-                            <div className="body no-margin">
+                        
+                            <div>
                                 <CensusGraph activeCategory={this.state.activeCensusCategory} />
                             </div>
-                        </section>
+                        
                         <section className="widget">
                             <div className="body no-margin">
                                 <CensusTable activeCategory={this.state.activeCensusCategory} />

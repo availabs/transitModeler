@@ -28,7 +28,7 @@ var RegressionForm = React.createClass({
     getInitialState: function() {
 
         return {
-            regression:{name:'',censusVariables:[]},
+            regression:{name:'',censusVariables:[],constant:0},
             globalCensusVariables:CensusStore.getCurrentDataSet().getTotalData(),
             marketareas:MarketAreaStore.getAll()
         };
@@ -95,6 +95,11 @@ var RegressionForm = React.createClass({
         if(el.name=='regressionName'){
 
             newState.regression.name = event.target.value
+            this.setState(newState);
+
+        }else if(el.name=='regressionConstant'){
+
+            newState.regression.constant = event.target.value
             this.setState(newState);
 
         }else{
@@ -166,6 +171,14 @@ var RegressionForm = React.createClass({
                     <div className="col-sm-5"><h4>Coefficient</h4></div>
                         {currentVariables}
                     </fieldset>
+                    <div class="form-group">
+                        <label htmlFor="dropdown-appended">Model Constant</label>
+                        <div className="input-group col-sm-12">
+                            <input type="text" className="form-control" id="dropdown-appended" placeholder="Constant"
+                                name="regressionConstant" 
+                                onChange={scope.handleChange} value={scope.state.regression.constant}/>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label htmlFor="marketareas">Market Area</label>
                         <div className="input-group col-sm-12">

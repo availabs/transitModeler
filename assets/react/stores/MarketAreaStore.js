@@ -5,33 +5,44 @@
  *
  */
 
-var AppDispatcher = require('../dispatcher/AppDispatcher');
-var Constants = require('../constants/AppConstants');
-var EventEmitter = require('events').EventEmitter;
-
-var assign = require('object-assign');
-
-var ActionTypes = Constants.ActionTypes;
-var CHANGE_EVENT = 'change';
-
-var _currentID = null,
+var AppDispatcher = require('../dispatcher/AppDispatcher'),
+    Constants = require('../constants/AppConstants'),
+    EventEmitter = require('events').EventEmitter,
+    assign = require('object-assign'),
+    
+    ActionTypes = Constants.ActionTypes,
+    CHANGE_EVENT = 'change',
+    
+    SailsWebApi = require('../utils/sailsWebApi'),
+    
+    _currentID = null,
     _marketAreas = {},
     _nullMarketArea = {name:''};
 
+    
+
 function _addMarketAreas(rawData) {
-  console.log('stores/marketareaStore/_addMarketAreas',rawData);
+  //console.log('stores/marketareaStore/_addMarketAreas',rawData);
   rawData.forEach(function(marketarea) {
     if (!_marketAreas[marketarea.id]) {
       _marketAreas[marketarea.id] = marketarea;
     }
   });
+  if(_currentID){
+    _loadCurrentRouteGeo();
+  }
 };
 
 function _setCurrentMarketarea(id){
-  console.log('stores/marketareaStore/_setCurrentMarketarea',id);
   _currentID = id;
+  if(_marketAreas[_currentID] && !_marketAreas[_currentID].routesGeo){
+    _loadCurrentRouteGeo();
+  }
 }
 
+function _loadCurrentRouteGeo(){
+  SailsWebApi.getRoutesGeo(_currentID,_marketAreas[_currentID].origin_gtfs,_marketAreas[_currentID].routes)
+}
 
 var MarketAreaStore = assign({}, EventEmitter.prototype, {
 
@@ -57,6 +68,12 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
   getCurrentMarketArea : function(){
 
     return _marketAreas[_currentID];
+
+  },
+
+  getCurrentMarketAreaTracts : function(){
+
+    return GeodataStore.getMarketAreaTracts();
 
   },
   
@@ -87,6 +104,12 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
       _setCurrentMarketarea(action.marketareaID);
       MarketAreaStore.emitChange();
     break;
+
+    case ActionTypes.RECEIVE_GTFS_GEOS:
+      _marketAreas[action.Id].routesGeo = action.data;
+      MarketAreaStore.emitChange();
+    break;
+
       
 
     default:

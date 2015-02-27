@@ -22,11 +22,7 @@ var _currentGtfs = null,
 
 function _addRoutes(id,rawData) {
   
-  console.log('stores/GtfsStore/_addRoutes',rawData);
-  
-  // if(!_gftsDataSets[id]){ //hopefully redundant
-  //   _gftsDataSets[id] = {};
-  // }
+  //console.log('stores/GtfsStore/_addRoutes',rawData);
 
   _gftsDataSets[id].routes = rawData;
 
@@ -34,7 +30,7 @@ function _addRoutes(id,rawData) {
 
 function _addDatasets(rawData){
 
-  console.log('stores/GtfsStore/_addDatasets',rawData);
+  //console.log('GTFS STORE/_addDatasets',rawData);
   
   rawData.forEach(function(ds){
     if(ds.type === 'gtfs'){
@@ -66,7 +62,6 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
   },
 
   get: function(id) {
-    console.log('stores/GtfsStore/get',id,_marketAreas[id],_marketAreas);
     return _marketAreas[id];
   },
 
@@ -81,11 +76,8 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     var gtfsId = MarketAreaStore.getCurrentMarketArea().origin_gtfs;
     if(_gftsDataSets[gtfsId]){
 
-      console.log('GTFS STORE / getCurrentRouteList / gtfsid:',_gftsDataSets[gtfsId]);
       if(_gftsDataSets[gtfsId].routes){
-        console.log('Do I go here?')
         return _gftsDataSets[gtfsId].routes;
-      
       }
       else if(!_loading){
       
@@ -124,7 +116,6 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_GTFS_ROUTES:
-      console.log('GTFS STORE / RECEIVE_GTFS_ROUTES / ',action)
       _addRoutes(action.Id,action.data);
       _loading = false
       GtfsStore.emitChange();

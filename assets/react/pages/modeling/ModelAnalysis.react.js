@@ -7,29 +7,19 @@ var React = require('react'),
 
     // -- Components
     WidgetHeader = require('../../components/WidgetHeader.react'),
-    CensusOverviewHeader = require('../../components/marketarea/CensusOverviewHeader.react'),
-    CensusMap = require('../../components/marketarea/CensusMap.react'),
+    ModelRunSelector = require('../../components/modelAnalysis/modelRunSelector.react'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
     // -- Stores
-    MarketAreaStore = require('../../stores/MarketAreaStore.js'),
-    CensusStore = require('../../stores/CensusStore.js');
+    ModelRunStore = require('../../stores/ModelRunStore.js');
 
 var i18n = {
     locales: ['en-US']
 };
 
-function getStatefromStore() {
-    
-    var ma  = MarketAreaStore.getCurrentMarketArea() ? MarketAreaStore.getCurrentMarketArea() : {id:0,name:''};
-    return {
-        marketarea: ma,
-        censusData: CensusStore.getCurrentDataSet(),
-    } 
 
-}
 
 var MarketAreaIndex = React.createClass({
 
@@ -45,58 +35,56 @@ var MarketAreaIndex = React.createClass({
         }
     
     },
+
     getInitialState: function(){
-        var state = getStatefromStore();
-        state.activeCensusCategory = 18;
-        return state;
+        return {
+            model_runs:ModelRunStore.getModelRuns()
+        }
     },
 
     componentDidMount: function() {
-        MarketAreaStore.addChangeListener(this._onChange);
-        CensusStore.addChangeListener(this._onChange);
+        ModelRunStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() {
-        MarketAreaStore.removeChangeListener(this._onChange);
-        CensusStore.removeChangeListener(this._onChange);
-    },
-
-    willTransitionTo: function (transition, params) {
-      console.log('will transition to',transition,params);
+        ModelRunStore.removeChangeListener(this._onChange);
     },
 
     _onChange:function(){
-        this.setState(getStatefromStore())
+        this.setState({
+            model_runs:ModelRunStore.getModelRuns()
+        });
     },
+
     render: function() {
        
-        var censusData = this.state.censusData.getTotalData();
-        var data = Object.keys(this.state.censusData.getCategories()).map(function(cat,id){
-            return {"id":id,"text":cat};
-        });
         
         return (
         	<div className="content container">
-            	<h2 className="page-title">{this.state.marketarea.name} <small>Model Analysis</small>
+            	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
                     <div className="btn-group pull-right">
-                        <Link to="ModelAnalysis" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Model Analysis
                         </Link>
-                        <Link to="ModelCreate" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Run New Models
                         </Link>
                     </div>
                 </h2>
                 
                 <div className="row">
-                	<div className="col-lg-7">
+                	
+                    <div className="col-lg-9">
                         <section className="widget">
                             <div className="body no-margin">
-                             <CensusMap />
+                            
+                                <ModelRunSelector marketarea={this.props.marketarea} model_runs={this.state.model_runs} />
+                            
                             </div>
                         </section>
                     </div>
-                    <div className="col-lg-5">
+
+                    <div className="col-lg-3">
                         <section className="widget">
                             <div className="body no-margin">
                                 

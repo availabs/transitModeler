@@ -9,7 +9,8 @@ var React = require('react'),
     L = require('leaflet'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
-    topojson = require('topojson');   
+    topojson = require('topojson');
+    
 
 var map = null,
     layers = {};
@@ -20,7 +21,8 @@ var Map = React.createClass({
     getDefaultProps:function(){
         return {
             height : '500px',
-            ToolTip : {display:'none'}
+            ToolTip : {display:'none'},
+            layerrs :{}
         }
     },
 
@@ -59,7 +61,7 @@ var Map = React.createClass({
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         map.addLayer(layers[key].layer);
-        if(layer.options.zoomOnLoad){
+        if(layer.options.zoomOnLoad && layer.geo.features.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
@@ -78,24 +80,29 @@ var Map = React.createClass({
         var scope = this;
         var mapDiv = document.getElementById('map');
         mapDiv.setAttribute("style","height:"+this.props.height);
-
-        var mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/am3081.kml65fk1/{z}/{x}/{y}.png");
+        var key = 'erickrans.4f9126ad',//am3081.kml65fk1,
+            mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/"+key+"/{z}/{x}/{y}.png");
         
         map = L.map("map", {
           center: [39.8282, -98.5795],
           zoom: 4,
-          layers: [mapquestOSM],
-          zoomControl: false
+          layers: [mapquestOSM],//[mapquestOSM],
+          zoomControl: true,
+          attributionControl:false
         });
 
         Object.keys(this.props.layers).forEach(function(key){
             
-            var currLayer = scope.props.layers[key]
+            var currLayer = scope.props.layers[key];
             layers[key] =  {
                 id:currLayer.id,
                 layer: L.geoJson(currLayer.geo,currLayer.options)
             };  
             map.addLayer(layers[key].layer);
+            if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
+                var ezBounds = d3.geo.bounds(currLayer.geo);
+                map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
+            }
         
         });
         

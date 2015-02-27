@@ -2,37 +2,49 @@
  * This file is provided by Facebook for testing and evaluation purposes
  * only. Facebook reserves all rights not expressly granted.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * FACEBOOK BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
- * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 var io = require('./sails.io.js')();
 var d3 = require('d3');
 var ServerActionCreators = require('../actions/ServerActionsCreator');
 
-// !!! Please Note !!!
-// We are using localStorage as an example, but in a real-world scenario, this
-// would involve XMLHttpRequest, or perhaps a newer client-server protocol.
-// The function signatures below might be similar to what you would build, but
-// the contents of the functions are just trying to simulate client-server
-// communication and server-side processing.
+
+//---------------------------------------------------
+// Socket Events
+//--------------------------------------------------
+function listenToSockets(sessionUser){
+  
+  io.socket.on("job_created", function(e){
+    console.log('job_created',e)
+    ServerActionCreators.receiveData('job',[e])
+  });
+
+  io.socket.on("job_updated", function(e){
+    console.log('job_updated',e)
+    ServerActionCreators.receiveData('job',e)
+  });
+  // io.socket.on("message", function(message){
+  //   console.log("on message",message)
+  //   //ServerActionCreators.receiveData('message',[message]);
+  // });
+
+}
+
 
 module.exports = {
   
   init:function(user){
     ServerActionCreators.setSessionUser(user);
     this.getStateGeodata(34);
-    
+    this.getModelRuns();
     this.read('marketarea');
     this.read('user');
     this.read('regression');
     this.read('datasource');
-    
+    listenToSockets();
   },
+
+  
   //-------------------------------------------
   // GeoData
   //-------------------------------------------
@@ -40,6 +52,12 @@ module.exports = {
     d3.json('/geo/states/'+fips+'/tracts.json',function(data){     
       //console.log('utils/sailsWebApi/getStateGeodata',data);
       ServerActionCreators.receiveStateTracts(data);
+    });
+  },
+  getRoutesGeo: function(ma_id,gtfsId,routes) {
+    d3.json('/datasources/gtfs/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){     
+      ServerActionCreators.receiveDataWithId('gtfs_geo',ma_id,data);
     });
   },
   //---------------------------------------------
@@ -56,14 +74,38 @@ module.exports = {
       ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data)
     })
   },
+
+  //----------------------------------------------
+  //Modeling
+  //-----------------------------------------------
+  getTriptable:function(settings){
+    d3.json('/triptable')
+      .post(JSON.stringify({triptable_settings:settings}),function(err,data){
+        ServerActionCreators.receiveData('triptable_list',data)
+      })
+  
+  },
+  
+  runModel:function(data){
+    d3.json('/triptable/run')
+      .post(JSON.stringify({model:data}),function(err,data){
+        if(err){  console.log('SAILS WEB API / runModel / error',err);  }
+        console.log('SAILS WEB API / runModel',data);
+      })
+  },
+  
+  getModelRuns:function(){
+    d3.json('/triptable/list',function(err,data){
+      ServerActionCreators.receiveData('model_run',data);
+    })
+  
+  },
   //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
   create: function(type,data){
     io.socket.post('/'+type,data,function(resData){
-      //ToDo Check for Errors and Throw Error Case
-      console.log('utils/sailsWebApi/createUser',resData);
-
+      
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
     });
@@ -80,9 +122,7 @@ module.exports = {
 
   update: function(type,data){
     io.socket.put('/'+type+'/'+data.id,data,function(resData){
-      //ToDo Check for Errors and Throw Error Case
-      console.log('utils/sailsWebApi/updateData',resData);
-
+      
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
     });
@@ -90,7 +130,6 @@ module.exports = {
 
   delete: function(type,id){
     io.socket.delete('/'+type+'/'+id,function(resData){
-      //ToDo Check for Errors and Throw Error Case
       console.log('utils/sailsWebApi/delete',resData,id);
 
       //Delete 

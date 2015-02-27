@@ -18,11 +18,14 @@ var React = require('react'),
     // -- Stores
     MarketAreaStore = require('../../stores/MarketAreaStore.js'),
     CensusStore = require('../../stores/CensusStore.js'),
-    GtfsStore = require('../../stores/GtfsStore');
+    GtfsStore = require('../../stores/GtfsStore'),
+    GeodataStore = require('../../stores/GeodataStore');
 
 var i18n = {
     locales: ['en-US']
 };
+
+var emptyGeojson = {type:'FeatureCollection',features:[]};
 
 function getStatefromStore() {
     
@@ -31,7 +34,8 @@ function getStatefromStore() {
     return {
         marketarea: ma,
         censusData: CensusStore.getCurrentDataSet(),
-        routeList:  routes
+        routeList:  routes,
+        tracts: GeodataStore.getMarketAreaTracts()
     } 
 
 }
@@ -82,7 +86,7 @@ var MarketAreaIndex = React.createClass({
         var data = Object.keys(this.state.censusData.getCategories()).map(function(cat,id){
             return {"id":id,"text":cat};
         });
-        
+        var routesGeo = this.state.marketarea.routesGeo || emptyGeojson;
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.state.marketarea.name} <small>Edit Market Area</small>
@@ -98,11 +102,9 @@ var MarketAreaIndex = React.createClass({
                 
                 <div className="row">
                 	<div className="col-lg-9">
-                        <section className="widget">
-                            <div className="body no-margin">
-                             <EditMap />
-                            </div>
-                        </section>
+                       
+                        <EditMap tracts={this.state.tracts} routes={routesGeo} />
+                      
                     </div>
                     <div className="col-lg-3">
                         <section className="widget">

@@ -1,5 +1,5 @@
 {
-  "name": "NJ Transit Demand Modeler",
+  "name": "NJTDM",
   "private": true,
   "version": "0.0.1",
   "description": "Sails React Boilerplate",
@@ -43,7 +43,9 @@
     "d3": "~3.5.3",
     "topojson": "~1.6.18",
     "leaflet": "~0.7.3",
-    "jquery": "~2.1.3"
+    "jquery": "~2.1.3",
+    "colorbrewer": "0.0.2",
+    "tree-kill": "0.0.6"
   },
   "scripts": {
     "start": "node app.js",

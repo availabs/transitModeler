@@ -6,11 +6,11 @@ var React = require('react'),
     WidgetHeader = require('../../components/WidgetHeader.react'),
     RegressionForm = require('../../components/regression/RegressionForm.react'),
     RegressionTable = require('../../components/regression/RegressionTable.react'),
+    
     // -- Action Creators
-    RegressionActionsCreator = require('../../actions/RegressionActionsCreator'),
+    RegressionActionsCreator = require('../../actions/RegressionActionsCreator');
 
-    // -- Stores
-    RegressionStore = require('../../stores/RegressionStore');
+    
 
     // -- Misc
 var panelData = [
@@ -26,11 +26,6 @@ var panelData = [
 ];
 
 
-function getStateFromStores(){
-    return {
-        regressions: RegressionStore.getAll(),
-    }
-};
 
 
 var AccordianPanel = React.createClass({
@@ -84,29 +79,16 @@ var EditAccordian = React.createClass({
 
 var RegressionPage = React.createClass({
 
-    getInitialState: function() {
-        return getStateFromStores();
-    },
-    
-    componentDidMount: function() {
-        RegressionStore.addChangeListener(this._onChange);
-    },
-
-    componentWillUnmount: function() {
-        RegressionStore.removeChangeListener(this._onChange);
-    },
 
     render: function() {
-        console.log('render',this.state.regressions);
         return (
             <div className="content container">
                 <h2 className="page-title">Regression Models <small>Management</small></h2>
                 <div className="row">
                     <div className="col-lg-9">
                         <section className="widget whitesmoke">
-                            <WidgetHeader />
                             <div className="body">
-                                <RegressionTable regressions={this.state.regressions} /> 
+                                <RegressionTable marketareas={this.props.marketareas} regressions={this.props.regressions} /> 
                             </div>
                         </section>                        
                     </div>

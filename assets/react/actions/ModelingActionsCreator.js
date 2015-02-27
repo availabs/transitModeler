@@ -1,0 +1,44 @@
+/**
+ Modeling Actions Creator
+ */
+
+var AppDispatcher = require('../dispatcher/AppDispatcher'),
+	Constants = require('../constants/AppConstants'),
+	ActionTypes = Constants.ActionTypes,
+
+	SailsWebApi = require('../utils/sailsWebApi');
+
+
+module.exports = {
+
+  setOption: function(option,data) {
+    
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_NEW_MODEL_OPTION,
+      option: option,
+      value: data
+    });
+  
+  },
+
+  loadTripTable:function(settings){
+  	//console.log('MAC / Load Trip Table',settings)
+  	SailsWebApi.getTriptable(settings);
+  	//data handled by server actions
+  },
+
+  runModel:function(tt){
+    //console.log('MAC / Run Model',tt)
+    SailsWebApi.runModel(tt);
+    //data handled by server actions
+  },
+
+  analyzeModel:function(id){
+     AppDispatcher.handleViewAction({
+      type: ActionTypes.ANALYZE_MODEL,
+      id: id
+    });
+  }
+
+
+};

@@ -1,8 +1,11 @@
 'use strict';
 var React = require('react'),
     Link = require('react-router').Link,
-    widthStyle16 = {'width': '16%'},
-    widthStyle23 = {'width': '23%'};
+
+    // -- Components
+    JobSidebar = require('./job/JobSidebar.react');
+
+
 
 var MenuItem = React.createClass({
 
@@ -23,9 +26,9 @@ var MenuItem = React.createClass({
             var collapse_string = '#'+name+'-collapse',
                 collapse_id = name+'-collapse';
 
-            var menus = this.props.data.menuItems.map(function(item){
+            var menus = this.props.data.menuItems.map(function(item,i){
                 return (
-                    <MenuItem data={item} parent={collapse_string} />
+                    <MenuItem key={i} data={item} parent={collapse_string} />
                 )
             });
 
@@ -71,9 +74,9 @@ var Sidebar = React.createClass({
       };
     },
     render: function() {
-        var menus = this.props.menuItems.map(function(item){
+        var menus = this.props.menuItems.map(function(item,i){
             return (
-                <MenuItem data={item} />
+                <MenuItem key={i} data={item} />
             )
         });
 
@@ -82,6 +85,7 @@ var Sidebar = React.createClass({
                 <ul id="side-nav" className="side-nav">
                 	{menus}
             	</ul>
+                <JobSidebar activeJobs={this.props.activeJobs} />
             </nav>
         );
     }

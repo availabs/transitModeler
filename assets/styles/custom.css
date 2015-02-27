@@ -32,7 +32,6 @@ body {
  censusMap
 */
 .ma-tract {
-    fill: #fff;
     fill-opacity: 0.5;
     stroke: #4ab0ce;
     stroke-width: 1;
@@ -63,4 +62,14 @@ body {
 #graphDiv svg{
 	height:400px;
 	width:100%;
+}
+
+#map{box-shadow: 5px 5px 5px #aaa;}
+
+.ToolTip{
+   transition: all 200ms linear;
+}
+
+.widget{
+  box-shadow: 5px 5px 5px #aaa;
 }

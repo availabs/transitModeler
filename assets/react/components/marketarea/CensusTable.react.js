@@ -58,7 +58,7 @@ var CensusTable= React.createClass({
             "background-color" : d3.scale.category20().range()[i] 
         }
         return (
-          <tr >
+          <tr key={i}>
             <td style={divStyle}></td>
             <td>{cen_var.replace(/_/g," ")}</td>
             <td>{total_data[cen_var].value/total*100}</td>

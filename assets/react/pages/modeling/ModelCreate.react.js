@@ -6,32 +6,25 @@ var React = require('react'),
 
 
     // -- Components
-    WidgetHeader = require('../../components/WidgetHeader.react'),
-    CensusOverviewHeader = require('../../components/marketarea/CensusOverviewHeader.react'),
-    CensusMap = require('../../components/marketarea/CensusMap.react'),
+    ModelMap = require('../../components/modeling/ModelMap.react'),
+    ModelOptionsSelect = require('../../components/modeling/ModelOptionsSelect.react'),
+    ModelDatasourcesSelect = require('../../components/modeling/ModelDatasourcesSelect.react'),
+    TripTableOverview =  require('../../components/modeling/TripTableOverview.react'),
+    
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
+    ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
 
     // -- Stores
-    MarketAreaStore = require('../../stores/MarketAreaStore.js'),
-    CensusStore = require('../../stores/CensusStore.js');
+    TripTableStore = require('../../stores/TripTableStore'),
 
-var i18n = {
-    locales: ['en-US']
-};
+    // -- Comp Globals
+    ttLoaded = false;
 
-function getStatefromStore() {
-    
-    var ma  = MarketAreaStore.getCurrentMarketArea() ? MarketAreaStore.getCurrentMarketArea() : {id:0,name:''};
-    return {
-        marketarea: ma,
-        censusData: CensusStore.getCurrentDataSet(),
-    } 
 
-}
 
-var MarketAreaIndex = React.createClass({
+var ModelCreate = React.createClass({
 
     mixins: [Router.State],
 
@@ -45,44 +38,72 @@ var MarketAreaIndex = React.createClass({
         }
     
     },
+   
     getInitialState: function(){
-        var state = getStatefromStore();
-        state.activeCensusCategory = 18;
-        return state;
-    },
-
-    componentDidMount: function() {
-        MarketAreaStore.addChangeListener(this._onChange);
-        CensusStore.addChangeListener(this._onChange);
-    },
-
-    componentWillUnmount: function() {
-        MarketAreaStore.removeChangeListener(this._onChange);
-        CensusStore.removeChangeListener(this._onChange);
+        return {
+            newModelOptions : TripTableStore.getOptions(),
+            currentSettings : TripTableStore.getCurrentSettings(),
+            currentTripTable : TripTableStore.getCurrentTripTable()
+        }
     },
 
     willTransitionTo: function (transition, params) {
       console.log('will transition to',transition,params);
     },
 
-    _onChange:function(){
-        this.setState(getStatefromStore())
+    componentDidMount: function() {
+        TripTableStore.addChangeListener(this._onChange);
+        if(this.props.marketarea.id > 0 && !ttLoaded){
+            this._loadNewTripTable();
+        }
     },
-    render: function() {
-       
-        var censusData = this.state.censusData.getTotalData();
-        var data = Object.keys(this.state.censusData.getCategories()).map(function(cat,id){
-            return {"id":id,"text":cat};
+
+    componentWillUnmount: function() {
+        TripTableStore.removeChangeListener(this._onChange);
+        ttLoaded = false;
+    },
+    
+    _onChange:function(){
+        this.setState({
+            newModelOptions : TripTableStore.getOptions(),
+            currentSettings : TripTableStore.getCurrentSettings(),
+            currentTripTable : TripTableStore.getCurrentTripTable()
         });
+    },
+
+    _loadNewTripTable:function(){
+        var settings = this.state.currentSettings;
+        settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};
+        if(this.props.marketarea.id > 0){
+            ModelingActionsCreator.loadTripTable(settings);
+            ttLoaded = true;
+        }
         
+    },
+    
+    componentWillReceiveProps:function(nextProps){
+        if(nextProps.marketarea.id > 0 && !ttLoaded){
+            this._loadNewTripTable();
+        }
+    },
+    
+    render: function() {
+        var routes = this.props.marketarea.routesGeo || {type:'FeatureCollection',features:[]}
+        
+        var OverviewStyle = {
+            borderBottomLeftRadius:0,
+            borderBottomRightRadius:0,
+            margin:0,
+            overflow:'auto'
+        }
         return (
         	<div className="content container">
-            	<h2 className="page-title">{this.state.marketarea.name} <small>Run New Model</small>
+            	<h2 className="page-title">{this.props.marketarea.name} <small>Run New Model</small>
                     <div className="btn-group pull-right">
-                        <Link to="ModelAnalysis" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Model Analysis
                         </Link>
-                        <Link to="ModelCreate" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Run New Models
                         </Link>
                     </div>
@@ -90,22 +111,17 @@ var MarketAreaIndex = React.createClass({
                 
                 <div className="row">
                 	<div className="col-lg-7">
-                        <section className="widget">
-                            <div className="body no-margin">
-                             <CensusMap />
-                            </div>
+                        <section className="widget no-margin" style={OverviewStyle}>
+                            <TripTableOverview currentTripTable={this.state.currentTripTable} currentSettings={this.state.currentSettings} marketarea={this.props.marketarea}/>
                         </section>
+                        <ModelMap currentTripTable={this.state.currentTripTable} tracts={this.props.tracts} routes={ routes } />
                     </div>
                     <div className="col-lg-5">
                         <section className="widget">
-                            <div className="body no-margin">
-                                
-                            </div>
+                            <ModelOptionsSelect options={this.state.newModelOptions} currentSettings={this.state.currentSettings}/>
                         </section>
                         <section className="widget">
-                            <div className="body no-margin">
-                                
-                            </div>
+                            <ModelDatasourcesSelect datasources={this.props.datasources} currentSettings={this.state.currentSettings}/>
                         </section>
                     </div>
                 </div>
@@ -114,4 +130,4 @@ var MarketAreaIndex = React.createClass({
     }
 });
 
-module.exports = MarketAreaIndex;
+module.exports = ModelCreate;
