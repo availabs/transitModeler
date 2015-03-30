@@ -128,7 +128,7 @@ module.exports = {
   read: function(type) {
 
     var where = {}
-    io.socket.get('/'+type,where,function(data){     
+    d3.json('/'+type,function(err,data){     
       //console.log('utils/sailsWebApi/getUsers',data);
       ServerActionCreators.receiveData(type,data);
     });
