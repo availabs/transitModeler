@@ -11,7 +11,9 @@ var React = require('react'),
     GeodataStore = require('../stores/GeodataStore.js'),
     DatasourcesStore = require('../stores/DatasourcesStore.js'),
     JobStore = require('../stores/JobStore.js'),
-    RegressionStore = require('../stores/RegressionStore');
+    RegressionStore = require('../stores/RegressionStore'),
+    CensusStore = require('../stores/CensusStore'),
+    ModelRunStore = require('../stores/ModelRunStore');
     
 
 function marketAreasToMenuItems(marketareas){
@@ -37,21 +39,48 @@ var App = React.createClass({
             tracts: GeodataStore.getMarketAreaTracts(),
             datasources: DatasourcesStore.getAll(),
             activeJobs: JobStore.getActive(),
-            regressions:RegressionStore.getAll()
+            regressions:RegressionStore.getAll(),
+            censusData: CensusStore.getCurrentDataSet(),
+            activeCensusVariable: CensusStore.getActiveVariable(),
+            ctppData: MarketAreaStore.getCurrentCtpp(),
+            loadedModels: ModelRunStore.getActiveModelRuns()
         };
+    },
+
+    _onChange: function() {
+        this.setState({
+            menu:this._populateMenu( MarketAreaStore.getAll()).menu,
+            currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
+            marketareas:MarketAreaStore.getAll(),
+            tracts: GeodataStore.getMarketAreaTracts(),
+            datasources: DatasourcesStore.getAll(),
+            activeJobs: JobStore.getActive(),
+            regressions:RegressionStore.getAll(),
+            censusData: CensusStore.getCurrentDataSet(),
+            activeCensusVariable: CensusStore.getActiveVariable(),
+            ctppData: MarketAreaStore.getCurrentCtpp(),
+            loadedModels: ModelRunStore.getActiveModelRuns()
+        });
     },
 
     componentDidMount: function() {
         JobStore.addChangeListener(this._onChange);
         MarketAreaStore.addChangeListener(this._onChange);
         DatasourcesStore.addChangeListener(this._onChange);
+        GeodataStore.addChangeListener(this._onChange);
+        CensusStore.addChangeListener(this._onChange);
+        ModelRunStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() {
         JobStore.removeChangeListener(this._onChange);
         MarketAreaStore.removeChangeListener(this._onChange);
         DatasourcesStore.removeChangeListener(this._onChange);
+        GeodataStore.removeChangeListener(this._onChange);
+        CensusStore.removeChangeListener(this._onChange);
+        ModelRunStore.removeChangeListener(this._onChange);
     },
+
 
     render: function() {
         return (
@@ -65,24 +94,16 @@ var App = React.createClass({
                         marketareas ={this.state.marketareas}
                         tracts={this.state.tracts} 
                         datasources={this.state.datasources}
-                        regressions={this.state.regressions} />
+                        regressions={this.state.regressions}
+                        censusData={this.state.censusData}
+                        activeCensusVariable = {this.state.activeCensusVariable} 
+                        ctppData = {this.state.ctppData} 
+                        loadedModels = {this.state.loadedModels} />
     	    	</div>
         	</div>
         );
     },
   
-    _onChange: function() {
-        this.setState({
-          menu:this._populateMenu( MarketAreaStore.getAll()).menu,
-          currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
-          marketareas:MarketAreaStore.getAll(),
-          tracts: GeodataStore.getMarketAreaTracts(),
-          datasources: DatasourcesStore.getAll(),
-          activeJobs: JobStore.getActive(),
-          regressions:RegressionStore.getAll()
-        });
-    },
-
     _populateMenu: function(marketareas){
         var maMenu = marketAreasToMenuItems(marketareas);
         if(!maMenu){

@@ -18,7 +18,9 @@ var ToolTip = React.createClass({
 		}
 	},
 
-
+	_Close:function(){
+		d3.select('.ToolTip').style({display:'none'});
+	},
 
 	render: function() {
 		displayStyle  = {
@@ -33,7 +35,7 @@ var ToolTip = React.createClass({
 			minWidth:'200px',
 			// width:this.props.size.width,
 			// height:this.props.size.height,
-			zIndex:100
+			zIndex:999999
 		
 		}
 		headerStyle = {
@@ -41,11 +43,23 @@ var ToolTip = React.createClass({
 			width:'100%',
 			color:'#000'
 		}
+		closeStyle = {
+			marginTop:'-30px',
+			color:'#000',
+			fontSize:'1.5em',
+			cursor:'pointer'
+		}
 
+		bodyStyle = {
+			width:'100%',
+			color:'#000'
+		}
+		//<i style={closeStyle} className="fa fa-close pull-right" onClick={this._Close}></i>
+	    	
 		return (
 			<div className="ToolTip" style={displayStyle}>
-		    	<h4 className="TT_Title" style={headerStyle}></h4>
-		    	<span className="TT_Content"></span>
+				<h4 className="TT_Title" style={headerStyle}></h4>
+		    	<span className="TT_Content" style={bodyStyle}></span>
 			</div>
 		);
 	}

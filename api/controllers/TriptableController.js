@@ -113,7 +113,7 @@ module.exports = {
 		});
 
 	},
-	modelData:function(req,res){
+	getModelRun:function(req,res){
 		if(typeof req.param('id') == 'undefined'){
 			console.log('model Data no id passed');
 			res.json({responseText:'Must pass model run ID'},500)
@@ -139,9 +139,11 @@ module.exports = {
 			}
 			var info = JSON.parse(data.rows[0].info);
 			var routes = JSON.stringify(info.marketarea.routes).replace('[','(').replace(']',')').replace(/\"/g, "'").replace(/\\/g, "").replace("'(", "(").replace(")'", ")");;
-			console.log(routes);
+			
+			//console.log(routes);
+			
 			var gtfs_table = 'njtransit_bus_07-12-2013';//info.datasources.gtfs;
-			var sql ="SELECT a.trip_id,a.duration,a.distance,a.route,a.on_stop_code,a.gtfs_trip_id,a.off_stop_code,b.start_time,b.waiting_time,b.walk_distance,b.walking_time,	c.arrival_time,	d.arrival_time as trip_start_time,f.fare_zone as on_fare_zone,	g.fare_zone as off_fare_zone,e.geoid as on_tract, h.geoid as off_tract"
+			var sql ="SELECT a.run_id,a.trip_id,a.duration,a.distance,a.route,a.on_stop_code,a.gtfs_trip_id,a.off_stop_code,b.start_time,b.waiting_time,b.walk_distance,b.walking_time,	c.arrival_time,	d.arrival_time as trip_start_time,f.fare_zone as on_fare_zone,	g.fare_zone as off_fare_zone,e.geoid as on_tract, h.geoid as off_tract"
 			 		+" from model_legs a "
 			 		+" join model_trips b ON a.trip_id = b.id "
 			 		+" join \""+gtfs_table+"\".stop_times c ON a.on_stop_id = c.stop_id and a.gtfs_trip_id = c.trip_id "
@@ -213,6 +215,7 @@ module.exports = {
 		var triptable = req.param('triptable_settings');
 		var tracts = JSON.stringify(triptable.marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
 		var output = {tt:[],failed:[]};
+		var regressionModel = triptable.regressionId;
 		var numTripsTotal = 0,
 			tractPairCount  = 0;
 		console.log('settings:',req.param('triptable_settings').time,req.param('triptable_settings').type,'total_zones',triptable.marketarea.zones.length);
@@ -240,6 +243,7 @@ module.exports = {
 											pop_growth = 1+(triptable.tract_forecasts.employment[tractPair.work_tract]/100);
 										}
 									}
+
 									var time = getTimeMatrix(tractPair);
 									if(triptable.time == 'full'){
 										//am riderrs
@@ -271,7 +275,7 @@ module.exports = {
 										
 										//console.log('am riders');
 										//am riders
-										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id));
+										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
 										//console.log('x',tractPair,numTrips)
 										for(var i = 0; i < numTrips;i++){
@@ -368,12 +372,27 @@ function planTrip(tractPair,timeMatrix,stop_points,timeOfDay,output){
 	}	
 }
 
-function getRegressionTrips(tractPair,time,timeOfDay,marketarea){
+function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model){
 	
 	var regressionRiders = 0;
 
 	var regRatio = 1;
-	//regRatio= Math.round(regressionRiders) / acs_data.acs[tractPair.home_tract].bus_to_work;
+	if(type === 'regression' && model){
+		
+		regressionRiders = +model.constant;
+		model.censusVariables.forEach(function(cv){
+			console.log(tractPair.home_tract,cv.name , 
+				acs_data.acs[tractPair.home_tract][cv.name],'*',cv.coef,'=',
+				acs_data.acs[tractPair.home_tract][cv.name]*cv.coef
+			)
+			regressionRiders += acs_data.acs[tractPair.home_tract][cv.name]*cv.coef;
+
+		})
+		
+		regRatio= regressionRiders / acs_data.acs[tractPair.home_tract].bus_to_work;
+		console.log(tractPair.home_tract,regressionRiders,'/', acs_data.acs[tractPair.home_tract].bus_to_work,'=',regRatio)
+	}
+	
 	
 	var output = tractPair.bus_total*(time.intime['am']/acs_data.acs[tractPair.home_tract].public_transportation_to_work)*Math.abs(regRatio);
 	return Math.round(output*1);

@@ -8,6 +8,8 @@ var React = require('react'),
     // -- Components
     WidgetHeader = require('../../components/WidgetHeader.react'),
     ModelRunSelector = require('../../components/modelAnalysis/modelRunSelector.react'),
+    RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
+    
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
@@ -58,7 +60,7 @@ var MarketAreaIndex = React.createClass({
 
     render: function() {
        
-        
+        var routeData = []
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -82,6 +84,9 @@ var MarketAreaIndex = React.createClass({
                             
                             </div>
                         </section>
+                        <div style={{width:'100%'}}>
+                            <RouteTotalGraph routeData = {this.props.loadedModels}  />
+                        </div>
                     </div>
 
                     <div className="col-lg-3">

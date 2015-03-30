@@ -35,11 +35,19 @@ module.exports.connections = {
   // Run:
   // npm install sails-mysql
   //
-  lorPostgres: {
+  localPostgres: {
     adapter: 'sails-postgresql',
     user: 'postgres',
     password:'am1238wk',//'transit', //
     host: 'localhost',///'lor.availabs.org',
+    database: 'transitModeler'
+  },
+  
+  lorPostgres: {
+    adapter: 'sails-postgresql',
+    user: 'postgres',
+    password:'transit', //
+    host: 'lor.availabs.org',
     database: 'transitModeler'
   }
 

@@ -14,11 +14,10 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     CHANGE_EVENT = 'change',
 
     //--Stores
-    MarketareaStore = require('./MarketAreaStore'),
-
+    
     //--Utils
     sailsWebApi = require('../utils/sailsWebApi.js'),
-    newModelOptions = require('../utils/src/newModelOptions.js');
+    crossTrips = require('../utils/src/crossTrips.js');
 
 
 var _modelRuns = {},
@@ -55,6 +54,39 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
   
   getModelRuns:function(){
     return _modelRuns;
+  },
+
+  addActiveModelRun : function(id){
+    if(_activeRuns.indexOf(id) === -1){
+      _activeRuns.push(id);
+      _runData[id] = 'loading';
+      sailsWebApi.getModelRun(id);
+      ModelRunStore.emitChange();
+    }
+  },
+
+  getActiveModelRuns : function(){
+    
+    var loading = false;
+    _activeRuns.forEach(function(runId){
+      if( _runData[runId] !== 'loading' ) { loading = true; }
+      console.log('getActiveModelRuns, new data',runId,_runData[runId],crossTrips.loadedModels.indexOf(runId));
+      if(crossTrips.loadedModels.indexOf(runId) === -1 && _runData[runId] !== 'loading'){
+        if(!crossTrips.initialized){
+          crossTrips.init(_runData[runId],runId)
+        }else{
+          crossTrips.addRun(_runData[runId],runId)
+        } 
+      }
+    })
+
+    crossTrips.loadedModels.forEach(function(runId){
+      if(_activeRuns.indexOf(runId) === -1){
+        crossTrips.removeRun(runId);
+      }
+    })
+    crossTrips.loading = loading;
+    return crossTrips;
   }
 
 
@@ -67,9 +99,20 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
 
 
     case ActionTypes.RECEIVE_MODEL_RUNS:
-        //console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
+      console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
       addModelRuns(action.data);
       ModelRunStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_FULL_MODEL_RUNS:
+      _runData[action.Id] = action.data;
+      console.log('ModelRunStore / RECEIVE_FULL_MODEL_RUNS',action,_runData);
+      ModelRunStore.emitChange();
+    
+    break;
+
+    case ActionTypes.ADD_ACTIVE_MODEL_RUN:
+      ModelRunStore.addActiveModelRun(action.id);
     break;
 
     default:

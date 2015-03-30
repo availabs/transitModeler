@@ -40,7 +40,6 @@ function _addDatasets(rawData){
       TripTableStore.setDatasource(source,tableName)
     }
   })
-
 };
 
 

@@ -69,6 +69,13 @@ module.exports = {
     })
   },
 
+  getCtpp: function(marketareaId){
+    io.socket.get('/datasources/ctpp/'+marketareaId,function(data){
+      //console.log('sailsWebApi / getCtpp',marketareaId,data)
+      ServerActionCreators.receiveCtpp(marketareaId,data);
+    })
+  },
+
   getGtfsRoutes: function(tablename,gtfs_id){
     io.socket.get( '/dataSources/gtfs/routes/'+tablename,function(data){
       ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data)
@@ -99,6 +106,13 @@ module.exports = {
       ServerActionCreators.receiveData('model_run',data);
     })
   
+  },
+
+  getModelRun:function(id){
+    d3.json('/triptable/'+id+'/modelrun',function(err,data){
+      //console.log('sailsWebApi getModelRun',id,'error',err,'data',data)
+      ServerActionCreators.receiveDataWithId('full_model_run',id,data)
+    })
   },
   //---------------------------------------------------
   // Sails Rest Route

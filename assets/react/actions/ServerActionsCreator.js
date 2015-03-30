@@ -50,6 +50,16 @@ module.exports = {
     });
 
   },
+  receiveCtpp:function(marketareaId,rawData){
+    
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_CTPP_DATA,
+      marketareaId: marketareaId,
+      rawData:rawData
+    });
+
+  },
+
 
   //------------------------------------
   // User
@@ -81,7 +91,7 @@ module.exports = {
   receiveDataWithId: function(type,id,data) {
     //handles Create,Read & Update
     var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
-    //console.log('receiveDataWithId / '+actiontype,data);
+
     AppDispatcher.handleServerAction({
       type: ActionTypes[actiontype],
       data: data,

@@ -18,9 +18,10 @@ var React = require('react'),
     
 
 
-var CensusMap = React.createClass({
+var CtppMap = React.createClass({
     
-     _toolTipContent:function(props,index){
+
+    _toolTipContent:function(props,index){
         var scope = this;
 
         var category_name = Object.keys(this.props.censusData.getCategories())[this.props.activeCategory],
@@ -53,26 +54,28 @@ var CensusMap = React.createClass({
 
     render: function() {
         var scope = this,
-            geo = this.props.tracts;
-
-        var tractData = this.props.censusData.getTractData(),
-            activeVariable = this.props.activeVariable;
-
-        odScale.domain(
+            geo = this.props.tracts,
+            tractData = this.props.ctppData;
             
-            geo.features.map(function(feature){
-                if( tractData[feature.properties.geoid] ){
-                    return tractData[feature.properties.geoid][activeVariable];
-                }
-                return 0
-            }).filter(function(d){
-                return d > 0;
-            }).sort(function(a,b){
-                return b-a;
-            })
+        var tractValues = {};
+        if(tractData){
+            
+            odScale.domain(
+                
+                tractData.map(function(d){
+                    if(scope.props.marketarea.zones.indexOf(d.key) > -1){
+                        tractValues[d.key] = d.value;
+                        return d.value
+                    }
+                }).filter(function(d){
+                    return d
+                }).sort(function(a,b){
+                    return b-a;
+                })
 
-        );
-
+            );
+        }
+        //console.log('ctpp scale',odScale.domain())
         
         if(geo.features.length != prevTractLength || !deepEqual(prevDomain,odScale.domain())){
             tractlayerID++;
@@ -90,7 +93,7 @@ var CensusMap = React.createClass({
                         return {
                             stroke:false,
                             className:'tract geo_'+feature.properties.geoid,
-                            fillColor: odScale( tractData[feature.properties.geoid] ? tractData[feature.properties.geoid][activeVariable] : 0),
+                            fillColor: odScale( tractValues[feature.properties.geoid] || 0),
                             fillOpacity: 0.5
                         }
                     },
@@ -98,33 +101,33 @@ var CensusMap = React.createClass({
                         layer.on({
                             mouseover: function(e){
                                 this.setStyle({stroke:true});
-                                 var toolTip = d3.select('.ToolTip').style({
-                                    top:e.originalEvent.clientY+'px',
-                                    left:e.originalEvent.clientX+'px',
-                                    display:'block'
-                                });
+                                //  var toolTip = d3.select('.ToolTip').style({
+                                //     top:e.originalEvent.clientY+'px',
+                                //     left:e.originalEvent.clientX+'px',
+                                //     display:'block'
+                                // });
 
-                                toolTip.select('h4')
-                                    .attr('class','TT_Title')
-                                    .html('Tract : '+feature.properties.geoid);
+                                // toolTip.select('h4')
+                                //     .attr('class','TT_Title')
+                                //     .html('Tract : '+feature.properties.geoid);
 
-                                toolTip.select('span')
-                                    .attr('class','TT_Content')
-                                    .html(scope._toolTipContent(feature.properties,0));
+                                // toolTip.select('span')
+                                //     .attr('class','TT_Content')
+                                //     .html(scope._toolTipContent(feature.properties,0));
                             },
 
                             click: function(e){
-
+                                scope.setState({filter:feature.properties.geoid});
                             },
 
 
                             mouseout: function(e){
                                this.setStyle({stroke:false});
-                                var toolTip = d3.select('.ToolTip').style({
-                                    top:e.originalEvent.clientY+'px',
-                                    left:e.originalEvent.clientX+'px',
-                                    display:'none'
-                                });
+                                // var toolTip = d3.select('.ToolTip').style({
+                                //     top:e.originalEvent.clientY+'px',
+                                //     left:e.originalEvent.clientX+'px',
+                                //     display:'none'
+                                // });
                             }
                         })
                     }
@@ -135,7 +138,7 @@ var CensusMap = React.createClass({
 
         var legendLayers = {
             census:{
-                title:this.props.activeVariable,
+                title:'CTPP',
                 scale:odScale
             }
         }
@@ -151,4 +154,4 @@ var CensusMap = React.createClass({
 });
 
 
-module.exports = CensusMap;
+module.exports = CtppMap;

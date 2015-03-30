@@ -1,5 +1,8 @@
 'use strict';
 var React = require('react'),
+    
+    // -- Components
+    ModelRegressionSelect = require('./ModelRegressionSelect.react'),
 
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
@@ -19,6 +22,19 @@ var ModelOptionsSelect = React.createClass({
 
         var fields = Object.keys(scope.props.options).map(function(option){
 
+            var regressionInclude = (function(){
+            
+                if(option === 'type' && scope.props.currentSettings[option] === 'regression'){
+                    return <ModelRegressionSelect 
+                                currentSettings={scope.props.currentSettings} 
+                                regressions={scope.props.regressions} 
+                                marketarea={scope.props.marketarea} />;
+                }
+
+                return <span />
+            })();
+
+
             var Buttons = Object.keys(scope.props.options[option]).map(function(key){
                 var currClass = "btn btn-default";
                 if(key === scope.props.currentSettings[option]){ currClass+= ' active'; }
@@ -37,6 +53,7 @@ var ModelOptionsSelect = React.createClass({
                     
                         <span className="help-block pull-left">{scope.props.options[option][scope.props.currentSettings[option]].helpText}</span>
                     </div>
+                    {regressionInclude}
                 </div>
             )
 

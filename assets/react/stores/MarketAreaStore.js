@@ -1,22 +1,20 @@
 'use strict';
-/**
- * This file is provided by Facebook for testing and evaluation purposes
- * only. Facebook reserves all rights not expressly granted.
- *
- */
 
+// - Store Boilerp[late]
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
     EventEmitter = require('events').EventEmitter,
-    assign = require('object-assign'),
-    
+    assign = require('object-assign'),   
     ActionTypes = Constants.ActionTypes,
     CHANGE_EVENT = 'change',
     
+    //utils
     SailsWebApi = require('../utils/sailsWebApi'),
+    CrossCtpp = require('../utils/src/crossCtpp'),
     
     _currentID = null,
     _marketAreas = {},
+    _ctppData = {},
     _nullMarketArea = {name:''};
 
     
@@ -82,6 +80,28 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
     return _currentID;
 
   },
+  getCurrentCtpp : function(){
+    if(_currentID && _currentID > 0){
+        
+        if(_ctppData[_currentID]){
+         
+          CrossCtpp.init(_ctppData[_currentID])
+          //console.log('get current',CrossCtpp)
+          return CrossCtpp;
+        
+        }else if(_ctppData[_currentID] !== 'loading'){
+
+            SailsWebApi.getCtpp(_currentID);
+            _ctppData[_currentID] == 'loading'
+            return {initialized:false};
+          
+        }else{
+            //still loading  
+            return {initialized:false};
+        }
+    }
+      
+  },
 
   getAll: function() {
     return _marketAreas;
@@ -108,6 +128,13 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_GTFS_GEOS:
       _marketAreas[action.Id].routesGeo = action.data;
       MarketAreaStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_CTPP_DATA:
+        //console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
+        _ctppData[action.marketareaId] = action.rawData;
+        
+        MarketAreaStore.emitChange();
     break;
 
       

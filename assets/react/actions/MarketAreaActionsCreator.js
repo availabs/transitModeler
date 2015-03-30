@@ -18,4 +18,11 @@ module.exports = {
     });
   },
 
+  setActiveCensusVariable: function(data) {
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_ACTIVE_CENSUS_VARIABLE,
+      cen_var: data
+    });
+  },
+
 };

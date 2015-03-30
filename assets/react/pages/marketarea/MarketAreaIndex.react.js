@@ -5,33 +5,18 @@ var React = require('react'),
     Link = require('react-router').Link,
 
     // -- Components
-    WidgetHeader = require('../../components/WidgetHeader.react'),
-    Select2Component = require('../../components/utils/Select2.react'),
-    CensusOverviewHeader = require('../../components/marketarea/CensusOverviewHeader.react'),
-    CensusMap = require('../../components/marketarea/CensusMap.react'),
-    CensusGraph = require('../../components/marketarea/CensusGraph.react'),
-    CensusTable = require('../../components/marketarea/CensusTable.react'),
-
+    CensusOverview = require('../../components/marketarea/CensusOverview.react'),
+    CtppOverview = require('../../components/marketarea/CtppOverview.react'),
+   
     // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
-    MarketAreaStore = require('../../stores/MarketAreaStore.js'),
-    CensusStore = require('../../stores/CensusStore.js');
-
+    
 var i18n = {
     locales: ['en-US']
 };
 
-function getStatefromStore() {
-    
-    var ma  = MarketAreaStore.getCurrentMarketArea() ? MarketAreaStore.getCurrentMarketArea() : {id:0,name:''};
-    return {
-        marketarea: ma,
-        censusData: CensusStore.getCurrentDataSet(),
-    } 
-
-}
 
 var MarketAreaIndex = React.createClass({
 
@@ -47,103 +32,109 @@ var MarketAreaIndex = React.createClass({
         }
     
     },
+    
     getInitialState: function(){
-        var state = getStatefromStore();
-        state.activeCensusCategory = 18;
+    
+        var state = {}
+        state.activeComponent = 'acs';
         return state;
+    
     },
 
-    componentDidMount: function() {
-        MarketAreaStore.addChangeListener(this._onChange);
-        CensusStore.addChangeListener(this._onChange);
+    _setActiveComponent : function(e){
+        this.setState({activeComponent:e.target.getAttribute('value')})
     },
 
-    componentWillUnmount: function() {
-        MarketAreaStore.removeChangeListener(this._onChange);
-        CensusStore.removeChangeListener(this._onChange);
+    _renderActiveComponent : function(){
+
+
+        switch(this.state.activeComponent) {
+
+            case 'acs':
+                return (
+                     <CensusOverview
+                    tracts={this.props.tracts}
+                    activeVariable={this.props.activeCensusVariable} 
+                    censusData={this.props.censusData} 
+                    marketarea={this.props.marketarea} />
+                )
+            break;
+
+            case 'ctpp':
+                return (
+                     <CtppOverview
+                        tracts={this.props.tracts}
+                        ctppData = {this.props.ctppData}
+                        marketarea={this.props.marketarea} />
+                )
+
+            break;
+
+            default:
+                return (
+                     <span />
+                )
+            break;
+            
+        }
+
     },
 
-    willTransitionTo: function (transition, params) {
-        //console.log('will transition to',transition,params);
-    },
-
-    _onChange:function(){
-        this.setState(getStatefromStore())
-    },
-    censusCategorySelections: function (e, selections) {
-       var newState = this.state;
-       newState.activeCensusCategory = selections.id;
-       this.setState(newState);
-    },
     render: function() {
        
-        var censusData = this.state.censusData.getTotalData();
-        var data = Object.keys(this.state.censusData.getCategories()).map(function(cat,id){
+        var censusData = this.props.censusData.getTotalData();
+        var data = Object.keys(this.props.censusData.getCategories()).map(function(cat,id){
             return {"id":id,"text":cat};
         });
         
+
+
         return (
         	<div className="content container">
-            	<h2 className="page-title">{this.state.marketarea.name} <small>marketarea overview</small>
+            	<h2 className="page-title">{this.props.marketarea.name} <small>marketarea overview</small>
                     <div className="btn-group pull-right">
-                        <Link to="MarketAreaIndex" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="MarketAreaIndex" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Overview
                         </Link>
-                        <Link to="MarketAreaEdit" params={{marketareaID:this.state.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
+                        <Link to="MarketAreaEdit" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
                             Edit
                         </Link>
                     </div>
                 </h2>
-                <CensusOverviewHeader/>
+                
                 <div className="row">
                     <div className="col-lg-12">
-                        <section className="widget">
-                            <div className="body no-margin">
-                                <div className="row">
-                                    <div className="col-lg-7">
-
-                                        <fieldset>
-                                        
-                                            <div className="form-group">
-                                                <label className="col-sm-3 control-label" htmlFor="grouped-select">Census Category</label>
-                                                <div className="col-sm-9">
-                                                     <Select2Component
-                                                      id="the-hidden-input-id"
-                                                      dataSet={data}
-                                                      onSelection={this.censusCategorySelections}
-                                                      multiple={false}
-                                                      styleWidth="100%"
-                                                      val={[this.state.activeCensusCategory]} />
-                                                </div>
-                                            </div>
-                                           
-                                        </fieldset>
-                                    </div>
+                        <section className="widget widget-tabs">
+                            <header>
+                                <ul className="nav nav-tabs" onClick={this._setActiveComponent}>
+                                    <li value="acs" className='active'>
+                                        <a href="#acs" data-toggle="tab" value="acs" aria-expanded="true">Census Acs</a>
+                                    </li>
+                                    <li value="ctpp">
+                                        <a href="#ctpp" data-toggle="tab" value="ctpp">Census Ctpp</a>
+                                    </li>
+                                    <li>
+                                        <a href="#survey" data-toggle="tab">Survey</a>
+                                    </li>
+                                    
+                                </ul>
+                            </header>
+                            <div className="body tab-content">
+                                <div id="acs" className="tab-pane active clearfix">
+                                   ACS 
+                                </div>
+                                <div id="ctpp" className="tab-pane clearfix">
+                                   
+                                </div>
+                                <div id="survey" className="tab-pane clearfix">
+                                   
                                 </div>
                             </div>
                         </section>
                     </div>
                     
                 </div>
-                <div className="row">
-                	<div className="col-lg-7">
-                       
-                        <CensusMap />
-            
-                    </div>
-                    <div className="col-lg-5">
-                        
-                            <div>
-                                <CensusGraph activeCategory={this.state.activeCensusCategory} />
-                            </div>
-                        
-                        <section className="widget">
-                            <div className="body no-margin">
-                                <CensusTable activeCategory={this.state.activeCensusCategory} />
-                            </div>
-                        </section>
-                    </div>
-                </div>
+                {this._renderActiveComponent()}
         	</div>
         );
     }

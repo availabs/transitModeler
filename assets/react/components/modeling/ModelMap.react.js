@@ -57,7 +57,7 @@ var ModelMap = React.createClass({
         if( !deepEqual(odScale.domain(),flatTrips) ){
             
             odScale.domain(flatTrips);
-            d3.selectAll('.ma-tract')
+            d3.selectAll('.tract')
                 .attr('fill',function(feature){
                     
                    
@@ -83,21 +83,20 @@ var ModelMap = React.createClass({
                         
                         //console.log(scaleValue,feature.properties.geoid, tractCounts[feature.properties.geoid])
                         return {
-                            className: 'ma-tract geo_'+feature.properties.geoid+'_',
+                            className: 'tract geo_'+feature.properties.geoid+'_',
+                            stroke:false
                         };
                     },
                     onEachFeature: function (feature, layer) {
                         
                         layer.on({
-
                             click: function(e){
-                                console.log('station_click',e.target.feature.properties);
                             },
                             mouseover: function(e){
-                             
+                                this.setStyle({stroke:true});
                             },
                             mouseout: function(e){
-                                
+                               this.setStyle({stroke:false});
                             }
                         });
                         
@@ -112,7 +111,7 @@ var ModelMap = React.createClass({
                         return {
                             className: 'route_'+feature.properties.short_name,
                             weight:5,
-                            opacity:0.3,
+                            opacity:1,
                             color:'#333',
                             fillColor:'#999'
                         };
@@ -125,7 +124,7 @@ var ModelMap = React.createClass({
                                 console.log('station_click',e.target.feature.properties);
                             },
                             mouseover: function(e){
-                                e.target.setStyle({opacity:0.7});
+                                e.target.setStyle({opacity:1,weight:12});
                                 d3.select('.ToolTip').style({
                                     left:e.originalEvent.clientX+'px',
                                     top:e.originalEvent.clientY+'px',
@@ -138,7 +137,7 @@ var ModelMap = React.createClass({
                             mouseout: function(e){
                                 //scope._updateTooltip({ x:0,y:0,display:'none'});
                                 d3.select('.ToolTip').style({opacity:0});
-                                e.target.setStyle({opacity :0.3})
+                                e.target.setStyle({opacity :1,weight:5})
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
                             

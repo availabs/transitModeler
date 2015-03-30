@@ -114,14 +114,23 @@ var ModelCreate = React.createClass({
                         <section className="widget no-margin" style={OverviewStyle}>
                             <TripTableOverview currentTripTable={this.state.currentTripTable} currentSettings={this.state.currentSettings} marketarea={this.props.marketarea}/>
                         </section>
-                        <ModelMap currentTripTable={this.state.currentTripTable} tracts={this.props.tracts} routes={ routes } />
+                        <ModelMap 
+                            currentTripTable={this.state.currentTripTable} 
+                            tracts={this.props.tracts} 
+                            routes={ routes } />
                     </div>
                     <div className="col-lg-5">
                         <section className="widget">
-                            <ModelOptionsSelect options={this.state.newModelOptions} currentSettings={this.state.currentSettings}/>
+                            <ModelOptionsSelect 
+                                options={this.state.newModelOptions} 
+                                currentSettings={this.state.currentSettings} 
+                                regressions={this.props.regressions}
+                                marketarea={this.props.marketarea} />
                         </section>
                         <section className="widget">
-                            <ModelDatasourcesSelect datasources={this.props.datasources} currentSettings={this.state.currentSettings}/>
+                            <ModelDatasourcesSelect 
+                                datasources={this.props.datasources}
+                                currentSettings={this.state.currentSettings} />
                         </section>
                     </div>
                 </div>

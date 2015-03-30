@@ -9,7 +9,9 @@ var React = require('react'),
 var ModelRunSelector = React.createClass({
 
   	_loadModelRun:function(){
-
+  		var id = this.refs.modelRunId.getDOMNode().childNodes[1].getAttribute("value");
+  		console.log('Analyze Model',id);
+  		ModelingActionsCreator.addActiveModelRun(id);
   	},
 
 	render: function() {

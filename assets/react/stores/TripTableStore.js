@@ -26,6 +26,7 @@ var _currentSettings = {
       type:'ctpp',
       od:'bus',
       forecast:'current',
+      regressionId:null,
       datasources:{ 
         // datasources get loaded and set
         // in Datasource Store

@@ -4,6 +4,7 @@ var React = require('react'),
     
     //--Components
     ToolTip = require('./ToolTip.react'),
+    MapLegend = require('./MapLegend.react'),
     
     //--Utils
     L = require('leaflet'),
@@ -22,7 +23,7 @@ var Map = React.createClass({
         return {
             height : '500px',
             ToolTip : {display:'none'},
-            layerrs :{}
+            legendLayers : {}
         }
     },
 
@@ -61,16 +62,33 @@ var Map = React.createClass({
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         map.addLayer(layers[key].layer);
-        if(layer.options.zoomOnLoad && layer.geo.features.length > 0){
+        if(layer.options.zoomOnLoad){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
     },
 
+    _renderLegend: function(){
+        
+        
+        if( Object.keys(this.props.legendLayers).length === 0 ){
+            
+            return (
+                <span />
+            )
+        }
+
+        return (
+            <MapLegend layers={this.props.legendLayers} />
+        )
+
+    },
+
     render: function() {
         return (
             <div className="map" id="map">
-                <ToolTip config={this.props.ToolTip}/>
+                <ToolTip/>
+                {this._renderLegend()}
             </div>
 
         );
@@ -80,32 +98,32 @@ var Map = React.createClass({
         var scope = this;
         var mapDiv = document.getElementById('map');
         mapDiv.setAttribute("style","height:"+this.props.height);
-        var key = 'erickrans.4f9126ad',//am3081.kml65fk1,
-            mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/"+key+"/{z}/{x}/{y}.png");
+
+        var mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/am3081.kml65fk1/{z}/{x}/{y}.png");
         
         map = L.map("map", {
-          center: [39.8282, -98.5795],
-          zoom: 4,
-          layers: [mapquestOSM],//[mapquestOSM],
-          zoomControl: true,
-          attributionControl:false
+            center: [39.8282, -98.5795],
+            zoom: 4,
+            layers: [mapquestOSM],
+            zoomControl: false,
+            attributionControl: false
         });
-
-        Object.keys(this.props.layers).forEach(function(key){
+        if(this.props.layers){
+            Object.keys(this.props.layers).forEach(function(key){
+                
+                var currLayer = scope.props.layers[key]
+                layers[key] =  {
+                    id:currLayer.id,
+                    layer: L.geoJson(currLayer.geo,currLayer.options)
+                };  
+                map.addLayer(layers[key].layer);
+                if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
+                    var ezBounds = d3.geo.bounds(currLayer.geo);
+                    map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
+                }
             
-            var currLayer = scope.props.layers[key];
-            layers[key] =  {
-                id:currLayer.id,
-                layer: L.geoJson(currLayer.geo,currLayer.options)
-            };  
-            map.addLayer(layers[key].layer);
-            if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
-                var ezBounds = d3.geo.bounds(currLayer.geo);
-                map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
-            }
-        
-        });
-        
+            });
+        }
     }
 });
 

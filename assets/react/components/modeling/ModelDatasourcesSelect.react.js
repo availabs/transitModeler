@@ -9,9 +9,9 @@ var ModelDatasourcesSelect = React.createClass({
 
     _setDatasource:function(e){
         
-        var data = e.target.getAttribute('value').split(',');
-        console.log('_setOption',e.target.getAttribute('value'),data)
-        ModelingActionsCreator.setOption(data[0],data[1]);
+        var data = e.target;
+        //console.log('_setOption',this.refs['regressionSelect'].getDOMNode().value,data)
+        //ModelingActionsCreator.setOption(data[0],data[1]);
     },
 
     render: function() {
@@ -38,18 +38,23 @@ var ModelDatasourcesSelect = React.createClass({
                     break;
 
                 }
+
                 return (
                     <option value={[source,key]}>{name}</option>
                 )
+            
             });
+            
             var selectStyle = {
                 width:'100%'
             }
+            
             return (
                 <div className="form-group">
                     <label className="col-sm-4 control-label">{source.toUpperCase()} SOURCE</label>
                     <div className="col-sm-8">
-                        <select className ='form-control' style={selectStyle} onChange={scope._setDatasource}>
+
+                        <select className ='form-control' ref="regressionSelect" style={selectStyle} onChange={scope._setDatasource}>
                             {Options}
                         </select>
                         

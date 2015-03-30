@@ -38,6 +38,13 @@ module.exports = {
       type: ActionTypes.ANALYZE_MODEL,
       id: id
     });
+  },
+
+  addActiveModelRun:function(id){
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.ADD_ACTIVE_MODEL_RUN,
+      id: id
+    });
   }
 
 

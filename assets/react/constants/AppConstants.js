@@ -18,8 +18,12 @@ module.exports = {
     SELECT_REGRESSION:null,
     CREATE_REGRESSION:null,
 
+    SET_ACTIVE_CENSUS_VARIABLE:null,
+
+
     //------Modeling-----------------------------------------
     SET_NEW_MODEL_OPTION:null,
+    ADD_ACTIVE_MODEL_RUN:null,
 
     //-------------------------------------------------------
     //SERVER actions 
@@ -35,6 +39,7 @@ module.exports = {
     //--------Data Sources------------------------------------
     RECEIVE_RAW_CENSUS_DATA:null,
     RECEIVE_RAW_STATE_TRACTS:null,
+    RECEIVE_CTPP_DATA:null,
 
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,
@@ -46,6 +51,7 @@ module.exports = {
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,
     RECEIVE_MODEL_RUNS:null,
+    RECEIVE_FULL_MODEL_RUNS:null,
 
     // -- Jobs
     RECEIVE_JOBS:null

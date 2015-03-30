@@ -2571,6 +2571,7 @@ nv.models.cumulativeLineChart = function() {
       chart.container = this;
 
       //set state.disabled
+      console.log(state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -4187,6 +4188,7 @@ nv.models.historicalBarChart = function() {
       chart.container = this;
 
       //set state.disabled
+      console.log('state disabled',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -4339,6 +4341,7 @@ nv.models.historicalBarChart = function() {
             return d;
           });
         }
+
 
         state.disabled = data.map(function(d) { return !!d.disabled });
         dispatch.stateChange(state);
@@ -5475,6 +5478,7 @@ nv.models.lineChart = function() {
       chart.container = this;
 
       //set state.disabled
+      console.log('state.disabled3',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
 
@@ -5953,6 +5957,7 @@ nv.models.linePlusBarChart = function() {
       // chart.container = this;
 
       //set state.disabled
+      console.log('state.disabled 4',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -8079,6 +8084,7 @@ nv.models.multiBarChart = function() {
       chart.container = this;
 
       //set state.disabled
+      console.log('stateDisabled 5',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {

@@ -22,7 +22,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var _rawDataSets = {},
     _currentYear = 2010,
-    _loading = false;
+    _loading = false,
+    _activeVariable = 'car_0';
 
 function _addCensusData(marketAreaId,year,rawData) {
   
@@ -76,7 +77,10 @@ var CensusStore = assign({}, EventEmitter.prototype, {
     currentData.update_data([])
     return currentData;
   },
-
+  
+  getActiveVariable:function(){
+    return _activeVariable;
+  }
 
 });
 
@@ -90,6 +94,10 @@ CensusStore.dispatchToken = AppDispatcher.register(function(payload) {
       _loading = false;
       CensusStore.emitChange();
     break;
+
+    case ActionTypes.SET_ACTIVE_CENSUS_VARIABLE:
+      _activeVariable = action.cen_var;
+      CensusStore.emitChange();
 
     default:
       // do nothing
