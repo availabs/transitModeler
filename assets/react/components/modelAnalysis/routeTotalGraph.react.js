@@ -37,7 +37,7 @@ var RouteTotalGraph = React.createClass({
     	var scope = this;
     	nv.addGraph(function(){
   		  	var chart = nv.models.discreteBarChart()
-                .x(function(d) { return d.label })    //Specify the data accessors.
+                .x(function(d) { return d.key })    //Specify the data accessors.
                 .y(function(d) { return d.value })
                 .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
                 .tooltips(true)        //Don't show tooltips
