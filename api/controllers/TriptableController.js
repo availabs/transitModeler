@@ -130,7 +130,7 @@ module.exports = {
 
 		//console.log('loading model run data')
 		//get data from Model RUn
-		var sql = 'SELECT name,info FROM triptable where "id" = '+id;
+		var sql = 'SELECT user,info FROM triptable where "id" = '+id;
 		console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
