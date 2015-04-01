@@ -9,7 +9,7 @@ acs_data = require('./utils/acsData.js');
 
 var models = require('../../config/models'),
 	connections = require('../../config/connections');
-	var connection = connections.connections[models.models.connection]; 
+	var connection = connections.connections[models.connection]; 
 	
 var database = {
 	host: connection.host ? connection.host : 'locahost' ,
