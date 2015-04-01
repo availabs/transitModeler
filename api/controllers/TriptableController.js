@@ -9,13 +9,14 @@ acs_data = require('./utils/acsData.js');
 
 var models = require('../../config/models'),
 	connections = require('../../config/connections');
-	var connection = connections.connections[models.connection]; 
+	var connection = connections.connections[models.models.connection]; 
+	console.log('testing',models.models.connection,connections.connections[models.models.connection])
 	
 var database = {
-	host: connection.host ? connection.host : 'locahost' ,
+	host: connection.host ? connection.host : 'lor.availabs.org' ,
 	port: connection.port ? connection.port : '5432',
 	user: connection.user ? connection.user :'postgres',
-	password: connection.password ? connection.password :'',
+	password: connection.password ? connection.password :'transit',
 	database: connection.database ? connection.database : 'transitModeler'
 };
 
