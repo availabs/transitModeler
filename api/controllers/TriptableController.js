@@ -247,25 +247,25 @@ module.exports = {
 									var time = getTimeMatrix(tractPair);
 									if(triptable.time == 'full'){
 										//am riderrs
-										var numTrips = parseInt(getRegressionTrips(tractPair,time,'am',triptable.marketarea.id)) || 0;
+										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId)) || 0;
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
 										for(var i = 0; i < numTrips;i++){
 											planTrip(tractPair,time.timeMatrix,ODPoints,'am',output)
 										}
 										//plus pm return trip riders
-										numTrips = parseInt(getRegressionTrips(tractPair,time,'pm',triptable.marketarea.id)) || 0;
+										numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId)) || 0;
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
 										for(var i = 0; i < numTrips;i++){
 											planTrip(tractPair,time.timeMatrix,ODPoints,'pm',output)
 										}
 										//plus pm to work riders
-										var numTrips = parseInt((time.intime['pm']/acs_data.acs[tractPair.home_tract].bus_to_work)*getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id));
+										var numTrips = parseInt((time.intime['pm']/acs_data.acs[tractPair.home_tract].bus_to_work)*getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
 										for(var i = 0; i < numTrips;i++){
 											planTrip(tractPair,time.timeMatrix,ODPoints,'am',output)
 										}
 										//plus off peak riders
-										var numTrips = parseInt((time.intime['pm']/acs_data.acs[tractPair.home_tract].bus_to_work)*getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id));
+										var numTrips = parseInt((time.intime['pm']/acs_data.acs[tractPair.home_tract].bus_to_work)*getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
 										for(var i = 0; i < numTrips;i++){
 											planTrip(tractPair,time.timeMatrix,ODPoints,'am',output)
@@ -292,7 +292,7 @@ module.exports = {
 										//console.log('pm riders');
 										
 										//pm return trip riders
-										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id));
+										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
 										numTrips = Math.round((numTrips*pop_growth)*emp_growth);										
 										
 										for(var i = 0; i < numTrips;i++){
