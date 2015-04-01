@@ -50,7 +50,7 @@ var ModelOptionsSelect = React.createClass({
                        <div className="btn-group">
                             {Buttons}
                         </div>
-                    
+                        <br/>
                         <span className="help-block pull-left">{scope.props.options[option][scope.props.currentSettings[option]].helpText}</span>
                     </div>
                     {regressionInclude}
