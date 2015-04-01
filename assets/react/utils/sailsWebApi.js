@@ -23,10 +23,7 @@ function listenToSockets(sessionUser){
     console.log('job_updated',e)
     ServerActionCreators.receiveData('job',e)
   });
-  // io.socket.on("message", function(message){
-  //   console.log("on message",message)
-  //   //ServerActionCreators.receiveData('message',[message]);
-  // });
+ 
 
 }
 
@@ -118,7 +115,7 @@ module.exports = {
   // Sails Rest Route
   //---------------------------------------------------
   create: function(type,data){
-    io.socket.post('/'+type,data,function(resData){
+    d3.xhr('/'+type).post(JSON.stringify(data),function(err,resData){
       
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
