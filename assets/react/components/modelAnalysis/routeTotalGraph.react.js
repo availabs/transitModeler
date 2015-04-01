@@ -36,13 +36,13 @@ var RouteTotalGraph = React.createClass({
     render:function(){
     	var scope = this;
     	nv.addGraph(function(){
-  		  	var chart = nv.models.multiBarChart()
-  		      	.transitionDuration(350)
-                  .reduceXTicks(true)   //If 'false', every single x-axis tick label will be rendered.
-                  .rotateLabels(0)      //Angle to rotate x-axis labels.
-                  .showControls(true)   //Allow user to switch between 'Grouped' and 'Stacked' mode.
-                  .groupSpacing(0.1)    //Distance between each group of bars.
-                ;
+  		  	var chart = nv.models.discreteBarChart()
+                .x(function(d) { return d.label })    //Specify the data accessors.
+                .y(function(d) { return d.value })
+                .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
+                .tooltips(true)        //Don't show tooltips
+                .showValues(false)       //...instead, show the bar value right on top of each bar.
+                .transitionDuration(350)
   		  
   		  	d3.select('#routeTotalGraph svg')
   		      	.datum(scope.processData())
