@@ -25,6 +25,8 @@ var React = require('react'),
     GtfsManager = require('./pages/datasources/GtfsManager.react'),
     AcsManager = require('./pages/datasources/AcsManager.react'),
     RegressionsManager = require('./pages/datasources/RegessionsManager.react'),
+    SurveyManager = require('./pages/datasources/SurveyManager.react'),
+    FareboxManager = require('./pages/datasources/FareboxManager.react'),
     UserAdmin = require('./pages/admin/UserAdmin.react'),
 
 // --- Server API
@@ -48,6 +50,8 @@ var routes = (
     <Route name="ModelCreate" path="/marketarea/:marketareaID/models/new" handler={ModelCreate} />
     <Route name="GtfsManager" path="/datasources/gtfs" handler={GtfsManager} />
     <Route name="AcsManager" path="/datasources/acs" handler={AcsManager} />
+    <Route name="SurveyManager" path="/datasources/survey" handler={SurveyManager} />
+    <Route name="FareboxManager" path="/datasources/farebox" handler={FareboxManager} />
     <Route name="RegressionsManager" path="/datasources/regressions" handler={RegressionsManager} />
     <Route name="dashboard" handler={Dashboard} />
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />

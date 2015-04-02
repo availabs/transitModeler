@@ -120,7 +120,9 @@ var App = React.createClass({
                     menuItems:[
                         {text:'GTFS',type:'Route',action:'GtfsManager'},
                         {text:'ACS',type:'Route',action:'AcsManager'},
-                        {text:'Regressions',type:'Route',action:'RegressionsManager'}
+                        {text:'Regressions',type:'Route',action:'RegressionsManager'},
+                        {text:'Surveys',type:'Route',action:'SurveyManager'},
+                        {text:'Farebox',type:'Route',action:'FareboxManager'}
                     ]
                 },
                 {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/docs/NJTransit%20User\'s%20Manual.pdf'}
