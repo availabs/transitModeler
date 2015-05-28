@@ -44,7 +44,7 @@ function _addDatasets(rawData){
 
 
 function _loadRoutes(gtfsId){
-  console.log('loading Routes')
+  //console.log('loading Routes')
   SailsWebApi.getGtfsRoutes(_gftsDataSets[gtfsId].tableName,gtfsId)
 
 };

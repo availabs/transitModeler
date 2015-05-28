@@ -63,19 +63,19 @@ var MarketAreaNew = React.createClass({
                 //console.log(parseInt(d.properties.geoid.substr(0,5)));
                 return countyFips.indexOf(parseInt(d.properties.geoid.substr(0,5))) > -1;
             })
-            console.log('stateTracts',filterTracts,'fips',countyFips)
+            //console.log('stateTracts',filterTracts,'fips',countyFips)
             
             var tractsFilter = Geoprocessing.point2polyIntersect(data,{type:'FeatureCollection',features:filterTracts});
-            console.log(tractsFilter,countyFilter)
+            //console.log(tractsFilter,countyFilter)
             this.setState({stopsGeo:data,countyFilter:countyFilter,tractsFilter:tractsFilter.keys});
         }else if(data.features.length === 0){
-            console.log('remove last layer')
+            //console.log('remove last layer')
             this.setState({stopsGeo:data,countyFilter:[],tractsFilter:[]})
         }
     },
 
     setRoutesGeo:function(data){
-        console.log('setRoutesGeo',data)
+        //console.log('setRoutesGeo',data)
         data.features = data.features.map(function(d,i){
             if(!d.properties.color){
                 d.properties.color = d3.scale.category20().range()[i];
@@ -87,7 +87,7 @@ var MarketAreaNew = React.createClass({
     },  
     
     removeRoute:function(route){
-        console.log('removeRoute',route)
+        //console.log('removeRoute',route)
         var newState = this.state;
         newState.marketarea.routes =  newState.marketarea.routes.filter(function(d){
             return d !== route;
@@ -170,7 +170,7 @@ var MarketAreaNew = React.createClass({
     },
 
     createdMa:function(data){
-        console.log('marketarea create callback',data)
+        //console.log('marketarea create callback',data)
         if(data.id){
             this.transitionTo('MarketAreaIndex', {marketareaID: data.id})
         }else{

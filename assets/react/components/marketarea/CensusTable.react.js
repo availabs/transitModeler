@@ -51,11 +51,12 @@ var CensusTable= React.createClass({
               </tr>
             )
         });
-
+        var downloadButton = <button type="button" className="btn btn-primary col-sm-4 pull-right" style={{marginTop:'-12px'}} >Download CSV</button>
         return(
             <div id="tableDiv">
-              <h4>Category:{category_name}</h4>
-              <table className="table table-striped table-hover" id="overview-table">
+                {downloadButton}
+                <h4>Category:{category_name}</h4>
+                <table className="table table-striped table-hover" id="overview-table">
                     <tbody>
                       {rows}
                     <tr>
@@ -66,6 +67,7 @@ var CensusTable= React.createClass({
                     </tr>
                   </tbody>
                 </table>
+
             </div>  
         );
     }

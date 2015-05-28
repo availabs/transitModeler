@@ -97,7 +97,7 @@ var ModelMap = React.createClass({
                             click: function(e){
                             },
                             mouseover: function(e){
-                                console.log(feature.properties)
+                                //console.log(feature.properties)
                                 this.setStyle({weight:2,stroke:true,fillColor:this._path.attributes[3].nodeValue});
                                 var table='<table class="table"><tr><td>Origin Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr><tr><td>Destination Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr></table>';
                                 var tt = d3.select('.ToolTip').style({

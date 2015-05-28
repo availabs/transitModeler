@@ -11,7 +11,7 @@ module.exports = {
 
 		var conflictlist = [],
 			geoidList = [];
-		console.log('point2polyIntersect features',polyFeature.length,pointFeature.length)
+		//console.log('point2polyIntersect features',polyFeature.length,pointFeature.length)
 		polyFeature.forEach(function(parcel,i){
 		    
 		    pointFeature.forEach(function(point,j){
@@ -29,7 +29,7 @@ module.exports = {
 		        }
 		    })
 		})
-		console.log('point2polyIntersect lists',conflictlist,geoidList);
+		//console.log('point2polyIntersect lists',conflictlist,geoidList);
 		return {index:conflictlist,keys:geoidList};
 	}	
 }

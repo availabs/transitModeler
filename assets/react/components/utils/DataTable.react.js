@@ -13,7 +13,9 @@ var DataTable = React.createClass({
 	getDefaultProps:function(){
 		return {
 			data:[],
-			columns:[]
+			columns:[],
+			download:false,
+			pagination:false
 		}
 	},
 
@@ -83,6 +85,10 @@ var DataTable = React.createClass({
 		if(this.props.pagination){
 			pagination = scope.renderPagination();
 		}
+		var downloadButton=<span />
+		if(this.props.download){
+			downloadButton = <button type="button" className="btn btn-primary col-sm-4 pull-right" >Download CSV</button>
+		}
 		return (
 			<div>
 				{ pagination }
@@ -100,6 +106,7 @@ var DataTable = React.createClass({
 						{sumRow}
 					</tfoot>
 				</table>
+				{downloadButton}
 			</div>
 		);
 	},
