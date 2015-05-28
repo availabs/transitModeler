@@ -1,63 +1,228 @@
-var React = require('react');
+var React = require('react'),
+    // -- Utils
+    Fips2State = require('../../utils/data/fips2state'),
+    sailsWebApi = require('../../utils/sailsWebApi'),
     
     //-- Components
+    Select2Component = require('../../components/utils/Select2.react');
   
-var SamplePage = React.createClass({
+var ACSDisplay = React.createClass({
 
-  render: function() {
+    getInitialState:function(){
+        return {
+            newData:{
+                state:null,
+                sumLevel:null,
+                startYear:null,
+                dataSource:'5'
+            },
+            message:null
+        }
+    },
+
+    clearMessage:function(){
+        this.setState({message:null})
+    },
+
+    renderMessage:function(){
+        if(this.state.message){
+            var messageClass = 'alert alert-danger';
+            if(this.state.message === 'Loading Data...'){
+                
+                messageClass = 'alert alert-success';
+            
+            }
+            return (
+                <div className={messageClass}>
+                    <button type="button" className="close" data-dismiss="alert" aria-hidden="true" onClick={this.clearMessage}>×</button>
+                    <strong><i class="fa fa-bell-o"></i></strong>{this.state.message}
+                </div>
+            )
+        }
+        return (<span />)
+    },
+
+    renderCurrentData: function(){
+        var scope = this;
+        var rows = Object.keys(this.props.datasources.acs).map(function(key){
+            var dataset= scope.props.datasources.acs[key];
+            return (
+                <tr>
+                    <td>{dataset.stateFips}</td>
+                    <td>{dataset.settings.year}</td>
+                    <td>ACS 5 Year</td>
+                    <td>{dataset.settings.level}</td>
+                    <td>
+                        <button className="btn btn-danger btn-sm delete" data-toggle="modal" data-target="#deleteModal" data-backdrop="false">
+                            <i className="fa fa-trash"></i>
+                            <span>Delete</span>
+                        </button>
+                    </td>
+                </tr>
+            )
+        });
+
+        return (
+            <section className="widget">
+                <header>
+                    <h4>
+                        Current Data
+                    </h4>
+                    
+                </header>
+                <div className="body no-margin">
+                    <table className="table table-striped">
+                    <thead>
+                        <tr>
+                            <td>State Fips</td>
+                            <td>Year</td>
+                            <td>Source</td>
+                            <td>Sum Level</td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                    </table>
+                </div>
+            </section>
+        )
+    },
+    updateState:function(e,selections){
     
-    return (
-    	<div className="content container">
-        	<h2 className="page-title">American Community Survey <small></small></h2>
-            <div className="row">
-            	<div className="col-lg-12">
-                    <section className="widget">
-                        <header>
-                            <h4>
-                                Visits
-                                <small>
-                                    Based on a three months data
-                                </small>
-                            </h4>
-                            <div className="widget-controls">
-                                <a title="Options" href="#"><i className="glyphicon glyphicon-cog"></i></a>
-                                <a data-widgster="expand" title="Expand" href="#" ><i className="glyphicon glyphicon-chevron-up"></i></a>
-                                <a data-widgster="collapse" title="Collapse" href="#"><i className="glyphicon glyphicon-chevron-down"></i></a>
-                                <a data-widgster="close" title="Close" href="#"><i className="glyphicon glyphicon-remove"></i></a>
+        var newState = this.state;
+        newState.newData.state = selections.id;
+        this.setState(newState);
+
+    },
+
+    updateSumLevel:function(e,selections){
+        
+        console.log('updateSumLevel',selections.id)
+        var newState = this.state;
+        newState.newData.sumLevel = selections.id;
+        this.setState(newState);
+
+    },
+
+    updateYear:function(e,selections){
+    
+        console.log('updateYear',selections.id)
+        
+        var newState = this.state;
+        newState.newData.startYear = selections.id;
+        this.setState(newState);
+
+    },
+
+    renderDataController:function(){
+        var data = Object.keys(Fips2State).map(function(key){
+            return {"id":key,"text":Fips2State[key]};
+        }),
+        sumlevelData = [{id:'tracts',text:'Tracts'},{id:'blockgroups',text:'Block Groups'}],
+        yearsData = [{id:'2010',text:'2010'},{id:'2011',text:'2011'},{id:'2012',text:'2012'},{id:'2013',text:'2013'}];
+        
+        //console.log('acs data controller selec2',data,Fips2State);
+        
+        return (
+             <section className="widget">
+                <header>
+                    <h4>
+                        Add ACS Data
+                    </h4>
+                    
+                </header>
+                <div className="body no-margin">
+                     <fieldset>
+                                
+                        <div className="form-group" style={{marginBottom:'10px',overflow:'auto'}}>
+                            <label className="col-sm-3 control-label" htmlFor="grouped-select">State</label>
+                            <div className="col-sm-9">
+                                 <Select2Component
+                                  id="the-hidden-input-id"
+                                  dataSet={data}
+                                  onSelection={this.updateState}
+                                  multiple={false}
+                                  styleWidth="100%"
+                                  val={this.state.newData.state} />
                             </div>
-                        </header>
-                        <div className="body no-margin">
-                            <div id="visits-chart" className="chart visits-chart">
-                              
-                            </div>
-                            <div className="visits-info well well-sm">
-                                <div className="row">
-                                    <div className="col-sm-3 col-xs-6">
-                                        <div className="key"><i className="fa fa-users"></i> Total Traffic</div>
-                                        <div className="value">24 541 <i className="fa fa-caret-up color-green"></i></div>
-                                    </div>
-                                    <div className="col-sm-3 col-xs-6">
-                                        <div className="key"><i className="fa fa-bolt"></i> Unique Visits</div>
-                                        <div className="value">14 778 <i className="fa fa-caret-down color-red"></i></div>
-                                    </div>
-                                    <div className="col-sm-3 col-xs-6">
-                                        <div className="key"><i className="fa fa-plus-square"></i> Revenue</div>
-                                        <div className="value">$3 583.18 <i className="fa fa-caret-up color-green"></i></div>
-                                    </div>
-                                    <div className="col-sm-3 col-xs-6">
-                                        <div className="key"><i className="fa fa-user"></i> Total Sales</div>
-                                        <div className="value">$59 871.12 <i className="fa fa-caret-down color-red"></i></div>
-                                    </div>
-                                </div>
-                            </div>
+
                         </div>
-                    </section>
+                        
+                        <div className="form-group" style={{marginBottom:'10px',overflow:'auto'}}>
+                            <label className="col-sm-3 control-label" htmlFor="grouped-select">Sum Level</label>
+                                <div className="col-sm-9">
+                                     <Select2Component
+                                      id="the-hidden-input-id2"
+                                      dataSet={sumlevelData}
+                                      onSelection={this.updateSumLevel}
+                                      multiple={false}
+                                      styleWidth="100%"
+                                      val={this.state.newData.sumLevel} />
+                                </div>
+                        </div>
+
+                        <div className="form-group" style={{marginBottom:'10px',overflow:'auto'}}>
+                            <label className="col-sm-3 control-label" htmlFor="grouped-select">Base Year</label>
+                                <div className="col-sm-9">
+                                     <Select2Component
+                                      id="the-hidden-input-id3"
+                                      dataSet={yearsData}
+                                      onSelection={this.updateYear}
+                                      multiple={false}
+                                      styleWidth="100%"
+                                      val={this.state.newData.startYear} />
+                                </div>
+                        </div>
+                        {this.renderMessage()}
+                         <button className="btn btn-lg btn-primary pull-right" onClick={this.uploadData}>
+                            Load Data
+                        </button>
+                    </fieldset>
+                   
+                </div>
+            </section>
+        )
+    },
+    
+    uploadData : function(){
+
+        console.log('upload data',this.state.newData,JSON.stringify(this.state.newData));  
+        
+        if(!this.state.newData.state){
+            this.setState({message:'Must choose a state'})
+            return;
+        }else if(!this.state.newData.sumLevel){
+            this.setState({message:'Must choose a sum level'})
+            return;
+        }else if(!this.state.newData.startYear){
+            this.setState({message:'Must choose a year'})
+            return;
+        }
+        this.setState({message:'Loading Data...'});
+        sailsWebApi.loadAcs(this.state.newData);   
+    },
+    
+    render: function() {
+        
+        return (
+        	<div className="content container">
+            	<h2 className="page-title">American Community Survey <small></small></h2>
+                <div className="row">
+                    <div className="col-lg-6">
+                        {this.renderDataController()}
+                        
+                    </div>
+                	<div className="col-lg-6">
+                        {this.renderCurrentData()}
+                        
+                    </div>
                     
                 </div>
-            </div>
-    	</div>
-    );
-  }
+        	</div>
+        );
+      }
 });
 
-module.exports = SamplePage;
+module.exports = ACSDisplay;

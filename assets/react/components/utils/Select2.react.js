@@ -65,19 +65,19 @@ var Select2Component = React.createClass({
       }
 
       // Handle val prop
-      var updateVal = false;
+      var updateVal = true;
       // ...if length of old val prop and new val prop arrays are the same,
       //    we'll need to check the elements
-      if (prevProps.val.length == this.props.val.length) {
-        $.each(prevProps.val, function (index, value) {
-          if (this.props.val[index] != value) {
-            updateVal = true;
-          }
-        }.bind(this));
+      // if (prevProps.val && prevProps.val.length == this.props.val.length) {
+      //   $.each(prevProps.val, function (index, value) {
+      //     if (this.props.val[index] != value) {
+      //       updateVal = true;
+      //     }
+      //   }.bind(this));
 
-      } else {
-        updateVal = true;
-      }
+      // } else {
+      //   updateVal = true;
+      // }
       // ...update our val if we need to
       if (updateVal) {
         this.getInputElem().select2("val", this.props.val);
@@ -123,7 +123,7 @@ var Select2Component = React.createClass({
   createSelect2: function () {
     // Get inital value
     var val = null;
-    if (this.props.val.length > 0) {
+    if (this.props.val && this.props.val.length > 0) {
       val = this.props.multiple ? this.props.val : this.props.val[0];
     }
 

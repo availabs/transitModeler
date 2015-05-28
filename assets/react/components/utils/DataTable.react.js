@@ -21,6 +21,8 @@ var DataTable = React.createClass({
 		//console.log('DATATABLE / Render',this.props.columns)
 		var scope = this;
 		var cursor = this.state.pageLength*this.state.currentPage;
+		var sums = {},
+			summed = false;
 
 		var headerRow = scope.props.columns.map(function(col){
 			return (
@@ -29,12 +31,17 @@ var DataTable = React.createClass({
 				</th>
 			)
 		});
-
+		
 		var rows = scope.props.data.map(function(row,index){
 			if(index >= cursor && index < (cursor + scope.state.pageLength) ){
 				
 				var rowValue = row[scope.props.rowValue] || '';
 				var dataRow = scope.props.columns.map(function(col){
+					if(col.summed){
+						summed = true;
+						if(!sums[col.key]) { sums[col.key] = 0;}
+						sums[col.key] += row[col.key]
+					}
 					if(col.type === 'modalButton'){
 						return (
 							<td data-key={rowValue}>
@@ -49,15 +56,33 @@ var DataTable = React.createClass({
 					)
 				});
 				
+
 				return(
 					<tr data-key={rowValue} onClick={scope.props.rowClick}>
 						{dataRow}
+						
 					</tr>
 				)
 			}
 			return;
 		});
-		var pagination = scope.renderPagination();
+		var sumRow = <tr></tr>
+		if(summed){
+
+			var sumCols = scope.props.columns.map(function(col){
+				var data = '';
+				if(col.summed){
+					data = sums[col.key]
+				}
+				return (<td>{data}</td>)
+			});
+			sumRow = <tr>{sumCols}</tr>
+		}
+
+		var pagination = <span />
+		if(this.props.pagination){
+			pagination = scope.renderPagination();
+		}
 		return (
 			<div>
 				{ pagination }
@@ -69,7 +94,11 @@ var DataTable = React.createClass({
 					</thead>
 					<tbody>
 						{rows}
+
 					</tbody>
+					<tfoot>
+						{sumRow}
+					</tfoot>
 				</table>
 			</div>
 		);
@@ -93,7 +122,6 @@ var DataTable = React.createClass({
             if(i % scope.state.pageLength === 0 ){
                 var pageNum = (i/scope.state.pageLength);
                 var activeClass = '';
-                //console.log('active page compare',pageNum,+scope.state.currentPage)
                 if(+pageNum == +scope.state.currentPage ){
                     activeClass = 'active';
                 }

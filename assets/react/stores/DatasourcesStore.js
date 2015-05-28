@@ -31,7 +31,11 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 function _addDatasets(rawData){
   
   rawData.forEach(function(ds){
+      if(ds.settings[0]){
+        ds.settings = ds.settings[0];
+      }
       _DataSets[ds.type][ds.id] = ds;
+
   });
 
   Object.keys(_DataSets).forEach(function(source){
@@ -72,6 +76,7 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
 
 DatasourcesStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
+  //console.log('action happening',action);
 
   switch(action.type) {
 

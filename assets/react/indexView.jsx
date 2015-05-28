@@ -13,13 +13,14 @@ var React = require('react'),
     Redirect = Router.Redirect,
     DefaultRoute = Router.DefaultRoute,
     
-//  --- Layout Controller View
+    //  --- Layout Controller View
     App = require('./pages/layout.react'),
 
-//  --- Pages
+    //  --- Pages
     Dashboard = require('./pages/Dashboard.react'),
     MarketAreaIndex = require('./pages/marketarea/MarketAreaIndex.react'),
-    MarketAreaEdit = require('./pages/marketarea/MarketAreaEdit.react'),
+    MarketAreaEdit = require('./pages/marketarea/MarketAreaEdit2.react'),
+    MarketAreaNew = require('./pages/marketarea/MarketAreaNew.react'),
     ModelAnalysis = require('./pages/modeling/ModelAnalysis.react'),
     ModelCreate = require('./pages/modeling/ModelCreate.react'),
     GtfsManager = require('./pages/datasources/GtfsManager.react'),
@@ -33,7 +34,7 @@ var React = require('react'),
     sailsWebApi = require('./utils/sailsWebApi.js');
 
 // --- 
-sailsWebApi.init(window.User);
+    sailsWebApi.init(window.User);
 
 
 var i18n = {
@@ -46,6 +47,7 @@ var routes = (
   <Route name="app" path="/" handler={App}>
     <Route name="MarketAreaIndex" path="/marketarea/:marketareaID" handler={MarketAreaIndex} />
     <Route name="MarketAreaEdit" path="/marketarea/:marketareaID/edit" handler={MarketAreaEdit} />
+    <Route name="MarketAreaNew" path="/new/marketarea" handler={MarketAreaNew} />
     <Route name="ModelAnalysis" path="/marketarea/:marketareaID/models" handler={ModelAnalysis} />
     <Route name="ModelCreate" path="/marketarea/:marketareaID/models/new" handler={ModelCreate} />
     <Route name="GtfsManager" path="/datasources/gtfs" handler={GtfsManager} />

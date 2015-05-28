@@ -54,8 +54,8 @@ var MarketAreaIndex = React.createClass({
         }
     
     },
+    
     getInitialState: function(){
-        console.log('MA edit')
         var state = getStatefromStore();
         state.activeCensusCategory = 18;
         return state;

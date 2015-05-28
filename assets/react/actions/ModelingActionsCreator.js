@@ -45,6 +45,14 @@ module.exports = {
       type: ActionTypes.ADD_ACTIVE_MODEL_RUN,
       id: id
     });
+  },
+
+  setMode:function(mode){
+    console.log('setMode',mode)
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_TRIPTABLE_MODE,
+      value: mode
+    });
   }
 
 

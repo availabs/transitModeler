@@ -23,7 +23,9 @@ var Map = React.createClass({
         return {
             height : '500px',
             ToolTip : {display:'none'},
-            legendLayers : {}
+            legendLayers : {},
+            legendOptions: {location:'bottomRight'},
+            mapId:'map_'+Math.floor((Math.random() * 100) + 1)
         }
     },
 
@@ -79,14 +81,14 @@ var Map = React.createClass({
         }
 
         return (
-            <MapLegend layers={this.props.legendLayers} />
+            <MapLegend layers={this.props.legendLayers} options={this.props.legendOptions} />
         )
 
     },
 
     render: function() {
         return (
-            <div className="map" id="map">
+            <div className="map" id={this.props.mapId}>
                 <ToolTip/>
                 {this._renderLegend()}
             </div>
@@ -96,12 +98,13 @@ var Map = React.createClass({
 
     renderMap:function(){
         var scope = this;
-        var mapDiv = document.getElementById('map');
+        var mapDiv = document.getElementById(this.props.mapId);
         mapDiv.setAttribute("style","height:"+this.props.height);
 
-        var mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/am3081.kml65fk1/{z}/{x}/{y}.png");
         
-        map = L.map("map", {
+        var key = 'erickrans.4f9126ad',//am3081.kml65fk1,
+            mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/"+key+"/{z}/{x}/{y}.png");
+        map = L.map(this.props.mapId, {
             center: [39.8282, -98.5795],
             zoom: 4,
             layers: [mapquestOSM],

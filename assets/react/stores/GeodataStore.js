@@ -20,7 +20,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     sailsWebApi = require('../utils/sailsWebApi.js'),
     topojson =require('topojson');
 
-var _stateTracts = {},
+var _stateTracts = {type:'FeatureCollection',features:[]},
+    _stateCounties = {type:'FeatureCollection',features:[]},
     _maTracts = {},
     _maCounties = {},
     _maRoutes = {};
@@ -42,8 +43,16 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
+  getAllTracts:function(){
+    return _stateTracts;
+  },
+  
+  getAllCounties:function(){
+    return _stateCounties;
+  },
 
   getMarketAreaTracts: function() {
+
     var maId = MarketareaStore.getCurrentMarketAreaId(),
         zones = MarketareaStore.getCurrentMarketArea();
     
@@ -56,13 +65,11 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
       return _maTracts[maId]
     }
     //if not loaded send empty geojson
-    if(!_stateTracts.features){
+    if(!_stateTracts.features || _stateTracts.features.length === 0){
       return {type:'FeatureCollection',features:[]};
     }
-
     //otherwise filter current market area from _stateTracts and cache it
     else{
-      
       zones =  zones.zones;         
       _maTracts[maId] = {type:'FeatureCollection',features:[]};
       
@@ -87,7 +94,12 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch(action.type) {
 
     case ActionTypes.RECEIVE_RAW_STATE_TRACTS:
-      _stateTracts = topojson.feature(action.geoData,action.geoData.objects.tracts);
+      if(action.geoType === 'tracts'){
+        _stateTracts = topojson.feature(action.geoData,action.geoData.objects.tracts);
+      }
+      if(action.geoType === 'counties'){
+        _stateCounties = topojson.feature(action.geoData,action.geoData.objects.tracts);
+      }
       GeodataStore.emitChange();
     break;
 

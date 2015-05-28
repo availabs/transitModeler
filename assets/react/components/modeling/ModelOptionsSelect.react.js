@@ -3,6 +3,7 @@ var React = require('react'),
     
     // -- Components
     ModelRegressionSelect = require('./ModelRegressionSelect.react'),
+    FutureForecastSelect = require('./FutureForecastSelect.react'),
 
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
@@ -29,6 +30,10 @@ var ModelOptionsSelect = React.createClass({
                                 currentSettings={scope.props.currentSettings} 
                                 regressions={scope.props.regressions} 
                                 marketarea={scope.props.marketarea} />;
+                }else if(option === 'forecast' && scope.props.currentSettings[option] === 'future'){
+                    return (
+                        <FutureForecastSelect currentSettings={scope.props.currentSettings}/>
+                    )
                 }
 
                 return <span />

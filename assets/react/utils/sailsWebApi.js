@@ -48,13 +48,29 @@ module.exports = {
   getStateGeodata: function(fips) {
     d3.json('/geo/states/'+fips+'/tracts.json',function(data){     
       //console.log('utils/sailsWebApi/getStateGeodata',data);
-      ServerActionCreators.receiveStateTracts(data);
+      ServerActionCreators.receiveStateTracts('tracts',data);
+    });
+    d3.json('/geo/states/'+fips+'/counties.json',function(data){     
+      //console.log('utils/sailsWebApi/getStateGeodata',data);
+      ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
-  getRoutesGeo: function(ma_id,gtfsId,routes) {
-    d3.json('/datasources/gtfs/geo/'+gtfsId)
+
+  getRoutesGeo: function(ma_id,gtfsId,routes,cb) {
+    d3.json('/datasources/gtfs/routes/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){     
       ServerActionCreators.receiveDataWithId('gtfs_geo',ma_id,data);
+      if(cb){ cb(data); }
+    
+    });
+  },
+
+  getStopsGeo: function(ma_id,gtfsId,routes,cb) {
+    d3.json('/datasources/gtfs/stops/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){     
+      ServerActionCreators.receiveDataWithId('gtfs_stops_geo',ma_id,data);
+      if(cb){ cb(data); }
+
     });
   },
   //---------------------------------------------
@@ -73,9 +89,12 @@ module.exports = {
     })
   },
 
-  getGtfsRoutes: function(tablename,gtfs_id){
+  getGtfsRoutes: function(tablename,gtfs_id,cb){
     io.socket.get( '/dataSources/gtfs/routes/'+tablename,function(data){
       ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data)
+      if(cb){
+        cb( gtfs_id, data)
+      }
     })
   },
 
@@ -112,13 +131,28 @@ module.exports = {
     })
   },
   //---------------------------------------------------
+  // Datasources Editing
+  //---------------------------------------------------
+  loadAcs:function(newData){
+    d3.json('/acs/load')
+    .post(JSON.stringify(newData),function(err,data){
+       if(err){  console.log('SAILS WEB API / loadAcs / error',err);  }
+       console.log('SAILS WEB API  / loadACS',data);
+    })
+  },
+
+  //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
-  create: function(type,data){
-    d3.xhr('/'+type).post(JSON.stringify(data),function(err,resData){
-      
+  create: function(type,data,cb){
+    d3.json('/'+type).post(JSON.stringify(data),function(err,resData){
+      if(err){
+        console.log('Create Err',err)
+      }
+      console.log('create',type,resData);
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
+      if(cb) {cb(resData)}
     });
   },
   
@@ -140,7 +174,8 @@ module.exports = {
   },
 
   delete: function(type,id){
-    io.socket.delete('/'+type+'/'+id,function(resData){
+    d3.json('/'+type+'/'+id)
+    .send('DELETE',function(resData){
       console.log('utils/sailsWebApi/delete',resData,id);
 
       //Delete 

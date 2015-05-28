@@ -34,7 +34,10 @@ function _addCensusData(marketAreaId,year,rawData) {
 };
 
 function _loadData(){
-  sailsWebApi.getRawCensus(MarketareaStore.getCurrentMarketAreaId(),_currentYear)
+  if(MarketareaStore.getCurrentMarketAreaId()){
+    //console.log('load census data',MarketareaStore.getCurrentMarketAreaId())
+    sailsWebApi.getRawCensus(MarketareaStore.getCurrentMarketAreaId(),_currentYear)
+  }
 }
 
 
@@ -65,12 +68,13 @@ var CensusStore = assign({}, EventEmitter.prototype, {
 
   getCurrentDataSet: function() {
     var marketAreaId = MarketareaStore.getCurrentMarketAreaId();
-    if(_rawDataSets[marketAreaId] && _rawDataSets[marketAreaId][_currentYear]){
+    //console.log('getCurrentCensusData',marketAreaId,_rawDataSets[marketAreaId],_loading)
+    if(marketAreaId && _rawDataSets[marketAreaId] && _rawDataSets[marketAreaId][_currentYear]){
 
         currentData.update_data(_rawDataSets[marketAreaId][_currentYear]);
         return currentData;
     
-    }else if(!_loading){
+    }else if(marketAreaId && !_loading){
       _loadData();
       _loading = true;
     }
@@ -90,6 +94,7 @@ CensusStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch(action.type) {
 
     case ActionTypes.RECEIVE_RAW_CENSUS_DATA:
+      //console.log('RECEIVE_RAW_CENSUS_DATA',action.rawData)
       _addCensusData(action.marketareaId,action.year,action.rawData);
       _loading = false;
       CensusStore.emitChange();

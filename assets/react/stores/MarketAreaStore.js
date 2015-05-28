@@ -80,19 +80,18 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
     return _currentID;
 
   },
+
   getCurrentCtpp : function(){
     if(_currentID && _currentID > 0){
         
-        if(_ctppData[_currentID]){
+        if(_ctppData[_currentID] && _ctppData[_currentID] !== 'loading'){
          
           CrossCtpp.init(_ctppData[_currentID])
-          //console.log('get current',CrossCtpp)
           return CrossCtpp;
         
         }else if(_ctppData[_currentID] !== 'loading'){
-
             SailsWebApi.getCtpp(_currentID);
-            _ctppData[_currentID] == 'loading'
+            _ctppData[_currentID] = 'loading'
             return {initialized:false};
           
         }else{
@@ -100,12 +99,14 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
             return {initialized:false};
         }
     }
+    else{ return {initialized:false}; }
       
   },
 
   getAll: function() {
     return _marketAreas;
   }
+
   
 
 });
@@ -116,6 +117,7 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch(action.type) {
 
     case ActionTypes.RECEIVE_MARKETAREAS:
+      //console.log('RECEIVE_MARKETAREAS',action.data)
       _addMarketAreas(action.data);
       MarketAreaStore.emitChange();
     break;
@@ -125,9 +127,17 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
       MarketAreaStore.emitChange();
     break;
 
-    case ActionTypes.RECEIVE_GTFS_GEOS:
-      _marketAreas[action.Id].routesGeo = action.data;
+    case ActionTypes.DELETE_MARKETAREA:
+      delete _marketAreas[action.Id]
       MarketAreaStore.emitChange();
+    break;
+    
+
+    case ActionTypes.RECEIVE_GTFS_GEOS:
+      if(_marketAreas[action.Id]){ //ignore routes from new marketarea
+        _marketAreas[action.Id].routesGeo = action.data;
+        MarketAreaStore.emitChange();
+      }
     break;
 
     case ActionTypes.RECEIVE_CTPP_DATA:

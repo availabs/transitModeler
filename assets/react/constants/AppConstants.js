@@ -23,6 +23,7 @@ module.exports = {
 
     //------Modeling-----------------------------------------
     SET_NEW_MODEL_OPTION:null,
+    SET_TRIPTABLE_MODE:null,
     ADD_ACTIVE_MODEL_RUN:null,
 
     //-------------------------------------------------------
@@ -32,9 +33,11 @@ module.exports = {
     //-------User--------------------------------------------
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
+    DELETE_USER:null,
 
     //--------MarketArea--------------------------------------
     RECEIVE_MARKETAREAS: null,
+    DELETE_MARKETAREA:null,
 
     //--------Data Sources------------------------------------
     RECEIVE_RAW_CENSUS_DATA:null,
@@ -43,6 +46,7 @@ module.exports = {
 
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,
+    RECEIVE_GTFS_STOPS_GEOS:null,
     
     RECIEVE_DATASOURCES:null,
     RECEIVE_REGRESSIONS:null,

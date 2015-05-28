@@ -32,7 +32,6 @@ body {
  censusMap
 */
 .ma-tract {
-    fill-opacity: 0.5;
     stroke: #4ab0ce;
     stroke-width: 1;
 }
@@ -67,7 +66,7 @@ body {
 #map{box-shadow: 5px 5px 5px #aaa;}
 
 .ToolTip{
-   transition: all 200ms linear;
+   transition: all 200ms ease;
 }
 
 .widget{

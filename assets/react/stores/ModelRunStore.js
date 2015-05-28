@@ -99,14 +99,14 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
 
 
     case ActionTypes.RECEIVE_MODEL_RUNS:
-      console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
+      //console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
       addModelRuns(action.data);
       ModelRunStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_FULL_MODEL_RUNS:
       _runData[action.Id] = action.data;
-      console.log('ModelRunStore / RECEIVE_FULL_MODEL_RUNS',action,_runData);
+      //console.log('ModelRunStore / RECEIVE_FULL_MODEL_RUNS',action,_runData);
       ModelRunStore.emitChange();
     
     break;

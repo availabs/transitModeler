@@ -26,6 +26,11 @@ var _currentSettings = {
       type:'ctpp',
       od:'bus',
       forecast:'current',
+      tract_forecasts:{
+        population:{},
+        employment:{}
+      },
+      forecastType:'mpo',
       regressionId:null,
       datasources:{ 
         // datasources get loaded and set
@@ -37,7 +42,8 @@ var _currentSettings = {
       marketarea: MarketareaStore.getCurrentMarketArea()  
     },
     _currentTripTable = {tt:[],failed:[]},
-    _finishedList = {};
+    _finishedList = {},
+    _mode = 'Origin';
 
 function addModelRuns(rawData){
 
@@ -83,6 +89,12 @@ var TripTableStore = assign({}, EventEmitter.prototype, {
     return newModelOptions;
   },
 
+  getMode:function(){
+    return _mode;
+  }
+
+
+
   
 
 });
@@ -94,6 +106,11 @@ TripTableStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SET_NEW_MODEL_OPTION:
       _currentSettings[action.option] = action.value;
+      TripTableStore.emitChange();
+    break;
+
+    case ActionTypes.SET_TRIPTABLE_MODE:
+      _mode = action.value;
       TripTableStore.emitChange();
     break;
 

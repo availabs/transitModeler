@@ -1099,7 +1099,7 @@ nv.utils.optionsFunc = function(args) {
         case 'top':
           axisLabel.enter().append('text').attr('class', 'nv-axislabel');
           var w = (scale.range().length==2) ? scale.range()[1] : (scale.range()[scale.range().length-1]+(scale.range()[1]-scale.range()[0]));
-          console.log('nvtest',w);
+          //console.log('nvtest',w);
           axisLabel
               .attr('text-anchor', 'middle')
               .attr('y', 0)
@@ -2571,7 +2571,7 @@ nv.models.cumulativeLineChart = function() {
       chart.container = this;
 
       //set state.disabled
-      console.log(state)
+      //console.log(state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -4188,7 +4188,7 @@ nv.models.historicalBarChart = function() {
       chart.container = this;
 
       //set state.disabled
-      console.log('state disabled',state)
+      //console.log('state disabled',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -5478,7 +5478,7 @@ nv.models.lineChart = function() {
       chart.container = this;
 
       //set state.disabled
-      console.log('state.disabled3',state)
+      //console.log('state.disabled3',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
 
@@ -5957,7 +5957,7 @@ nv.models.linePlusBarChart = function() {
       // chart.container = this;
 
       //set state.disabled
-      console.log('state.disabled 4',state)
+      //console.log('state.disabled 4',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {
@@ -8084,7 +8084,7 @@ nv.models.multiBarChart = function() {
       chart.container = this;
 
       //set state.disabled
-      console.log('stateDisabled 5',state)
+      //console.log('stateDisabled 5',state)
       state.disabled = data.map(function(d) { return !!d.disabled });
 
       if (!defaultState) {

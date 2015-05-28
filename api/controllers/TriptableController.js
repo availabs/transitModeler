@@ -10,7 +10,7 @@ acs_data = require('./utils/acsData.js');
 var models = require('../../config/models'),
 	connections = require('../../config/connections');
 	var connection = connections.connections[models.models.connection]; 
-	console.log('testing',models.models.connection,connections.connections[models.models.connection])
+	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
 	
 var database = {
 	host: connection.host ? connection.host : 'lor.availabs.org' ,

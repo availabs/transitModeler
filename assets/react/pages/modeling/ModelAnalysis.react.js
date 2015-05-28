@@ -9,7 +9,7 @@ var React = require('react'),
     WidgetHeader = require('../../components/WidgetHeader.react'),
     ModelRunSelector = require('../../components/modelAnalysis/modelRunSelector.react'),
     RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
-    
+    ModelRunContainer = require('../../components/modelAnalysis/modelRunContainer.react'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
@@ -57,6 +57,53 @@ var MarketAreaIndex = React.createClass({
             model_runs:ModelRunStore.getModelRuns()
         });
     },
+    _renderModelRuns:function(){
+        //console.log('loaded Models',this.props.loadedModels)
+        if(!this.props.loadedModels.initialized || this.props.loadedModels.loadedModels.length === 0){
+            return (
+                <span />
+            )
+        }
+
+        if(this.props.loadedModels.loadedModels.length === 1){
+            return (
+                <div className="col-lg-12">
+                    <ModelRunContainer 
+                        marketarea={this.props.currentMarketarea} 
+                        tracts={this.props.tracts}
+                        routesGeo={this.props.routesGeo}
+                        stopsGeo={this.props.stopsGeo}
+                        data={this.props.loadedModels} 
+                        modelId={this.props.loadedModels.loadedModels[0]} />
+                </div>
+            )
+        }
+        return (
+            <div>
+                <div className="col-lg-6">
+                    <ModelRunContainer 
+                        marketarea={this.props.currentMarketarea} 
+                        tracts={this.props.tracts}
+                        routesGeo={this.props.routesGeo}
+                        stopsGeo={this.props.stopsGeo}
+                        data={this.props.loadedModels}
+                        mapId='map1'
+                        modelId={this.props.loadedModels.loadedModels[0]} />
+                </div>
+                <div className="col-lg-6">
+                    <ModelRunContainer 
+                        marketarea={this.props.currentMarketarea} 
+                        tracts={this.props.tracts}
+                        routesGeo={this.props.routesGeo}
+                        stopsGeo={this.props.stopsGeo}
+                        data={this.props.loadedModels}
+                        mapId='map2'
+                        modelId={this.props.loadedModels.loadedModels[1]} />
+                </div>
+            </div>
+        )
+
+    },
 
     render: function() {
        
@@ -102,7 +149,13 @@ var MarketAreaIndex = React.createClass({
                         </section>
                     </div>
                 </div>
-        	</div>
+
+                <div className='row'>
+                    {this._renderModelRuns()}
+                </div>
+        	
+            </div>
+            
         );
     }
 });

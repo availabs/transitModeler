@@ -13,6 +13,7 @@ var React = require('react'),
     JobStore = require('../stores/JobStore.js'),
     RegressionStore = require('../stores/RegressionStore'),
     CensusStore = require('../stores/CensusStore'),
+    GtfsStore = require('../stores/GtfsStore'),
     ModelRunStore = require('../stores/ModelRunStore');
     
 
@@ -37,13 +38,19 @@ var App = React.createClass({
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
             marketareas:MarketAreaStore.getAll(),
             tracts: GeodataStore.getMarketAreaTracts(),
+            stateTracts : GeodataStore.getAllTracts(),
+            stateCounties : GeodataStore.getAllCounties(),
             datasources: DatasourcesStore.getAll(),
             activeJobs: JobStore.getActive(),
             regressions:RegressionStore.getAll(),
             censusData: CensusStore.getCurrentDataSet(),
             activeCensusVariable: CensusStore.getActiveVariable(),
             ctppData: MarketAreaStore.getCurrentCtpp(),
-            loadedModels: ModelRunStore.getActiveModelRuns()
+            loadedModels: ModelRunStore.getActiveModelRuns(),
+            routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
+            routesGeo : GtfsStore.getRoutesGeo(),
+            stopsGeo : GtfsStore.getStopsGeo()
+    
         };
     },
 
@@ -53,13 +60,18 @@ var App = React.createClass({
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
             marketareas:MarketAreaStore.getAll(),
             tracts: GeodataStore.getMarketAreaTracts(),
+            stateTracts : GeodataStore.getAllTracts(),
+            stateCounties : GeodataStore.getAllCounties(),
             datasources: DatasourcesStore.getAll(),
             activeJobs: JobStore.getActive(),
             regressions:RegressionStore.getAll(),
             censusData: CensusStore.getCurrentDataSet(),
             activeCensusVariable: CensusStore.getActiveVariable(),
             ctppData: MarketAreaStore.getCurrentCtpp(),
-            loadedModels: ModelRunStore.getActiveModelRuns()
+            loadedModels: ModelRunStore.getActiveModelRuns(),
+            routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
+            routesGeo : GtfsStore.getRoutesGeo(),
+            stopsGeo : GtfsStore.getStopsGeo()
         });
     },
 
@@ -70,6 +82,7 @@ var App = React.createClass({
         GeodataStore.addChangeListener(this._onChange);
         CensusStore.addChangeListener(this._onChange);
         ModelRunStore.addChangeListener(this._onChange);
+        GtfsStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() {
@@ -79,6 +92,7 @@ var App = React.createClass({
         GeodataStore.removeChangeListener(this._onChange);
         CensusStore.removeChangeListener(this._onChange);
         ModelRunStore.removeChangeListener(this._onChange);
+        GtfsStore.removeChangeListener(this._onChange);
     },
 
 
@@ -97,8 +111,13 @@ var App = React.createClass({
                         regressions={this.state.regressions}
                         censusData={this.state.censusData}
                         activeCensusVariable = {this.state.activeCensusVariable} 
-                        ctppData = {this.state.ctppData} 
-                        loadedModels = {this.state.loadedModels} />
+                        ctppData = {this.state.ctppData}
+                        routes = {this.state.routes}
+                        routesGeo = {this.state.routesGeo}
+                        stopsGeo = {this.state.stopsGeo}
+                        loadedModels = {this.state.loadedModels}
+                        stateTracts = {this.state.stateTracts}
+                        stateCounties = {this.state.stateCounties} />
     	    	</div>
         	</div>
         );
@@ -109,7 +128,8 @@ var App = React.createClass({
         if(!maMenu){
             maMenu = [{text:'Loading'}]
         }
-        
+        maMenu.push({text:'New Marketarea',icon:'fa fa-plus',action:'MarketAreaNew',type:'Route'});
+
         return {
             menu: [
                 {text:'Dashboard',icon:'fa fa-home',action:'dashboard',type:'Route'},

@@ -114,7 +114,10 @@ var MarketAreaIndex = React.createClass({
                                         <a href="#ctpp" data-toggle="tab" value="ctpp">Census Ctpp</a>
                                     </li>
                                     <li>
-                                        <a href="#survey" data-toggle="tab">Survey</a>
+                                        <a href="#survey" data-toggle="tab" value="survey">Survey</a>
+                                    </li>
+                                     <li>
+                                        <a href="#farebox" data-toggle="tab" value="farebox">Farebox</a>
                                     </li>
                                     
                                 </ul>

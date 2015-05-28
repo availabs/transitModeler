@@ -4,11 +4,12 @@ var React = require('react'),
     d3 = require('d3'),
     colorbrewer  = require('colorbrewer'),
     deepEqual = require('deep-equal'),
-
-    //--Components
+    // -- Actions 
+    ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
+    // --Components
     LeafletMap = require('../utils/LeafletMap.react'),
     
-    //--Component Globals
+    //  --Component Globals
     tractlayerID = 0,
     prevTractLength,
     routeLayerID = 0,
@@ -21,7 +22,7 @@ var ModelMap = React.createClass({
     
     getDefaultProps: function() {
         return {
-            mode:'origin'
+            mode:'Origin'
         };
     },
 
@@ -38,7 +39,9 @@ var ModelMap = React.createClass({
     },
 
     processLayers:function(){
-        var scope = this;
+        var scope = this,
+            tractCounts = this._reduceTripTable();
+
         if(this.props.tracts.features.length !== prevTractLength){
             tractlayerID++;
             prevTractLength = this.props.tracts.features.length
@@ -47,10 +50,10 @@ var ModelMap = React.createClass({
             routeLayerID++;
             prevRouteLength = this.props.tracts.features.length
         }
-        var tractCounts = this._reduceTripTable()
+        
         
         var flatTrips = Object.keys(tractCounts).map(function(key){
-            return scope.props.mode === 'origin' ? tractCounts[key].o : tractCounts[key].d
+            return scope.props.mode === 'Origin' ? tractCounts[key].o : tractCounts[key].d
         }).sort(function(a, b) { return a - b; });
 
         
@@ -65,13 +68,13 @@ var ModelMap = React.createClass({
                     var scaleValue = 0; 
 
                     if(tractCounts[geoid]){
-                        scaleValue = scope.props.mode === 'origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
+                        scaleValue = scope.props.mode === 'Origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
                     }
                     return odScale(scaleValue);
                 })
 
         }
-
+        //console.log('testing',tractCounts)
         return {
             tractsLayer:{
                 id:tractlayerID,
@@ -84,7 +87,8 @@ var ModelMap = React.createClass({
                         //console.log(scaleValue,feature.properties.geoid, tractCounts[feature.properties.geoid])
                         return {
                             className: 'tract geo_'+feature.properties.geoid+'_',
-                            stroke:false
+                            stroke:false,
+                            weight:2
                         };
                     },
                     onEachFeature: function (feature, layer) {
@@ -93,10 +97,29 @@ var ModelMap = React.createClass({
                             click: function(e){
                             },
                             mouseover: function(e){
-                                this.setStyle({stroke:true});
+                                console.log(feature.properties)
+                                this.setStyle({weight:2,stroke:true,fillColor:this._path.attributes[3].nodeValue});
+                                var table='<table class="table"><tr><td>Origin Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr><tr><td>Destination Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr></table>';
+                                var tt = d3.select('.ToolTip').style({
+                                    left:e.originalEvent.clientX+'px',
+                                    top:e.originalEvent.clientY+'px',
+                                    display:'block',
+                                    opacity:1.0
+                                })
+                                tt.select('h4')
+                                    .attr('class','TT_Title')
+                                    .html('Tract '+feature.properties.geoid)
+                                tt.select('span')
+                                    .attr('class','TT_Content')
+                                    .html(table)
+
                             },
                             mouseout: function(e){
-                               this.setStyle({stroke:false});
+                                this.setStyle({stroke:false,fillColor:this._path.attributes[3].nodeValue});
+                                var tt = d3.select('.ToolTip').style({opacity:0});
+                                tt.select('span')
+                                    .attr('class','TT_Content')
+                                    .html('')
                             }
                         });
                         
@@ -160,11 +183,26 @@ var ModelMap = React.createClass({
     },
 
     render: function() {
+        var legendLayers = {
+            od:{
+                type:'buttonGroup',
+                buttons:[
+                    {text:'Origins',value:'Origin',click:ModelingActionsCreator.setMode},
+                    {text:'Destinations',value:'Destination',click:ModelingActionsCreator.setMode}
+                ],
+                active:this.props.mode
+            },
+            triptable:{
+                title:'Trip '+this.props.mode+'s',
+                scale:odScale
+            }
+            
+        }
 
         return (
               
             <div>
-                <LeafletMap layers={this.processLayers()}  height="800px" />
+                <LeafletMap layers={this.processLayers()} legendLayers={legendLayers} legendOptions={{location:'bottomRight'}} height="800px" />
             </div>
                             
         );

@@ -20,6 +20,12 @@ crossTrips = {
 
 		crossTrips.dimensions['route'] = crossTrips.trips.dimension(function(d){ return d.route}),
 		crossTrips.groups['route'] = crossTrips.dimensions['route'].group().reduceCount(),
+
+		crossTrips.dimensions['stop_boarding'] = crossTrips.trips.dimension(function(d){ return d.on_stop_code}),
+		crossTrips.groups['stop_boarding'] = crossTrips.dimensions['stop_boarding'].group().reduceCount(),
+		
+		crossTrips.dimensions['stop_alighting'] = crossTrips.trips.dimension(function(d){ return d.off_stop_code}),
+		crossTrips.groups['stop_alighting'] = crossTrips.dimensions['stop_alighting'].group().reduceCount(),
 		
 	
 		crossTrips.initialized = true;

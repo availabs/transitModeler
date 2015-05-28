@@ -17,7 +17,7 @@ var _editRegressionID = null,
     _regressions = {};
 
 function _addRegressions(rawData) {
-  console.log('stores/RegressionStore/_addUsers',rawData);
+  //console.log('stores/RegressionStore/_addUsers',rawData);
   rawData.forEach(function(regression) {
     
       _regressions[regression.id] = regression;

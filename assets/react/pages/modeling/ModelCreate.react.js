@@ -43,12 +43,13 @@ var ModelCreate = React.createClass({
         return {
             newModelOptions : TripTableStore.getOptions(),
             currentSettings : TripTableStore.getCurrentSettings(),
-            currentTripTable : TripTableStore.getCurrentTripTable()
+            currentTripTable : TripTableStore.getCurrentTripTable(),
+            currentMode: TripTableStore.getMode()
         }
     },
 
     willTransitionTo: function (transition, params) {
-      console.log('will transition to',transition,params);
+      //console.log('will transition to',transition,params);
     },
 
     componentDidMount: function() {
@@ -67,7 +68,8 @@ var ModelCreate = React.createClass({
         this.setState({
             newModelOptions : TripTableStore.getOptions(),
             currentSettings : TripTableStore.getCurrentSettings(),
-            currentTripTable : TripTableStore.getCurrentTripTable()
+            currentTripTable : TripTableStore.getCurrentTripTable(),
+            currentMode: TripTableStore.getMode()
         });
     },
 
@@ -111,15 +113,20 @@ var ModelCreate = React.createClass({
                 
                 <div className="row">
                 	<div className="col-lg-7">
+                    
                         <section className="widget no-margin" style={OverviewStyle}>
                             <TripTableOverview currentTripTable={this.state.currentTripTable} currentSettings={this.state.currentSettings} marketarea={this.props.marketarea}/>
                         </section>
-                        <ModelMap 
+                    
+                        <ModelMap
+                            mode = {this.state.currentMode}
                             currentTripTable={this.state.currentTripTable} 
                             tracts={this.props.tracts} 
                             routes={ routes } />
+                    
                     </div>
                     <div className="col-lg-5">
+                        
                         <section className="widget">
                             <ModelOptionsSelect 
                                 options={this.state.newModelOptions} 
@@ -127,11 +134,13 @@ var ModelCreate = React.createClass({
                                 regressions={this.props.regressions}
                                 marketarea={this.props.marketarea} />
                         </section>
+
                         <section className="widget">
                             <ModelDatasourcesSelect 
                                 datasources={this.props.datasources}
                                 currentSettings={this.state.currentSettings} />
                         </section>
+                    
                     </div>
                 </div>
         	</div>

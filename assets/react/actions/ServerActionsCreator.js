@@ -31,9 +31,10 @@ module.exports = {
   //-----------------------------------
   // GeoData
   //-----------------------------------
-  receiveStateTracts:function(data){
+  receiveStateTracts:function(geoType,data){
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_RAW_STATE_TRACTS,
+      geoType: geoType,
       geoData: data
     });
   },
@@ -99,9 +100,10 @@ module.exports = {
     });
   },
   
-  deleteData:function(id){
+  deleteData:function(type,id){
+    var actiontype = 'DELETE_'+type.toUpperCase()
     AppDispatcher.handleServerAction({
-      type: ActionTypes.DELETE_USER,
+      type: ActionTypes[actiontype],
       Id: id
     });
   }

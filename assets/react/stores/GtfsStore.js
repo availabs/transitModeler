@@ -17,7 +17,9 @@ var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi')
 
 var _currentGtfs = null,
-    _gftsDataSets = {},  
+    _gftsDataSets = {}, //by gtfs ID
+    _gtfsRoutesGeo={},  //by MA ID
+    _gtfsStopsGeo={},   //"  "  "
     _loading = false;
 
 function _addRoutes(id,rawData) {
@@ -27,6 +29,7 @@ function _addRoutes(id,rawData) {
   _gftsDataSets[id].routes = rawData;
 
 };
+
 
 function _addDatasets(rawData){
 
@@ -39,10 +42,19 @@ function _addDatasets(rawData){
   });
 };
 
+
 function _loadRoutes(gtfsId){
- 
+  console.log('loading Routes')
   SailsWebApi.getGtfsRoutes(_gftsDataSets[gtfsId].tableName,gtfsId)
 
+};
+
+function _loadRoutesGeo(maId,gtfsId,routes){
+  SailsWebApi.getRoutesGeo(maId,gtfsId,routes)
+};
+
+function _loadStopsGeo(maId,gtfsId,routes){
+  SailsWebApi.getStopsGeo(maId,gtfsId,routes)
 };
 
 var GtfsStore = assign({}, EventEmitter.prototype, {
@@ -65,15 +77,35 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     return _marketAreas[id];
   },
 
-  getRoutesGeo : function(routeIds){
+  getRoutesGeo : function(){
+    
+    if( MarketAreaStore.getCurrentMarketArea() ){
+        var _currentID = MarketAreaStore.getCurrentMarketArea().id;
+        
+        return _gtfsRoutesGeo[_currentID] ? _gtfsRoutesGeo[_currentID] : {type:'FeatureCollection',features:[]};
+    }
+    return {type:'FeatureCollection',features:[]}
 
-    return _gftsDataSets[_currentID];
+  },
+
+  getStopsGeo : function(){
+    
+    if( MarketAreaStore.getCurrentMarketArea() ){
+        var _currentID = MarketAreaStore.getCurrentMarketArea().id;
+        
+        return _gtfsStopsGeo[_currentID] ? _gtfsStopsGeo[_currentID] : {type:'FeatureCollection',features:[]};
+    }
+    return {type:'FeatureCollection',features:[]}
 
   },
   
   getCurrentRouteList : function(){
 
-    var gtfsId = MarketAreaStore.getCurrentMarketArea().origin_gtfs;
+    var getCurrentMarketArea = MarketAreaStore.getCurrentMarketArea(),
+        gtfsId = getCurrentMarketArea.origin_gtfs,
+        routes =  getCurrentMarketArea.routes,
+        maId = getCurrentMarketArea.id;
+
     if(_gftsDataSets[gtfsId]){
 
       if(_gftsDataSets[gtfsId].routes){
@@ -82,6 +114,8 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       else if(!_loading){
       
         _loadRoutes(gtfsId);
+        _loadRoutesGeo(maId,gtfsId,routes);
+        _loadStopsGeo(maId,gtfsId,routes);
         _loading = true;
         return [];
       
@@ -90,10 +124,6 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return [];
       }
       
-    }else{
-    
-      console.log('gtfsStore / getCurrentRouteList ERROR: Invalid Data Set,',gtfsId);
-    
     }
   },
 
@@ -116,10 +146,22 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_GTFS_ROUTES:
-      _addRoutes(action.Id,action.data);
-      _loading = false
-      GtfsStore.emitChange();
+        _addRoutes(action.Id,action.data);
+        _loading = false
+        GtfsStore.emitChange();
     break;
+
+    case ActionTypes.RECEIVE_GTFS_GEOS:    
+        _gtfsRoutesGeo[action.Id] = action.data
+        GtfsStore.emitChange();
+    break;
+    
+    case ActionTypes.RECEIVE_GTFS_STOPS_GEOS:
+        //console.log('gtfsStore / RECEIVE_GTFS_STOPS_GEOS',action)  
+        _gtfsStopsGeo[action.Id] = action.data
+        GtfsStore.emitChange();
+    break;
+
 
     default:
       // do nothing

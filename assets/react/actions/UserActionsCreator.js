@@ -37,6 +37,9 @@ module.exports = {
 
     sailsWebApi.deleteUser(id);
   
+  },
+  deleteMarketArea:function(id){
+    sailsWebApi.delete('marketarea',id)
   }
 
 };

@@ -37,9 +37,10 @@
     "object": "~0.1.1",
     "object-assign": "~2.0.0",
     "rc": "~0.3.3",
-    "react": "~0.12.0",
+    "react": "~0.13.1",
+    "react-dropzone": "~1.1.1",
     "react-intl": "~1.0.2",
-    "react-router": "~0.11.4",
+    "react-router": "~0.13.1",
     "reactify": "~0.17.1",
     "request": "~2.51.0",
     "requirejs": "~2.1.15",
@@ -47,7 +48,8 @@
     "sails-disk": "~0.10.0",
     "sails-postgresql": "~0.10.0",
     "topojson": "~1.6.18",
-    "tree-kill": "0.0.6"
+    "tree-kill": "0.0.6",
+    "turf": "^2.0.2"
   },
   "scripts": {
     "start": "node app.js",

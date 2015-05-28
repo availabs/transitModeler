@@ -5,6 +5,19 @@
  * @description :: Server-side logic for managing datasources
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
+var models = require('../../config/models'),
+	connections = require('../../config/connections');
+	var connection = connections.connections[models.models.connection]; 
+	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
+	
+var database = {
+	host: connection.host ? connection.host : 'lor.availabs.org' ,
+	port: connection.port ? connection.port : '5432',
+	user: connection.user ? connection.user :'postgres',
+	password: connection.password ? connection.password :'transit',
+	database: connection.database ? connection.database : 'transitModeler'
+};
+
 var getCensusData = function(marketarea,table,cb){
 
     var sql = 'SELECT a.*,b.aland FROM public.'+table+' as a'
@@ -119,6 +132,57 @@ module.exports = {
 		});
    	
   	},
+
+  	getStopsGeo:function(req,res){
+		var gtfs_id = req.param('id'),
+	        route_id = req.param('route');
+
+
+	    if (!(gtfs_id && route_id)) {
+	      res.send({status: 500, error: 'You must supply a gtfs_id and route ID'}, 500);
+	      return;
+	    }
+	   
+	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
+	    	if(err){console.log('find datasource error',err)}
+			
+			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code ' +
+                      'FROM fare_zones AS a ' +
+                      'JOIN "njtransit_bus_07-12-2013".stops on a.stop_num = stops.stop_code ' +
+                      'where a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
+
+            Datasource.query(sql,{},function(err,data){
+                if (err) {
+                    res.send({ status:500, error: err }, 500);
+                    return console.log(err);
+                }
+                var stopsCollection = {
+		        	type:"FeatureCollection",
+		        	features:[]
+		    	};
+                var stops =[];
+                data.rows.forEach(function(stop){
+                  if(stops.indexOf(stop) == -1){
+                    var Feature = {};
+                    Feature.type="Feature";
+                    Feature.geometry = JSON.parse(stop.stop_geom);
+                    Feature.properties = {};
+                    Feature.properties.stop_code = stop.stop_code;
+                    Feature.properties.fare_zone = stop.fare_zone;
+                    Feature.properties.stop_id = stop.stop_id;
+
+                    stopsCollection.features.push(Feature);
+                  }
+
+                });
+                //console.log(stopsCollection);
+                res.json(stopsCollection);
+
+            });	    
+		   
+		});
+   	
+  	},
   	
 	getCTPP: function(req, res) {
 		var id = req.param('id')
@@ -139,6 +203,198 @@ module.exports = {
 			    res.send(data.rows);
 			})
 		});
+	},
+	//---------------------ACS Create Delete-----------------------------------------
+	deleteACS:function(req,res){
+
+		Datasource.findOne(req.param('id')).exec(function(err,found){
+			
+			var query = 'DROP TABLE public."'+found.tableName+'"';
+			
+
+			Datasource.query(query,{} ,function(err, result) { 
+				if(err) { console.error('error running query:',query, err); }
+
+				Datasource.destroy(found.id).exec(function(err,destroyed){
+					if(err) { console.log(err); res.json({error:err}); }
+
+					res.json({'message':'Record '+found.id+' deleted.'})
+
+				});
+
+			});
+
+		});
+		
+	},
+	loadACSData:function(req,res){
+		var state=req.param('state'),
+		dataSource=req.param('dataSource'),
+		year=req.param('startYear'),
+		sumlevel=req.param('sumLevel');
+
+		console.log('Datasource.loadData',state,dataSource,year,sumlevel)
+		
+		Datasource //Check to see if this data set has been loaded
+		.find({ stateFips:state})
+		.exec(function(err,data){
+			console.log(err,data);
+			
+			data = data.filter(function(d){
+				return d.stateFips == state && d.settings.year == year && d.settings.level == sumlevel;
+			})
+			console.log(err,data);
+			if(data.length > 0){// the data source does exist, refuse to load.
+				var flashMessage = [{
+					name:"Data Exists",
+					message: "This dataset has already been loaded"
+				}];
+
+				req.session.flash = {
+					err: flashMessage
+				}
+				
+
+				res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
+			
+			}else{//the data source doesn't exists 
+
+				Job.create({
+					isFinished:false,
+					type:'load ACS',
+					info:[{'state':state,'dataSource':dataSource,'year':year,'sumlevel':sumlevel}],
+					status:'Started'
+				})
+				.exec(function(err,job){
+					if(err){console.log('create job error',err)
+						req.session.flash = {
+							err: err
+						}
+						res.json({responseText:'ACS Job Create Error'});
+						return;
+					}
+					sails.sockets.blast('job_created',job);
+
+					var flashMessage = [{
+						name:"Test",
+						message: "job created "+job.id,
+					}];
+
+					spawnACSJob(job);
+
+					req.session.flash = {
+						err: flashMessage
+					}
+				
+					res.json({responseText:'ACS Job Created'});
+					return;
+					
+				})
+			}
+
+		})//Check for data source	
 	}
 };
 
+//--------------------------------------------------------
+function spawnACSJob(job){
+	var terminal = require('child_process').spawn('bash');
+	var current_progress = 0;
+	var settings = {
+	 		dataSource: job.info[0].dataSource,
+  	 		year:job.info[0].year,
+  	 		level:job.info[0].sumlevel
+  	 	},
+  	 	acsEntry = { 
+		tableName:'',
+		type:'acs',
+  	 	stateFips:job.info[0].state,
+	 	settings:[settings]
+  	}
+
+  	terminal.stdout.on('data', function (data) {
+	    data = data+'';
+	    if(data.indexOf('tableName') !== -1){
+	    	console.log('table-name',data.split(":")[1]);
+	    	acsEntry.tableName = data.split(":")[1];
+	    }
+	    else if(data.indexOf('status') !== -1){
+	    	console.log('status',data.split(":")[1]);
+	    	Job.update({id:job.id},{status:data.split(":")[1],progress:0})
+    		.exec(function(err,updated_job){
+    			if(err){ console.log('job update error',error); }
+    			sails.sockets.blast('job_updated',updated_job);		
+    		});
+	    	current_progress =0;
+	    }
+	    else if(data.indexOf('progress') !== -1){
+
+	    	if(data.split(":")[1] !== current_progress){
+	    		current_progress = data.split(":")[1]
+	    		console.log(current_progress);
+	    		Job.update({id:job.id},{progress:current_progress})
+    			.exec(function(err,updated_job){
+    				if(err){ console.log('job update error',error); }
+    				sails.sockets.blast('job_updated',updated_job);		
+    			});
+	    	}
+	    }
+	    else{
+	    	console.log('error probably',data)
+	    }
+	});
+
+	terminal.on('exit', function (code) {
+		code = code*1;
+	    console.log('child process exited with code ' + code);
+	    if(code == 0){
+	    	
+	    	Job.findOne(job.id).exec(function(err,newJob){
+	    		if(err){ console.log('Job check err',err);}
+	    		
+	    		if(newJob.status != 'Cancelled'){
+			    	
+			    	Datasource.create(acsEntry)
+				    .exec(function(err,newEntry){
+				    	if(err){ console.log('Datasource create error',err);}
+							
+					    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+						.exec(function(err,updated_job){
+							if(err){ console.log('job update error',err); }
+							sails.sockets.blast('job_updated',updated_job);		
+						});
+					});
+				}else{
+					console.log('Exit from Job Cancel');
+				}
+			});
+					
+		}else{
+			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Failure'})
+			.exec(function(err,updated_job){
+				if(err){ console.log('job update error',error); }
+				sails.sockets.blast('job_updated',updated_job);		
+			});
+		}
+	});
+
+	setTimeout(function() {
+		console.log('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
+	    	+' '+job.info[0].state
+	    	+' '+job.info[0].dataSource
+	    	+' '+job.info[0].year
+	    	+'\n');
+	    terminal.stdin.write('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
+	    	+' '+job.info[0].state
+	    	+' '+job.info[0].dataSource
+	    	+' '+job.info[0].year
+	    	+'\n');
+	    
+	    Job.update({id:job.id},{pid:terminal.pid}).exec(function(err,updated_job){
+	    	if(err){ console.log('job update error',error); }
+			sails.sockets.blast('job_updated',updated_job);		
+	    })
+
+	    terminal.stdin.end();
+	}, 1000);
+}

@@ -96,7 +96,7 @@ var Header = React.createClass({
             <header className="page-header">
                 <div className="navbar">
                     <ul className="nav navbar-nav navbar-right pull-right">
-                        <MessagesMenu />
+                        
                         <li className="hidden-xs dropdown">
                             <a href="#" title="Account" id="account" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i className="fa fa-user"></i>

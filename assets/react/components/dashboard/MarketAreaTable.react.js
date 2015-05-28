@@ -3,14 +3,19 @@ var React = require('react'),
     Link = require('react-router').Link,
     // -- Components 
     
+    // -- Stores
+    MarketAreaStore = require('../../stores/MarketAreaStore'),
+    
     // -- Action Creators
-    MarketAreaStore = require('../../stores/MarketAreaStore');
+    UserActionsCreator = require('../../actions/UserActionsCreator');
 
 var MarketAreaRow = React.createClass({
     
      _onClick: function(id){
         //console.log('clicked');
     },
+
+   
 
     render: function(){
 
@@ -21,12 +26,12 @@ var MarketAreaRow = React.createClass({
                 <td>{this.props.marketarea.routes ? this.props.marketarea.routes.length : 0}</td>
                 <td>{this.props.marketarea.zones ? this.props.marketarea.zones.length : 0}</td>
                 <td>
-                    <a className="btn btn-sm btn-warning">
+                    <Link to="MarketAreaEdit" params={{marketareaID:this.props.marketarea.id}} className="btn btn-sm btn-warning">
                         Edit
-                    </a>
+                    </Link>
                 </td> 
                 <td>
-                    <a data-toggle="modal" data-target="#deleteModal" data-backdrop="false" className="btn btn-sm btn-danger">
+                    <a data-toggle="modal" onClick={this.props.select.bind(null,this.props.marketarea.id)}data-target="#deleteModal" data-backdrop="false" className="btn btn-sm btn-danger">
                         Delete
                     </a>
                 </td>
@@ -37,16 +42,14 @@ var MarketAreaRow = React.createClass({
     
 })
 
-function getStatefromStore(){
-    return {
-        marketareas: MarketAreaStore.getAll()
-    }
-}
 var MarketAreaTable = React.createClass({
     
     
     getInitialState: function(){
-       return getStatefromStore()
+       return {
+            marketareas: MarketAreaStore.getAll(),
+            selectedMarketarea:null
+        }
     },
 
     componentDidMount: function() {
@@ -59,18 +62,19 @@ var MarketAreaTable = React.createClass({
     },
 
     _onChange:function(){
-        this.setState(getStatefromStore());
+        this.setState({marketareas: MarketAreaStore.getAll()});
     },
-    _deleteUser : function(){
-        UserActionsCreator.deleteUser(this.props.editUser);
+    _selectMA:function(id){
+        this.setState({selectedMarketarea:id})
     },
+
     render: function(){
         var scope = this;
         
         var rows = Object.keys(this.state.marketareas).map(function(key){
             var marketarea = scope.state.marketareas[key];
             return (
-                <MarketAreaRow key={marketarea.id} marketarea={marketarea}  />
+                <MarketAreaRow key={marketarea.id} marketarea={marketarea}  select={scope._selectMA}/>
             )
         });
         ///var deleteModal = this.deleteModal();
@@ -89,12 +93,24 @@ var MarketAreaTable = React.createClass({
                         {rows}
                     </tbody>
                 </table>
-                
+                {this.deleteModal()}
             </div>
         )
     },
+
+    deleteMarketArea:function(){
+        UserActionsCreator.deleteMarketArea(this.state.selectedMarketarea);
+        this.setState({selectedMarketarea:null})
+    },
+    
     deleteModal:function(){
-        var username = this.props.users[this.props.editUser] ? this.props.users[this.props.editUser].name : '';
+        var name = this.state.selectedMarketarea ? this.state.marketareas[this.state.selectedMarketarea].name : '';
+        var text = <h4>Are you sure you want to delete {name}?</h4>;
+        var deleteButton = <button type="button" className="btn btn-info" onClick={this.deleteMarketArea} data-dismiss="modal">Delete</button>
+        if(this.state.selectedMarketarea && this.state.selectedMarketarea < 4){
+            text = <h4> You cannot delete {name}. </h4>;
+            deleteButton = <span />;
+        }
         return (
             <div id="deleteModal" className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div className="modal-dialog">
@@ -102,23 +118,23 @@ var MarketAreaTable = React.createClass({
 
                         <div className="modal-header">
                             <button type="button" className="close" data-dismiss="modal" aria-hidden="true">×</button>
-                            <h4 className="modal-title" id="myModalLabel2">Delete User</h4>
+                            <h4 className="modal-title" id="myModalLabel2">Delete Market Area</h4>
                         </div>
                         <div className="modal-body">
-                            <h4>Are you sure you want to delete {username}?</h4>     
+                             {text}    
                         </div>
                         
                         <div className="modal-footer">
                            <br />
                             <button type="button" className="btn btn-danger" data-dismiss="modal">Cancel</button>
-                            <button type="button" className="btn btn-info" onClick={this._deleteUser} data-dismiss="modal">Delete</button>
+                            {deleteButton}
                         </div>
 
                     </div>
                 </div>
             </div>
         )
-    }
+    },
 });
 
 module.exports = MarketAreaTable;

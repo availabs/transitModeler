@@ -18,21 +18,22 @@ var RouteListTable= React.createClass({
     },
     
     render:function(){
-      
-      var rows = this.props.marketarea.routes.map(function(route,i){
-        var divStyle = {
-            "width":'10px',
-            "background-color" : d3.scale.category20().range()[i] 
-        }
-        var colorClass='route_color_'+route;
-        return (
-          <tr key={i}>
-            <td style={divStyle} className={colorClass}></td>
-            <td>{route}</td>
-            <td></td>
-          </tr>
-        )
-      });
+      var scope = this,
+          routes = this.props.marketarea ? this.props.marketarea.routes : [],
+          rows = routes.map(function(route,i){
+            var divStyle = {
+                "width":'10px',
+                "backgroundColor" : d3.scale.category20().range()[i] 
+            }
+            var colorClass='route_color_'+route;
+            return (
+              <tr key={i}>
+                <td style={divStyle} className={colorClass}></td>
+                <td>{route}</td>
+                <td><i className='fa fa-minus' style={{cursor:'pointer'}} onClick={scope.props.removeRoute.bind(null,route)}/></td>
+              </tr>
+            )
+          });
 
       return(
         <div id="tableDiv">
