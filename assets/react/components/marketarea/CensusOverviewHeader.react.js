@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react'),
-	ReactIntl = require('react-intl'),
+	
    
     // -- Stores
     MarketAreaStore = require('../../stores/MarketAreaStore.js'),
@@ -19,7 +19,7 @@ function getStatefromStore() {
 }
 
 var censusOverviewHeader = React.createClass({
-	mixins: [ReactIntl],
+	
 
 	getInitialState: function(){
         return getStatefromStore()
@@ -54,7 +54,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			            {this.formatNumber(census.total_population.value)}
+			            {parseInt(census.total_population.value)}
 			               
 			            </h3>
 			            <div className="description">
@@ -65,7 +65,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			               {this.formatNumber(census.occupied_housing.value)}
+			               {parseInt(census.occupied_housing.value)}
 			            </h3>
 			            <div className="description">
 			                Households
@@ -75,11 +75,11 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			                {this.formatNumber(census.employment.value+census.unemployment.value)}
+			                {parseInt(census.employment.value+census.unemployment.value)}
 			            </h3>
 			            <div className="description">
 			                in Labor Force<br />
-			                <small>{this.formatNumber( (census.unemployment.value/(census.employment.value+census.unemployment.value))*100 ) }% Unemployment</small>
+			                <small>{parseInt( (census.unemployment.value/(census.employment.value+census.unemployment.value))*100 ) }% Unemployment</small>
 			            </div>
 			        </div>
 			    </div>
@@ -97,10 +97,10 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			                {this.formatNumber(census.bus_to_work.value)}
+			                {parseInt(census.bus_to_work.value)}
 			            </h3>
 			            <div>
-			            	{this.formatNumber(census.bus_to_work.value/census.travel_to_work_total.value*100)}%<br />
+			            	{parseInt(census.bus_to_work.value/census.travel_to_work_total.value*100)}%<br />
 			                Bus To Work
 			            </div>
 			        </div>

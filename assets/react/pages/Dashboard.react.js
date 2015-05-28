@@ -31,24 +31,7 @@ var SamplePage = React.createClass({
                                    <MarketAreaTable />
                                 </div>
                                 <div className="visits-info well well-sm">
-                                    <div className="row">
-                                        <div className="col-sm-3 col-xs-6">
-                                            <div className="key"><i className="fa fa-users"></i> Total Traffic</div>
-                                            <div className="value">24 541 <i className="fa fa-caret-up color-green"></i></div>
-                                        </div>
-                                        <div className="col-sm-3 col-xs-6">
-                                            <div className="key"><i className="fa fa-bolt"></i> Unique Visits</div>
-                                            <div className="value">14 778 <i className="fa fa-caret-down color-red"></i></div>
-                                        </div>
-                                        <div className="col-sm-3 col-xs-6">
-                                            <div className="key"><i className="fa fa-plus-square"></i> Revenue</div>
-                                            <div className="value">$3 583.18 <i className="fa fa-caret-up color-green"></i></div>
-                                        </div>
-                                        <div className="col-sm-3 col-xs-6">
-                                            <div className="key"><i className="fa fa-user"></i> Total Sales</div>
-                                            <div className="value">$59 871.12 <i className="fa fa-caret-down color-red"></i></div>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </section>

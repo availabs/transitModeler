@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react'),
-    ReactIntl = require('react-intl'),
+    
    
     // -- Actions 
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
@@ -15,7 +15,6 @@ var React = require('react'),
 
 var CensusTable= React.createClass({
 
-    mixins: [ReactIntl],
   
 
     getDefaultProps:function(){
@@ -47,7 +46,7 @@ var CensusTable= React.createClass({
               <tr key={i} onClick={scope._rowClick} value={cen_var}>
                 <td style={divStyle}></td>
                 <td value={cen_var}>{cen_var.replace(/_/g," ")}</td>
-                <td value={cen_var}>{total_data[cen_var].value/total*100}</td>
+                <td value={cen_var}>{(total_data[cen_var].value/total*100).toFixed(2)}</td>
                 <td value={cen_var}>{total_data[cen_var].value}</td>
               </tr>
             )
