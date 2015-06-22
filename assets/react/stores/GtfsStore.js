@@ -1,4 +1,4 @@
-'use strict'
+//'use strict'
 /**
  * This file is provided by Facebook for testing and evaluation purposes
  * only. Facebook reserves all rights not expressly granted.
@@ -20,7 +20,10 @@ var _currentGtfs = null,
     _gftsDataSets = {}, //by gtfs ID
     _gtfsRoutesGeo={},  //by MA ID
     _gtfsStopsGeo={},   //"  "  "
-    _loading = false;
+    _gtfsSchedules={},
+    _routingData={},
+    _loading = false,
+    _routingWaypoints = [];
 
 function _addRoutes(id,rawData) {
   
@@ -29,7 +32,6 @@ function _addRoutes(id,rawData) {
   _gftsDataSets[id].routes = rawData;
 
 };
-
 
 function _addDatasets(rawData){
 
@@ -50,13 +52,42 @@ function _loadRoutes(gtfsId){
 };
 
 function _loadRoutesGeo(maId,gtfsId,routes){
-  SailsWebApi.getRoutesGeo(maId,gtfsId,routes)
+  if(!_gtfsRoutesGeo[maId] && _gtfsRoutesGeo[maId] !== 'loading' ){
+    SailsWebApi.getRoutesGeo(maId,gtfsId,routes)
+    _gtfsRoutesGeo[maId] = 'loading';  
+  }
+  
 };
 
 function _loadStopsGeo(maId,gtfsId,routes){
-  SailsWebApi.getStopsGeo(maId,gtfsId,routes)
+  if(!_gtfsStopsGeo[maId] && _gtfsStopsGeo[maId] !== 'loading'){
+    SailsWebApi.getStopsGeo(maId,gtfsId,routes)
+    _gtfsStopsGeo[maId] = 'loading';  
+  }
+  
 };
 
+function _loadRouteSchedule(maId,gtfsId,routes){
+  if(!_gtfsSchedules[maId] && _gtfsSchedules[maId]!=='loading'){
+    SailsWebApi.getRoutesSched(maId,gtfsId,routes);
+    _gtfsSchedules[maId] = 'loading';
+  }
+
+};
+
+
+//------RoutingData-------------------------------------
+  function _loadRoutingData(waypoints){
+    if(waypoints.length > 1){ //stipulate greater than 1 to avaoid error
+      SailsWebApi.getRoutingGeo(waypoints);
+      _routingData = 'loading';
+    }
+  }
+
+  function _setWaypoints(waypts){
+      _routingWaypoints = waypts;
+  }
+//======================================================
 var GtfsStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
@@ -79,26 +110,70 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
   getRoutesGeo : function(){
     
-    if( MarketAreaStore.getCurrentMarketArea() ){
-        var _currentID = MarketAreaStore.getCurrentMarketArea().id;
-        
-        return _gtfsRoutesGeo[_currentID] ? _gtfsRoutesGeo[_currentID] : {type:'FeatureCollection',features:[]};
+    var ma = MarketAreaStore.getCurrentMarketArea();
+
+    if( ma ){
+        var _currentID = ma.id,
+        gtfsId = ma.origin_gtfs
+        routes = ma.routes;
+        if(_gtfsRoutesGeo[_currentID] && _gtfsRoutesGeo[_currentID] !=='loading')
+          return  _gtfsRoutesGeo[_currentID];
+        else if (!_gtfsRoutesGeo[_currentID]){
+          _loadRoutesGeo(_currentID,gtfsId,routes);
+        }     
+        return {type:'FeatureCollection',features:[]};
     }
     return {type:'FeatureCollection',features:[]}
 
   },
 
   getStopsGeo : function(){
-    
-    if( MarketAreaStore.getCurrentMarketArea() ){
-        var _currentID = MarketAreaStore.getCurrentMarketArea().id;
-        
-        return _gtfsStopsGeo[_currentID] ? _gtfsStopsGeo[_currentID] : {type:'FeatureCollection',features:[]};
+    var ma = MarketAreaStore.getCurrentMarketArea();
+
+    if( ma ){
+        var _currentID = ma.id,
+        gtfsId = ma.origin_gtfs
+        routes = ma.routes;
+        if(_gtfsStopsGeo[_currentID] && _gtfsStopsGeo[_currentID] !=='loading')
+          return  _gtfsStopsGeo[_currentID];
+        else if (!_gtfsStopsGeo[_currentID]){
+          _loadStopsGeo(_currentID,gtfsId,routes);
+        } 
+          
+        return {type:'FeatureCollection',features:[]};
     }
     return {type:'FeatureCollection',features:[]}
 
   },
-  
+  getRouteSchedules : function(){
+    
+    var ma = MarketAreaStore.getCurrentMarketArea();
+
+    if( ma ){
+        var _currentID = ma.id,
+        gtfsId = ma.origin_gtfs
+        routes = ma.routes;
+        if(_gtfsSchedules[_currentID] && _gtfsSchedules[_currentID] !=='loading')
+          return  _gtfsSchedules[_currentID];
+        else if (!_gtfsSchedules[_currentID]){
+          _loadRouteSchedule(_currentID,gtfsId,routes);
+        }     
+        return {};
+    }
+    return {}
+
+  },
+  getRoutingGeo : function(){
+    
+      if(_routingWaypoints.length === 0 && Object.keys(_routingData).length > 0 )
+        return _routingData;
+      if(_routingWaypoints.length > 0){
+        _loadRoutingData(_routingWaypoints); //send requrest
+        _routingWaypoints = [];               //reset waypoints to empty
+        return {};
+      }
+      return {};
+  },
   getCurrentRouteList : function(){
 
     var getCurrentMarketArea = MarketAreaStore.getCurrentMarketArea(),
@@ -112,12 +187,11 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return _gftsDataSets[gtfsId].routes;
       }
       else if(!_loading){
-      
-        _loadRoutes(gtfsId);
-        _loadRoutesGeo(maId,gtfsId,routes);
-        _loadStopsGeo(maId,gtfsId,routes);
-        _loading = true;
-        return [];
+        console.log('load stops', maId);
+        // _loadRoutes(gtfsId);
+        // _loadRoutesGeo(maId,gtfsId,routes);
+        
+        // _loadRouteSchedule(maId,gtfsId,routes);
       
       }else{
         //still loading  
@@ -138,6 +212,11 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
   switch(action.type) {
+
+    case ActionTypes.SET_WAYPOINTS:
+        _setWaypoints(action.waypoints);
+        GtfsStore.emitChange();
+    break;
 
     case ActionTypes.RECEIVE_DATASOURCES:
       
@@ -162,6 +241,17 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         GtfsStore.emitChange();
     break;
 
+    case ActionTypes.RECEIVE_GTFS_SCHEDS:
+          _gtfsSchedules[action.Id] = action.data
+          console.log('Received Gtfs Scheds',action.id, action.data)
+          GtfsStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_ROUTING_GEOS:
+        _routingData = action.data
+        console.log('Received Routing Object',action.data);
+        GtfsStore.emitChange();
+    break;
 
     default:
       // do nothing

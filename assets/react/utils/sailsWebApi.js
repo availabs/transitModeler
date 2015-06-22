@@ -7,7 +7,7 @@
 var io = require('./sails.io.js')();
 var d3 = require('d3');
 var ServerActionCreators = require('../actions/ServerActionsCreator');
-
+var Router = require('./hereApi');
 
 //---------------------------------------------------
 // Socket Events
@@ -64,6 +64,15 @@ module.exports = {
     
     });
   },
+  getRoutesSched: function(ma_id,gtfsId,routes,cb) {
+    d3.json('/datasources/gtfs/schedule/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){
+        console.log('getRoutesSched', ma_id, gtfsId,data)     
+        ServerActionCreators.receiveDataWithId('gtfs_sched',ma_id,data);
+        if(cb){ cb(data); }
+    
+    });
+  },
 
   getStopsGeo: function(ma_id,gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/stops/geo/'+gtfsId)
@@ -73,6 +82,18 @@ module.exports = {
 
     });
   },
+
+        //---------------------------------------------
+        // External GeoData
+        //--------------------------------------------
+        getRoutingGeo: function(waypoints,cb){
+          var dsource = new Router();
+          dsource.addwaypoints(waypoints);
+          dsource.handleRequest(function(err,data){
+            ServerActionCreators.receiveData('routing_geo',data);
+            if(cb){cb(data)}
+          });
+        },
   //---------------------------------------------
   // DataSources
   //---------------------------------------------

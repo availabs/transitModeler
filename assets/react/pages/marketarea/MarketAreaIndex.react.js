@@ -7,7 +7,7 @@ var React = require('react'),
     // -- Components
     CensusOverview = require('../../components/marketarea/CensusOverview.react'),
     CtppOverview = require('../../components/marketarea/CtppOverview.react'),
-   
+    GtfsEditor   = require('../../components/gtfs/GtfsEditor.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -36,7 +36,7 @@ var MarketAreaIndex = React.createClass({
     getInitialState: function(){
     
         var state = {}
-        state.activeComponent = 'acs';
+        state.activeComponent = 'gtfs';
         return state;
     
     },
@@ -67,6 +67,18 @@ var MarketAreaIndex = React.createClass({
                         ctppData = {this.props.ctppData}
                         marketarea={this.props.marketarea} />
                 )
+
+            break;
+
+            case 'gtfs':
+                return (
+                        <GtfsEditor
+                        tracts = {this.props.tracts}
+                        routesGeo ={this.props.routesGeo}
+                        stopsGeo = {this.props.stopsGeo}
+                        schedules = {this.props.schedules}
+                        routingGeo= {this.props.routingGeo}/>
+                    )
 
             break;
 
@@ -119,7 +131,9 @@ var MarketAreaIndex = React.createClass({
                                      <li>
                                         <a href="#farebox" data-toggle="tab" value="farebox">Farebox</a>
                                     </li>
-                                    
+                                    <li>
+                                        <a href="#gtfs" data-toggle="tab" value="gtfs">Gtfs</a>
+                                    </li>
                                 </ul>
                             </header>
                             <div className="body tab-content">
@@ -131,6 +145,9 @@ var MarketAreaIndex = React.createClass({
                                 </div>
                                 <div id="survey" className="tab-pane clearfix">
                                    
+                                </div>
+                                <div id="gtfs" className="tab-pane clearfix">
+                                   GTFS
                                 </div>
                             </div>
                         </section>

@@ -20,7 +20,6 @@ module.exports = {
 
     SET_ACTIVE_CENSUS_VARIABLE:null,
 
-
     //------Modeling-----------------------------------------
     SET_NEW_MODEL_OPTION:null,
     SET_TRIPTABLE_MODE:null,
@@ -35,6 +34,11 @@ module.exports = {
     SET_SESSION_USER:null,
     DELETE_USER:null,
 
+
+    //--------GtfsEditor--------------------------------------
+    SET_WAYPOINTS:null,
+    SET_EDITOR_SAVE:null,
+
     //--------MarketArea--------------------------------------
     RECEIVE_MARKETAREAS: null,
     DELETE_MARKETAREA:null,
@@ -47,7 +51,9 @@ module.exports = {
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,
     RECEIVE_GTFS_STOPS_GEOS:null,
-    
+    RECEIVE_GTFS_SCHEDS:null,
+    RECEIVE_ROUTING_GEOS:null,
+
     RECIEVE_DATASOURCES:null,
     RECEIVE_REGRESSIONS:null,
 

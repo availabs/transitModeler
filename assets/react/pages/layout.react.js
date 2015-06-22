@@ -30,49 +30,40 @@ function marketAreasToMenuItems(marketareas){
     })
 }
 
+
+
 var App = React.createClass({
+
+    getState : function(){
+        return {
+                menu:this._populateMenu( MarketAreaStore.getAll() ).menu,
+                currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
+                marketareas:MarketAreaStore.getAll(),
+                tracts: GeodataStore.getMarketAreaTracts(),
+                stateTracts : GeodataStore.getAllTracts(),
+                stateCounties : GeodataStore.getAllCounties(),
+                datasources: DatasourcesStore.getAll(),
+                activeJobs: JobStore.getActive(),
+                regressions:RegressionStore.getAll(),
+                censusData: CensusStore.getCurrentDataSet(),
+                activeCensusVariable: CensusStore.getActiveVariable(),
+                ctppData: MarketAreaStore.getCurrentCtpp(),
+                loadedModels: ModelRunStore.getActiveModelRuns(),
+                routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
+                routesGeo : GtfsStore.getRoutesGeo(),
+                stopsGeo : GtfsStore.getStopsGeo(),
+                schedules : GtfsStore.getRouteSchedules(),
+                routingGeo : GtfsStore.getRoutingGeo(),
+        
+            };
+    },
  
     getInitialState: function(){   
-        return {
-            menu:this._populateMenu( MarketAreaStore.getAll() ).menu,
-            currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
-            marketareas:MarketAreaStore.getAll(),
-            tracts: GeodataStore.getMarketAreaTracts(),
-            stateTracts : GeodataStore.getAllTracts(),
-            stateCounties : GeodataStore.getAllCounties(),
-            datasources: DatasourcesStore.getAll(),
-            activeJobs: JobStore.getActive(),
-            regressions:RegressionStore.getAll(),
-            censusData: CensusStore.getCurrentDataSet(),
-            activeCensusVariable: CensusStore.getActiveVariable(),
-            ctppData: MarketAreaStore.getCurrentCtpp(),
-            loadedModels: ModelRunStore.getActiveModelRuns(),
-            routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
-            routesGeo : GtfsStore.getRoutesGeo(),
-            stopsGeo : GtfsStore.getStopsGeo()
-    
-        };
+        return this.getState(); 
     },
 
     _onChange: function() {
-        this.setState({
-            menu:this._populateMenu( MarketAreaStore.getAll()).menu,
-            currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
-            marketareas:MarketAreaStore.getAll(),
-            tracts: GeodataStore.getMarketAreaTracts(),
-            stateTracts : GeodataStore.getAllTracts(),
-            stateCounties : GeodataStore.getAllCounties(),
-            datasources: DatasourcesStore.getAll(),
-            activeJobs: JobStore.getActive(),
-            regressions:RegressionStore.getAll(),
-            censusData: CensusStore.getCurrentDataSet(),
-            activeCensusVariable: CensusStore.getActiveVariable(),
-            ctppData: MarketAreaStore.getCurrentCtpp(),
-            loadedModels: ModelRunStore.getActiveModelRuns(),
-            routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
-            routesGeo : GtfsStore.getRoutesGeo(),
-            stopsGeo : GtfsStore.getStopsGeo()
-        });
+        this.setState(this.getState());
     },
 
     componentDidMount: function() {
@@ -115,6 +106,8 @@ var App = React.createClass({
                         routes = {this.state.routes}
                         routesGeo = {this.state.routesGeo}
                         stopsGeo = {this.state.stopsGeo}
+                        schedules = {this.state.schedules}
+                        routingGeo = {this.state.routingGeo}
                         loadedModels = {this.state.loadedModels}
                         stateTracts = {this.state.stateTracts}
                         stateCounties = {this.state.stateCounties} />

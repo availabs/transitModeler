@@ -29,6 +29,7 @@ module.exports.routes = {
   '/datasources/gtfs/routes/geo/:id': 'DataSourceController.getRouteGeo',
   '/datasources/gtfs/stops/geo/:id': 'DataSourceController.getStopsGeo',
   '/datasources/gtfs/routes/:tablename':'DataSourceController.getRoutes',
+  '/datasources/gtfs/schedule/:id':'GtfsController.getSimpleSchedule',
 
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
