@@ -16,9 +16,9 @@ var MarketAreaNew = React.createClass({
     updateGtfs:function(e,selection){
       var scope = this;
       if(selection){
-        this.props.onRouteChange(selection.id);
+        var canChange = this.props.onRouteChange(selection.id);
         // this.props.gtfsChange(scope.props.gtfsChange(scope.props.gtfsData[selection.id]));
-        if (this.isMounted()) {
+        if (this.isMounted() && canChange) {
           scope.setState({selection:selection.id});
           console.log(selection.id)
         }

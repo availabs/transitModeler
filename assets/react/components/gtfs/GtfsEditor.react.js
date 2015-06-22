@@ -37,7 +37,16 @@ var initStops = function(stops){
     return stopColl;
 }
 
-
+var editCheckConfirm = function(obj){
+    if(obj.state.edited){
+        var check = confirm('Are you sure you\'d like to scrap these edits?')
+        if(check===true)
+            return true;
+        else
+            return false
+    }else
+        return true;   
+}
 
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
@@ -54,15 +63,21 @@ var MarketAreaNew = React.createClass({
         };
     },
     setRoute:function(id){  //on route change
+        if(!editCheckConfirm(this))
+            return false;
         this.setState({currentRoute:id});  //set state to current route id
         // this.setState({graph:new Graph()});//set graph object to an empty one
-        this.setState({currentTrip: null});//reset the trip
+        this.setState({currentTrip: null,edited:false});//reset the trip
+        return true;
     },
     setTrip:function(ix){
-        this.setState({currentTrip:ix,graph:new Graph()});
+        if(!editCheckConfirm(this))
+            return false;
+        this.setState({currentTrip:ix,graph:new Graph(),edited:false});
         var T = new Trip();
         T.setId(this.props.schedules[this.state.currentRoute].trips[ix].id);
         this.setState({TripObj:T});
+        return true;
     },
     _getActiveIds:function(){
         if(this.state.TripObj)
@@ -124,7 +139,7 @@ var MarketAreaNew = React.createClass({
     },
     componentWillUpdate:function(nextProps, nextState){
         //if the selected trip isn't null and isnt the same as the last trip
-        if((nextState.currentTrip !== this.state.currentTrip)){
+        if(nextState.currentTrip !== null && (nextState.currentTrip !== this.state.currentTrip)){
             var route = this.props.schedules[this.state.currentRoute],
             trip = route.trips[nextState.currentTrip],
             stopTraj = JSON.parse(trip.id);
