@@ -3,6 +3,7 @@
 var React = require('react'),
     //comps
     Select2Component = require('../utils/Select2.react'),
+    CreationForm     = require('./CreationForm.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -21,6 +22,8 @@ var MarketAreaNew = React.createClass({
         if (this.isMounted() && canChange) {
           scope.setState({selection:selection.id});
           console.log(selection.id)
+        }else if(!canChange){
+          scope.setState({selection:this.state.selection});//set the state to itself to force rerender
         }
       }
     },
@@ -42,7 +45,19 @@ var MarketAreaNew = React.createClass({
                       styleWidth="100%"
                       onSelection={this.updateGtfs}
                       val={this.state.selection} />
+                  <div>
+                    <CreationForm 
+                    values={{"New Route":''}}
+                    buttonText={"Create New Route"}
+                    id={"routes"}
+                    saveAction={this.props.addRoute}/>
+                      
+
+                  </div>
                 </div>
+
+
+
             </section> 
         );
     }

@@ -2,16 +2,28 @@
 
 var React = require('react'),
     //comps
-    
+    CreationForm     = require('./CreationForm.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
 var MarketAreaNew = React.createClass({
-
+    _crtTripButton : function(length){
+      if(length < 2)
+        return (
+            <CreationForm
+              values={{Service_Id:'', Trip_Id:'',Shape_Id:'',Headsign:''}}
+              buttonText={"Create New Trip"}
+              id={"trips"}
+              saveAction={this.props.addTrip} />
+          );
+      else{
+        return (<div></div>)
+      }
+    },
     render: function() {
         var buttons = <span/>,scope=this;
-        if(this.props.route){
+        if(this.props.route && this.props.route.trips){
           buttons = scope.props.route.trips.map(function(trip,i){
             var classes = "btn btn-lg btn-warning btn-block";
             if(scope.props.currentTrip === i){
@@ -31,6 +43,7 @@ var MarketAreaNew = React.createClass({
             <section className="widget">
                 <div className="body no-margin">
                     {buttons}
+                    {scope._crtTripButton(buttons.length)}
                 </div>
             </section> 
         );

@@ -10,12 +10,43 @@ var React = require('react'),
     L = require('leaflet'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
+    Stop = require('./Gtfsutils').Stop,
     topojson = require('topojson');
     
 
 var map = null,
-    layers = {};
+    layers = {},
+    divmarker = L.divIcon({
+                    className:'divMarker',
+                    iconSize:[10,10],
+                }),
+    newstopindex = 0,
+    allowLayerAddAction = true;
 
+var _layerAddAction = function(featGroup,scope){
+        
+    function addLayer(e){
+        var marker = e.layer, //This makes the reasonable assumption that the only layers to be added to this layer group will be markers
+        stopPoint = marker._latlng,
+        coors = [stopPoint.lng,stopPoint.lat],
+        feat = {type:'Feature',geometry:{type:'Point',coordinates:coors},properties:{}},
+        id = scope.props.addStop(feat);
+        if(id === undefined){
+            featGroup.removeLayer(marker);
+        }
+    }
+    if(allowLayerAddAction)
+        featGroup.on('layeradd',addLayer);
+    featGroup.switchOnLayerAdd = function(){
+        featGroup.on('layeradd',addLayer);
+        allowLayerAddAction=true;
+    }
+    featGroup.switchOffLayerAdd = function(){
+        allowLayerAddAction=false;
+        featGroup.off('layeradd',addLayer);
+    }
+
+}
 
 var Map = React.createClass({
     
@@ -36,11 +67,7 @@ var Map = React.createClass({
         var scope = this;
         return {
                     pointToLayer: function (d, latlng) {
-                        var divmarker = L.divIcon({
-                            className:'divMarker',
-                            iconSize:[10,10],
-                          }),
-                        options = {
+                        var options = {
                             icon:divmarker,
                             draggable:true,
                         },
@@ -80,17 +107,12 @@ var Map = React.createClass({
                         };
                     },
                     onEachFeature:function(feat,layer){
-                        var divmarker = L.divIcon({
-                            className:'divMarker',
-                            iconSize:[10,10],
-                        }),
-                        tempMarker;
+                        var tempMarker;
                         layer.on({
                             click: function(e){
                                 tempMarker = L.marker(e.latlng,{icon:divmarker, draggable:true});
                                 layers.stopsLayer.layer.addLayer(tempMarker);
                                 tempMarker = undefined;
-                                scope.props.addStop();
                             },
                             mouseover : function(e){
                                 e.target.setStyle({opacity:0.5})
@@ -110,8 +132,8 @@ var Map = React.createClass({
                 var currLayer = nextProps.layers[key];
                 if(layers[key]){
                     //if layer existed previously check version ids
-                    if(currLayer.id !== layers[key].id && currLayer.geo.features.length > 0){
-                        scope._updateLayer(key,currLayer)        
+                    if(currLayer.id !== layers[key].id && currLayer.geo.features.length >= 0){
+                        scope._updateLayer(key,currLayer,nextProps.isCreating)        
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
@@ -123,7 +145,8 @@ var Map = React.createClass({
         }    
     },
     
-    _updateLayer : function(key,layer){
+    _updateLayer : function(key,layer,isCreating){
+        var scope = this;
         if(map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer)
         }
@@ -138,6 +161,13 @@ var Map = React.createClass({
             layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
+        if(key === 'stopsLayer'){
+            _layerAddAction(layers[key].layer,this);
+            console.log('CreateDebug',layer.geo.features.length,isCreating);
+            if( (layer.geo.features.length === 0) && isCreating){
+                   this._createTrip();
+            }
+        }
         map.addLayer(layers[key].layer);
         if(layer.options.zoomOnLoad){
             var ezBounds = d3.geo.bounds(layer.geo);
@@ -146,19 +176,14 @@ var Map = React.createClass({
     },
 
     _renderLegend: function(){
-        
-        
-        if( Object.keys(this.props.legendLayers).length === 0 ){
-            
+        if( Object.keys(this.props.legendLayers).length === 0 ){   
             return (
                 <span />
             )
         }
-
         return (
             <MapLegend layers={this.props.legendLayers} options={this.props.legendOptions} />
         )
-
     },
 
     render: function() {
@@ -170,7 +195,44 @@ var Map = React.createClass({
 
         );
     },
+    _addStop : function(e){
+        var marker = L.marker(e.latlng,{icon:divmarker,draggable:true});
+        if(layers.stopsLayer)
+            layers.stopsLayer.layer.addLayer(marker);
+        else{
+            layers.stopsLayer.layer = L.layerGroup([marker]);
+            map.addLayer(layers.stopsLayer.layer);
+        }
+    },
+    _createTrip : function(){
+        var count = 0, scope = this;
+        
+        //stop the layeradd action from fire when initing a trip
+        layers.stopsLayer.layer.switchOffLayerAdd();
+        function onClick(e){
+            console.log(e);
+            scope._addStop(e);
+            count += 1;
+            if(count === 2){
+                var newstops = layers.stopsLayer.layer.getLayers().map(function(d){
+                    var s = new Stop();
+                    s.setLat(d._latlng.lat);
+                    s.setLon(d._latlng.lng);
+                    s.setId('NewStop'+newstopindex++);
+                    return s;
+                });
+                scope.props.createTrip(newstops);
+                //once complete resume normal actions
+                layers.stopsLayer.layer.switchOnLayerAdd();
+                count = 0;
+                map.off('click',onClick);
+            }
+        };
+        if(!map.hasEventListeners('click')){
+            map.on('click',onClick);
+        }
 
+    },
     renderMap:function(){
         var scope = this;
         var mapDiv = document.getElementById(this.props.mapId);
@@ -184,9 +246,8 @@ var Map = React.createClass({
             zoomControl: false,
             attributionControl: false
         });
-        // map.on('click',function(e){
-        //     scope.props.createStop(map);
-        // })
+        
+
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){
                 var currLayer = scope.props.layers[key]
@@ -200,7 +261,10 @@ var Map = React.createClass({
                     id:currLayer.id,
                     layer: L.geoJson(currLayer.geo,currLayer.options)
                 };  
+                if(key === 'stopsLayer'){
+                    _layerAddAction(layers[key].layer,this);
 
+                }
                 map.addLayer(layers[key].layer);
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);

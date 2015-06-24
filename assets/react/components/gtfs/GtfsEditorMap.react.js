@@ -14,7 +14,8 @@ var React = require('react'),
     countyLayerID = 0,
     routingLayerId = 0,
     prevCountyLength,
-    prevMode;
+    prevMode,
+    prevStops=null;
 
 
 
@@ -74,9 +75,11 @@ var GtfsEditorMap = React.createClass({
             routeLayerID++;
             prevRouteLength = routes.features.length;
         }
-        if(stops.features.length !== prevStopsLength){
+        if( (stops.features.length !== prevStopsLength) 
+            || !prevStops || (prevStops !== stops)  ){
             stopslayerID++;
             prevStopsLength = stops.features.length;
+            prevStops = stops;
         }
         if(this.props.mode && this.props.mode !== prevMode){
             stopslayerID++;
@@ -221,10 +224,11 @@ var GtfsEditorMap = React.createClass({
                     ToolTip={this.state.tooltip} 
                     mapId={this.props.mapId}
                     deleteStop={this.props.deleteStop}
-                    createStop={this.props.createStop}
+                    createTrip={this.props.createTrip}
                     addStop   ={this.props.addStop}
                     onStopMove={this.props.onStopMove}
                     legendLayers={this.props.legendLayers}
+                    isCreating={this.props.isCreating}
 
                     height="500px" />
             </div>

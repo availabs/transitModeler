@@ -60,24 +60,37 @@ var MarketAreaNew = React.createClass({
             edited:false,
             tracker:new EditTracker(),
             TripObj:undefined,
+            buffStopColl:null,
+            schedules:null,
+            isCreating:false,
         };
     },
     setRoute:function(id){  //on route change
         if(!editCheckConfirm(this))
             return false;
-        this.setState({currentRoute:id});  //set state to current route id
-        // this.setState({graph:new Graph()});//set graph object to an empty one
-        this.setState({currentTrip: null,edited:false});//reset the trip
+        //reset the trip, that it has not been edited and the appropriate route
+        this.setState({currentTrip: null,edited:false,currentRoute:id});//reset the trip
         return true;
     },
     setTrip:function(ix){
         if(!editCheckConfirm(this))
             return false;
-        this.setState({currentTrip:ix,graph:new Graph(),edited:false});
         var T = new Trip();
-        T.setId(this.props.schedules[this.state.currentRoute].trips[ix].id);
-        this.setState({TripObj:T});
+        T.setId(this.state.schedules[this.state.currentRoute].trips[ix].id);
+        if(T.getStops().length === 0)
+            this.setState({TripObj:T,currentTrip:ix,graph:new Graph(),edited:false,buffStopColl:new Stops(),isCreating:true});
+        else
+            this.setState({TripObj:T,currentTrip:ix,graph:new Graph(),edited:false,buffStopColl:new Stops()});
         return true;
+    },
+    _getStop : function(id,newstops){
+        if(this.state.stopColl && this.state.stopColl.hasStop(id))
+            return this.state.stopColl.getStop(id);
+        else if(newstops){
+            return newstops.getStop(id);
+        }
+        else if(this.state.buffStopColl && this.state.buffStopColl.hasStop(id))
+            return this.state.buffStopColl.getStop(id);
     },
     _getActiveIds:function(){
         if(this.state.TripObj)
@@ -85,10 +98,10 @@ var MarketAreaNew = React.createClass({
         else
             return [];
     },
-    _requestData:function(ids){
+    _requestData:function(ids,newstops){
         var scope = this,
         waypoints=ids.map(function(id){
-            var stp = scope.state.stopColl.getStop(id);
+            var stp = scope._getStop(id,newstops);
             if(!stp) console.log(id);
             return stp.getPoint();
         });
@@ -131,23 +144,39 @@ var MarketAreaNew = React.createClass({
         if(((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features 
             && nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length)) 
             && nextProps.stopsGeo.features.length >0){
+
             console.log('update stops',nextProps.stopsGeo.features.length);
             var stops = new Stops();
             stops.addStops(nextProps.stopsGeo.features);
             this.setState({stopColl:stops});
         }
+
+        if( ((!this.props.schedules && nextProps.schedules) || (nextProps.schedules 
+            && Object.keys(nextProps.schedules).length !== Object.keys(this.props.schedules).length)) 
+            && Object.keys(nextProps.schedules).length >0){
+
+            console.log('update schedules',nextProps.schedules);
+            this.setState({schedules:nextProps.schedules});
+        }
+
     },
     componentWillUpdate:function(nextProps, nextState){
         //if the selected trip isn't null and isnt the same as the last trip
-        if(nextState.currentTrip !== null && (nextState.currentTrip !== this.state.currentTrip)){
-            var route = this.props.schedules[this.state.currentRoute],
+        if(nextState.currentTrip !== null && (nextState.currentTrip !== this.state.currentTrip)) {
+            var route = this.state.schedules[this.state.currentRoute],
             trip = route.trips[nextState.currentTrip],
             stopTraj = JSON.parse(trip.id);
-            this._requestData(stopTraj);
+            if(nextState.buffStopColl !== this.state.buffStopColl)
+                this._requestData(stopTraj,nextState.buffStopColl);
+            else
+                this._requestData(stopTraj);
         }
         else if (nextState.TripObj !== this.state.TripObj){
             stopTraj = nextState.TripObj.getStops();
-            this._requestData(stopTraj);
+            if(nextState.buffStopColl !== this.state.buffStopColl)
+                this._requestData(stopTraj,nextState.buffStopColl);
+            else
+                this._requestData(stopTraj);
         }
 
     },
@@ -174,29 +203,119 @@ var MarketAreaNew = React.createClass({
         victim.setDeleted(true)
         victim.setEdited();
         this.state.tracker.addEvent('d',victim);
-        this.setState({TripObj:trip,edited:true})
         this.state.graph.deleteNode(id,stopList)
+        this.setState({TripObj:trip,edited:true,graph:this.state.graph});
+        
         
         console.log('Attempted Delete',stop);  
     },
     insStop : function(stopobj){
-        console.log('Attempted to Add Stop',map)
-        this.state.tracker.addEvent('i',stopobj);
+        var nStop = new Stop(stopobj),
+        stops = this.state.TripObj.getStops(),
+        qObj,i1,i2,i,graph,
+        trip = new Trip(),
+        id='';
+        trip.setStops(stops);
+        do{
+            if(id!=='')
+                alert('stop already exists');
+            id = prompt('Please Enter new Stop Id');
+            if( id === null)
+                return;
+        }while(this._getStop(id));
+        nStop.setId(id);
+        nStop.setNew(true);
+        nStop.setEdited(true);
+        nStop.addRoute(this.state.TripObj.getRouteId());
+        nStop.addTrip(this.state.TripObj.getId());
+        graph = this.state.graph;
+        qObj = graph.queryPoint(nStop.getPoint());
+        graph.splitEdge(qObj.v1,qObj.v2,stopobj,qObj.position);
+        i1 = stops.indexOf(qObj.v1);
+        i2 = stops.indexOf(qObj.v2);
+        i = Math.max(i1,i2);
+        
+
+        stops.splice(i,0,id);//this edits the state object TripObj
+        this.state.buffStopColl.addStop(nStop);
+        this.setState({TripObj:trip,graph:graph,buffStopColl:this.state.buffStopColl,edited:true}); //so set it 
+        this.state.tracker.addEvent('i',{id:id,position:i+1,data:nStop});
+        console.log('Attempted to Add Stop',map);
+        return id;
     },
-    crtStop : function(stopobj){
-        console.log('Attempted Create',map);
-        this.state.tracker.addEvent('i',stopobj);
+    _crtTrip : function(endpoints){
+        console.log('Attempted Create');
+        var buffStops = new Stops(),
+        ix = 0, scope = this,
+        trip = new Trip();
+        endpoints.forEach(function(d,i){
+            d.addRoute(scope.state.schedules[scope.state.currentRoute].id);
+            buffStops.addStop(d);
+            scope.state.tracker.addEvent('i',{id:d.getId(),position:i+1,data:d});
+        });
+        trip.setStops(endpoints.map(function(d){return d.getId();}));
+        trip.setRouteId(this.state.TripObj.getRouteId());
+        trip.setNew();
+        trip.setServiceId(this.state.TripObj.getServiceId());
+        trip.setIds(this.state.TripObj.getIds());
+        this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
+        this.setState({buffStopColl:buffStops});
+        this.setState({TripObj:trip,schedules:this.state.schedules});
+
+    },
+    _addRoute : function(formObj){
+        var id = formObj['New Route']
+        if(this.state.schedules[id])
+            return false;
+        else{
+            this.state.schedules[id] = {trips:[],id:id}
+            this.setState({schedules:this.state.schedules});
+        }
+        console.log(id);
+    },
+    _addTrip : function(formObj){
+        var service_id = formObj.Service_Id,
+        trip_id        = formObj.Trip_Id,
+        headsign       = formObj.Headsign,
+        shape_id       = formObj.Shape_Id;
+
+        if(!(service_id && trip_id && shape_id) ){
+            return "All Fields Must be populated"
+        }
+        else{
+            var schedules = this.state.schedules;
+            var trip = {
+                headsign:headsign,
+                id:'[]',
+                intervals:[],
+                route_id:schedules[this.state.currentRoute].id,
+                start_times:[],
+                stop_times:[],
+                tripids:[trip_id],
+                shape_id:shape_id,
+                service_id:service_id,
+            };
+            schedules[this.state.currentRoute].trips.push(trip);
+            this.setState({schedules:schedules});
+        }
     },
     render: function() {
+        var scope = this;
         var routesGeo = check(this.props.routesGeo);  
         var stopsGeo;
         if(!this.state.TripObj)
             stopsGeo = emptyGeojson;
         else{
-            var ids = this.state.TripObj.getStops();
-            stopsGeo = this.state.stopColl.getSubCollByIds(ids).getFeatureCollection();
+            var ids = this.state.TripObj.getStops(),
+            tempColl = new Stops();
+            tempColl.addStops(ids.map(function(id){return scope._getStop(id)}));
+            console.log('new Test',ids,tempColl);
+            stopsGeo = tempColl.getFeatureCollection();
+
         }
         var tracts = check(this.props.tracts) ;
+        var scheds = this.state.schedules || {}
+        var route = (this.state.schedules)?this.state.schedules[this.state.currentRoute]:{};
         var routingGeo = this._processResponse(this.props.routingGeo);
         return (
         	<div className="content container">
@@ -217,25 +336,25 @@ var MarketAreaNew = React.createClass({
                             onStopMove={this._movedStop}
                             deleteStop={this.delStop}
                             addStop={this.insStop}
-                            createStop={this.crtStop} />
+                            createTrip={this._crtTrip}
+                            isCreating={this.state.isCreating} />
                         
 
                     </div>
                     <div className="col-lg-3">
                        <Databox
-                           schedules = {this.props.schedules}
-                           onRouteChange={this.setRoute}/>
+                           schedules = {scheds}
+                           onRouteChange={this.setRoute}
+                           addRoute = {this._addRoute}/>
                         <Trips
-                            route={this.props.schedules[this.state.currentRoute]}
+                            route={route}
                             onTripSelect={this.setTrip}
-                            currentTrip={this.state.currentTrip}/>
+                            currentTrip={this.state.currentTrip}
+                            addTrip = {this._addTrip}/>
                        <SaveBox
                         Edited={this.state.edited}
                         onSave={this._saveEdits}/>
-                       //  {stopsGeo.features.length}
-                       // {this.state.currentRoute}
-                       // {this.state.currentTrip}
-                       // {routingGeo}
+                       
                        
                     </div>
                 </div>
@@ -243,5 +362,8 @@ var MarketAreaNew = React.createClass({
         );
     }
 });
-
+//  {stopsGeo.features.length}
+                       // {this.state.currentRoute}
+                       // {this.state.currentTrip}
+                       // {routingGeo}
 module.exports = MarketAreaNew;
