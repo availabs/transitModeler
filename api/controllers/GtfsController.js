@@ -42,7 +42,7 @@ module.exports = {
 	      res.send({status: 500, error: 'You must supply a gtfs_id and route ID'}, 500);
 	      return;
 	    }
-	   
+
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err)}
 	    	var datafile = mgtfs.tableName;
@@ -52,21 +52,21 @@ module.exports = {
 					+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, '
 		  			+'T.trip_headsign,T.route_id, T.service_id, T.trip_id,T.direction_id, array_agg(ST.stop_id Order By ST.stop_sequence) as stops '
 					+'FROM \"'+datafile+'\".trips as T '
-					+'JOIN \"'+datafile+'\".stop_times as ST ' 
+					+'JOIN \"'+datafile+'\".stop_times as ST '
 					+'ON T.trip_id = ST.trip_id '
 					+'JOIN \"'+datafile+'\".calendar as C '
 					+'ON T.service_id = C.service_id '
 					+'JOIN \"'+datafile+'\".routes as R '
 					+'ON T.route_id=R.route_id '
-					+'WHERE R.route_short_name in '+ route_short_names + ' ' 
+					+'WHERE R.route_short_name in '+ route_short_names + ' '
 					+'Group By T.trip_id '
 					+'Order By T.route_id, starting, T.trip_id,T.trip_headsign '
-					+') as T2 ' 
+					+') as T2 '
 					+'Group By T2.stops,T2.route_id,T2.trip_headsign;'
+				console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log(err);
-				console.log(data.rows.length)
-				
+
 					var Routes = {};
 					var trips = {};
 					data.rows.forEach(function(trip){
@@ -87,10 +87,9 @@ module.exports = {
 					})
 					res.json(Routes);
 		  	});
-  	
+
 		});
 	},
 
-	
-};
 
+};

@@ -21,7 +21,7 @@ var React = require('react'),
 
 
 var GtfsEditorMap = React.createClass({
-    
+
     getDefaultProps:function(){
         return {
             mapId:'map',
@@ -37,7 +37,7 @@ var GtfsEditorMap = React.createClass({
                 y:0,
                 display:'none'
             },
-            
+
         };
     },
 
@@ -49,7 +49,7 @@ var GtfsEditorMap = React.createClass({
             routes = emptyGeojson,
             routingGeo = emptyGeojson,
             counties = emptyGeojson;
-        
+
         //console.log('processLayers, diplay tracts',this.props.displayTracts);
         if(this.props.stops){
             stops = this.props.stops
@@ -65,7 +65,7 @@ var GtfsEditorMap = React.createClass({
         }
         if(this.props.routingGeo){
             routingGeo = this.props.routingGeo;
-            
+
         }
         if(tracts.features.length !== prevTractLength){
             tractlayerID++;
@@ -75,7 +75,7 @@ var GtfsEditorMap = React.createClass({
             routeLayerID++;
             prevRouteLength = routes.features.length;
         }
-        if( (stops.features.length !== prevStopsLength) 
+        if( (stops.features.length !== prevStopsLength)
             || !prevStops || (prevStops !== stops)  ){
             stopslayerID++;
             prevStopsLength = stops.features.length;
@@ -128,7 +128,7 @@ var GtfsEditorMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -136,14 +136,14 @@ var GtfsEditorMap = React.createClass({
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6});
-                                
+
                             },
                             mouseout: function(e){
                                  e.target.setStyle({weight:1});
-                                
+
                             }
                         });
-                        
+
                     }
                 }
             },
@@ -162,7 +162,7 @@ var GtfsEditorMap = React.createClass({
                     },
 
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -191,17 +191,17 @@ var GtfsEditorMap = React.createClass({
                                 e.target.setStyle({opacity :0.3})
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
-                            
-                            
+
+
                         });
-                        
+
                     }
                 }
             },
             stopsLayer:{
                 id:stopslayerID,
                 geo:stops,
-                options:{}   
+                options:{}
             }
         };
     },
@@ -217,11 +217,11 @@ var GtfsEditorMap = React.createClass({
     render: function() {
         console.log(this.processLayers());
         return (
-              
+
             <div>
-                <LeafletMap 
-                    layers={this.processLayers()}  
-                    ToolTip={this.state.tooltip} 
+                <LeafletMap
+                    layers={this.processLayers()}
+                    ToolTip={this.state.tooltip}
                     mapId={this.props.mapId}
                     deleteStop={this.props.deleteStop}
                     createTrip={this.props.createTrip}
@@ -229,13 +229,14 @@ var GtfsEditorMap = React.createClass({
                     onStopMove={this.props.onStopMove}
                     legendLayers={this.props.legendLayers}
                     isCreating={this.props.isCreating}
-
+                    editStop ={this.props.editStop}
+                    needZoom ={this.props.tripChange}
                     height="500px" />
             </div>
-                            
+
         );
     },
-    
+
 
 });
 

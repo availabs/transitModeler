@@ -1,5 +1,5 @@
 var getWaypoints = function(Stops,Trip){	//get simple psuedo matrix of trip traversals
-	var coorVector = [];			
+	var coorVector = [];
 	Trip.getStops().forEach(function(id){		//for each stop that it visits
 		var stop = getStop(id);
 		coorVector.push(stop.getPoint());	//push that stop's coordinates into the vector
@@ -146,7 +146,7 @@ Stop.prototype.setLat = function(lat){
 	this.stop.geometry.coordinates[1] = lat;
 }
 Stop.prototype.setId = function(id){
-	this.stop.properties.stop_id = id; 
+	this.stop.properties.stop_id = id;
 }
 Stop.prototype.setName = function(name){
 	this.stop.properties.stop_name = id;
@@ -230,6 +230,7 @@ var Trip = function(){
 	this.stop_times = [];
 	this.trip_ids = [];
 	this.service_id = '';
+	this.headsign = '';
 	this.isNew = false;
 };
 Trip.prototype.getId = function(){
@@ -258,6 +259,12 @@ Trip.prototype.getStopTime = function(i){
 }
 Trip.prototype.getIds =function(){
 	return this.trip_ids;
+}
+Trip.prototype.getHeadSign = function(){
+	return this.headsign;
+}
+Trip.prototype.setHeadSign = function(hs){
+	this.headsign = hs;
 }
 Trip.prototype.setIds = function(ids){
 	this.trip_ids = ids;
