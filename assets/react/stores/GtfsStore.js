@@ -222,7 +222,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return _gftsDataSets[gtfsId].routes;
       }
       else if(!_loading){
-        console.log('load stops', maId);
+        //console.log('load stops', maId);
         // _loadRoutes(gtfsId);
         // _loadRoutesGeo(maId,gtfsId,routes);
 
@@ -294,7 +294,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_EDITOR_RESPONSES:
         _editResponse = action.data;
-        console.log('Receive Upload Response:',action.data);
+        //console.log('Receive Upload Response:',action.data);
         GtfsStore.emitChange();
     break;
 

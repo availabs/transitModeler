@@ -29,7 +29,7 @@ var MarketAreaNew = React.createClass({
       }
     },
     componentWillUpdate : function(nextProps,nextState){
-      console.log('Select Check',nextProps,nextState)
+      //console.log('Select Check',nextProps,nextState)
     },
     addingRouteAction : function(data){
       var err = this.props.addRoute(data);
@@ -42,7 +42,6 @@ var MarketAreaNew = React.createClass({
     },
     render: function() {
         var scope = this;
-        console.log(scope.state.selection);
         var selectData = Object.keys(this.props.schedules)
                                 .map(function(key){
                                     return {"id":scope.props.schedules[key].id ,"text":key };

@@ -284,10 +284,8 @@ Trip.prototype.setIds = function(ids){
 }
 Trip.prototype.setId = function(id){
 	this.id = id;
-	this.stops = JSON.parse(id);
 }
 Trip.prototype.setStops = function(stops){
-	this.id = JSON.stringify(stops);
 	this.stops = stops;
 }
 Trip.prototype.setRouteId = function(rid){
@@ -324,7 +322,6 @@ Trip.prototype.addTripId = function(tid){
 }
 Trip.prototype.addStop = function(sid,ix){
 	this.stops.splice(ix,0,sid);
-	this.id = JSON.stringify(this.stops);
 }
 Trip.prototype.setNew = function(){
 	this.isNew = true;
@@ -335,7 +332,6 @@ Trip.prototype.isNewTrip = function(){
 Trip.prototype.removeStop = function(sid){
 	var ix = this.stops.indexOf(sid);
 	this.stops.splice(ix,1); //remove stop from stop list;
-	this.id = JSON.stringify(this.stops);
 }
 var Route = function(id){
 	this.id = id;

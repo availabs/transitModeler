@@ -170,7 +170,6 @@ var Map = React.createClass({
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         if(key === 'stopsLayer'){
             _layerAddAction(layers[key].layer,this);
-            console.log('CreateDebug',layer.geo.features.length,isCreating);
             if( (layer.geo.features.length === 0) && isCreating){
                    this._createTrip();
             }

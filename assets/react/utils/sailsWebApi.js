@@ -100,7 +100,7 @@ module.exports = {
   putGtfsData : function(data,gtfsId,cb){
     d3.json('/datasources/gtfs/schedule/'+gtfsId+'/edit')
       .post(JSON.stringify(data),function(err,data){
-          console.log('sent gtfs data', data);
+          //console.log('sent gtfs data', data);
           ServerActionCreators.receiveData('EDITOR_RESPONSE',data);
           if(cb){cb(data)}
       });

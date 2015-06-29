@@ -215,7 +215,6 @@ var GtfsEditorMap = React.createClass({
     },
 
     render: function() {
-        console.log(this.processLayers());
         return (
 
             <div>

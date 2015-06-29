@@ -92,6 +92,7 @@ var MarketAreaNew = React.createClass({
         if(editInfo.stop)
           editInfo.stop = undefined;
         T.setId(temp.id);
+        T.setStops(temp.stops);
         T.setRouteId(temp.route_id);
         T.setIntervals(temp.intervals)
         T.setStartTimes(temp.start_times);
@@ -198,7 +199,7 @@ var MarketAreaNew = React.createClass({
         if(((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features
             && nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length))
             && nextProps.stopsGeo.features.length >0){
-            console.log('Existing Stops',nextProps.stopsGeo.features)
+            // console.log('Existing Stops',nextProps.stopsGeo.features)
             var stops = new Stops();
             stops.addStops(nextProps.stopsGeo.features);
             this.setState({stopColl:stops});
@@ -210,7 +211,7 @@ var MarketAreaNew = React.createClass({
 
             this.setState({schedules:nextProps.schedules});
         }
-        console.log(nextProps.routingGeo);
+        //console.log(nextProps.routingGeo);
         if(nextProps.routingGeo && Object.keys(nextProps.routingGeo).length > 0
           &&(nextProps.routingGeo.legs.length > 0)
           && nextProps.routingGeo !== this.props.routingGeo){
@@ -234,7 +235,7 @@ var MarketAreaNew = React.createClass({
         if(nextState.currentTrip !== null && (nextState.currentTrip !== this.state.currentTrip)) {
             var route = this.state.schedules[this.state.currentRoute],
             trip = route.trips[nextState.currentTrip],
-            stopTraj = JSON.parse(trip.id);
+            stopTraj = trip.stops;
             if(nextState.buffStopColl !== this.state.buffStopColl)
                 this._requestData(stopTraj,nextState.buffStopColl);
             else
@@ -355,13 +356,13 @@ var MarketAreaNew = React.createClass({
             var schedules = this.state.schedules;
             var trip = {
                 headsign:headsign,
-                id:'[]',
+                id:shape_id,
+                stops:[],
                 intervals:[],
                 route_id:schedules[this.state.currentRoute].id,
                 start_times:[],
                 stop_times:[],
                 tripids:[trip_id],
-                shape_id:shape_id,
                 service_id:service_id,
             };
             schedules[this.state.currentRoute].trips.push(trip);

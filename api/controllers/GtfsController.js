@@ -28,6 +28,7 @@ var BasicTrip = function(id,route_id){
 	this.stop_times  = [];
 	this.tripids     = [];
 	this.headsign = ''
+	this.stops = [];
 	this.addInterval = function(start,stop){
 		this.start_times.push(start);
 		this.stop_times.push(stop);
@@ -56,8 +57,8 @@ module.exports = {
 	    	var datafile = mgtfs.tableName;
 	    	var route_short_names = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
-		  	var sql = 'Select T2.trip_headsign,T2.stops, array_agg(T2.starting ORDER BY T2.starting)as starts,T2.route_id, array_agg(T2.ending ORDER BY T2.starting) as ends, array_agg(T2.trip_id ORDER BY T2.starting) as trips from ( '
-					+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, '
+		  	var sql = 'Select T2.shape_id,T2.trip_headsign,T2.stops, array_agg(T2.starting ORDER BY T2.starting)as starts,T2.route_id, array_agg(T2.ending ORDER BY T2.starting) as ends, array_agg(T2.trip_id ORDER BY T2.starting) as trips from ( '
+					+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, T.shape_id, '
 		  			+'T.trip_headsign,T.route_id, T.service_id, T.trip_id,T.direction_id, array_agg(ST.stop_id Order By ST.stop_sequence) as stops '
 					+'FROM \"'+datafile+'\".trips as T '
 					+'JOIN \"'+datafile+'\".stop_times as ST '
@@ -70,7 +71,7 @@ module.exports = {
 					+'Group By T.trip_id '
 					+'Order By T.route_id, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
-					+'Group By T2.stops,T2.route_id,T2.trip_headsign;'
+					+'Group By T2.shape_id,T2.stops,T2.route_id,T2.trip_headsign;'
 				console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log(err);
@@ -78,13 +79,15 @@ module.exports = {
 					var Routes = {};
 					var trips = {};
 					data.rows.forEach(function(trip){
-						var id = JSON.stringify(trip.stops);
+						var id = trip.shape_id;
+						var stops = trip.stops;
 						trips[id] = trips[id] || new BasicTrip(id,trip.route_id);
 						for(var i = 0; i < trip.starts.length; i++){
 							trips[id].addInterval(trip.starts[i],trip.ends[i]);
 						}
 						trips[id].tripids = trip.trips;
 						trips[id].headsign = trip.trip_headsign;
+						trips[id].stops = stops;
 					})
 
 					Object.keys(trips).forEach(function(trip_id){
@@ -122,11 +125,12 @@ module.exports = {
 
 		db.putData(agency,featList,trips,deltas,route_id,shape,trip,function(err,data){
 			if(err){
+				console.log("Error in uploading");
 				res.send('{status:"error",message:'+JSON.stringify(errlist)+'}', 500)
 			}
 			else{
 				console.log("Successful Edit Upload");
-				res.json(datalist);
+				res.json({status:'success'});
 			}
 		});
 	},

@@ -70,7 +70,7 @@ var Util = {
 				dbhelp.setMapping(map);
 				sql = dbhelp.getQuery(); //ends shapes table edit
         //Now update the routes table
-        sql += 'SELECT update_route_geom(\''+routeId+'\',\''+datafile+'\');'
+        sql += "SELECT update_route_geom('"+routeId+"'::TEXT,'"+datafile+"'::TEXT);"
 				// console.log(sql);
 				return sql;
 	},
@@ -146,7 +146,7 @@ var Util = {
 	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
-			var sql = '', datafile=agency.tableName + '_edited';
+			var sql = '', datafile=agency.tableName ;
 			console.log(trip.isNew);
 			if(trip.isNew){
 				sql += db.putRoute(datafile,route_id);
