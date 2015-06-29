@@ -71,6 +71,7 @@ var Map = React.createClass({
     _setStopOptions : function(map){
         var scope = this;
         return {
+
                     pointToLayer: function (d, latlng) {
                         var options = {
                             icon:divmarker,
@@ -98,13 +99,12 @@ var Map = React.createClass({
                             })
 
                     },
-                    zoomOnLoad:true,
                 }
     },
     _setRoutingOptions : function(map){
         var scope = this;
         return {
-
+                    zoomOnLoad:true,
                     style:function(feature){
                         return {
                             color:'yellow',
@@ -140,11 +140,11 @@ var Map = React.createClass({
                 if(layers[key]){
                     //if layer existed previously check version ids
                     if(currLayer.id !== layers[key].id && currLayer.geo.features.length >= 0){
-                        scope._updateLayer(key,currLayer,nextProps.isCreating)
+                        scope._updateLayer(key,currLayer,nextProps.isCreating,nextProps.needZoom)
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
-                    scope._updateLayer(key,currLayer)
+                    scope._updateLayer(key,currLayer,nextProps.isCreating,nextProps.needZoom)
                 }else{
                     console.log('MAP/recieve props/ DEAD END')
                 }
@@ -152,7 +152,7 @@ var Map = React.createClass({
         }
     },
 
-    _updateLayer : function(key,layer,isCreating){
+    _updateLayer : function(key,layer,isCreating,isZooming){
         var scope = this;
         if(map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer)
@@ -175,7 +175,7 @@ var Map = React.createClass({
             }
         }
         map.addLayer(layers[key].layer);
-        if(layer.options.zoomOnLoad && this.props.needZoom){
+        if(layer.options.zoomOnLoad && isZooming && layer.geo.features.length > 0 && layer.geo.features[0].geometry.coordinates.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
@@ -272,7 +272,7 @@ var Map = React.createClass({
 
                 }
                 map.addLayer(layers[key].layer);
-                if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
+                if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0 && currLayer.geo.features[0].geometry.coordinates.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);
                     map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
                 }

@@ -65,7 +65,7 @@ var MarketAreaNew = React.createClass({
             isCreating:false,
             needEdit:false,
             editInfo:{},
-            tripChange:false,
+            tripChange:true,
             routingGeo:emptyGeojson,
             deltas:[],
         };
@@ -108,6 +108,7 @@ var MarketAreaNew = React.createClass({
               buffStopColl:new Stops(),
               isCreating:true,
               tracker:new EditTracker(),
+              tripChange:true,
               editInfo:editInfo,
               });
         else{

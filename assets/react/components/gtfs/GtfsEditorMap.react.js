@@ -6,14 +6,14 @@ var React = require('react'),
     LeafletMap = require('./GtfsLeafletMap.react'),
     //--Utils
     stopslayerID = 0,
-    prevStopsLength,
+    prevStopsLength=0,
     tractlayerID = 0,
-    prevTractLength,
+    prevTractLength=0,
     routeLayerID = 0,
-    prevRouteLength,
+    prevRouteLength=0,
     countyLayerID = 0,
     routingLayerId = 0,
-    prevCountyLength,
+    prevCountyLength=0,
     prevMode,
     prevStops=null;
 
@@ -95,7 +95,9 @@ var GtfsEditorMap = React.createClass({
             routingLayer:{
                 id:routingLayerId++,
                 geo:routingGeo,
-                options:{}
+                options:{
+                  zoomOnLoad:true,
+                }
             },
             countiesLayer:{
                 id:countyLayerID,
@@ -151,7 +153,7 @@ var GtfsEditorMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
-
+                    zoomOnLoad:true,
                     style:function (feature,i) {
                         return {
                             className: 'route_'+feature.properties.short_name,
