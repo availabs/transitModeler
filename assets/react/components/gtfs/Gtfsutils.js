@@ -221,17 +221,30 @@ Stop.prototype.getSequence = function(){
 	return this.stop.sequence;
 }
 
-var Trip = function(){
-	this.id = '';
-	this.stops = [];
-	this.route_id = '';
-	this.intervals = [];
-	this.start_times = [];
-	this.stop_times = [];
-	this.trip_ids = [];
-	this.service_id = '';
-	this.headsign = '';
-	this.isNew = false;
+var Trip = function(T){
+	if(T){
+		this.id=T.id
+		this.stops = T.stops
+		this.route_id = T.route_id
+		this.intervals = T.intervals
+		this.start_times = T.start_times
+		this.stop_times = T.start_times
+		this.trip_ids = T.trip_ids
+		this.service_id = T.service_id
+		this.headsign = T.headsign
+		this.isNew = T.isNew
+	}else{
+		this.id = '';
+		this.stops = [];
+		this.route_id = '';
+		this.intervals = [];
+		this.start_times = [];
+		this.stop_times = [];
+		this.trip_ids = [];
+		this.service_id = '';
+		this.headsign = '';
+		this.isNew = false;
+	}
 };
 Trip.prototype.getId = function(){
 	return this.id;

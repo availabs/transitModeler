@@ -36,16 +36,21 @@ var MarketAreaNew = React.createClass({
               </button>
               )
           })
-        } 
+        }
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
+        var divstyle = {
+          'overflowY':'scroll',
+          height:300,
+
+        }
         return (
             <section className="widget">
-                <div className="body no-margin">
+                <div className="body no-margin" style={divstyle}>
                     {buttons}
                     {scope._crtTripButton(buttons.length)}
                 </div>
-            </section> 
+            </section>
         );
     }
 });

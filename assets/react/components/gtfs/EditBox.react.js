@@ -19,6 +19,9 @@ var MarketAreaNew = React.createClass({
         var stop = this.props.stopSearch(nextProps.data.stop);
         this.setState({stop:stop});
       }
+      else {
+        this.setState({stop:null});
+      }
     },
     form : function(){
 
@@ -35,10 +38,10 @@ var MarketAreaNew = React.createClass({
     },
 
     render: function() {
-
+      
       return (
           <section className="widget">
-                <div className="body no-margin">
+                <div className="body no-margin" >
                   {this.form()}
                 </div>
             </section>

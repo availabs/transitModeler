@@ -8,6 +8,8 @@ var React = require('react'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
+
+
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
@@ -18,7 +20,6 @@ var MarketAreaNew = React.createClass({
       var scope = this;
       if(selection){
         var canChange = this.props.onRouteChange(selection.id);
-        // this.props.gtfsChange(scope.props.gtfsChange(scope.props.gtfsData[selection.id]));
         if (this.isMounted() && canChange) {
           scope.setState({selection:selection.id});
           console.log(selection.id)
@@ -27,17 +28,28 @@ var MarketAreaNew = React.createClass({
         }
       }
     },
+    componentWillUpdate : function(nextProps,nextState){
+      console.log('Select Check',nextProps,nextState)
+    },
+    addingRouteAction : function(data){
+      var err = this.props.addRoute(data);
+      if(err){
+        this.setState({selection:this.state.selection});
+        return err;
+      }else{
+        this.setState({selection:data['New Route']});
+      }
+    },
     render: function() {
-        
-        //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
+        console.log(scope.state.selection);
         var selectData = Object.keys(this.props.schedules)
                                 .map(function(key){
                                     return {"id":scope.props.schedules[key].id ,"text":key };
                                 });
         return (
             <section className="widget">
-                <div className="body no-margin">
+                <div className="body no-margin" >
                     <Select2Component
                       id="gtfsSelector"
                       dataSet={selectData}
@@ -46,19 +58,19 @@ var MarketAreaNew = React.createClass({
                       onSelection={this.updateGtfs}
                       val={this.state.selection} />
                   <div>
-                    <CreationForm 
+                    <CreationForm
                     values={{"New Route":''}}
                     buttonText={"Create New Route"}
                     id={"routes"}
-                    saveAction={this.props.addRoute}/>
-                      
+                    saveAction={this.addingRouteAction}/>
+
 
                   </div>
                 </div>
 
 
 
-            </section> 
+            </section>
         );
     }
 });

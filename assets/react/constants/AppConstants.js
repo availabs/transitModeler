@@ -6,9 +6,9 @@ var keyMirror = require('keymirror');
 module.exports = {
 
   ActionTypes: keyMirror({
-    
+
     //-------------------------------------------------------
-    //View actions 
+    //View actions
     //-------------------------------------------------------
     SET_CURRENT_MARKETAREA: null,
     SELECT_USER: null,
@@ -26,9 +26,9 @@ module.exports = {
     ADD_ACTIVE_MODEL_RUN:null,
 
     //-------------------------------------------------------
-    //SERVER actions 
+    //SERVER actions
     //-------------------------------------------------------
-    
+
     //-------User--------------------------------------------
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
@@ -53,6 +53,7 @@ module.exports = {
     RECEIVE_GTFS_STOPS_GEOS:null,
     RECEIVE_GTFS_SCHEDS:null,
     RECEIVE_ROUTING_GEOS:null,
+    RECEIVE_EDITOR_RESPONSES:null,
 
     RECIEVE_DATASOURCES:null,
     RECEIVE_REGRESSIONS:null,
@@ -65,10 +66,10 @@ module.exports = {
 
     // -- Jobs
     RECEIVE_JOBS:null
-    
+
   }),
 
-  
+
 
   PayloadSources: keyMirror({
     SERVER_ACTION: null,

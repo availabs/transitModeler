@@ -21,15 +21,20 @@ var map = null,
                     iconSize:[10,10],
                 }),
     newstopindex = 0,
-    allowLayerAddAction = true;
-
+    allowLayerAddAction = true,
+    newStopId = function(){
+      return 'NewStop'+newstopindex++
+    };
 var _layerAddAction = function(featGroup,scope){
 
     function addLayer(e){
         var marker = e.layer, //This makes the reasonable assumption that the only layers to be added to this layer group will be markers
         stopPoint = marker._latlng,
         coors = [stopPoint.lng,stopPoint.lat],
-        feat = {type:'Feature',geometry:{type:'Point',coordinates:coors},properties:{}},
+        feat = {type:'Feature',
+                geometry:{type:'Point',coordinates:coors},
+                properties:{stop_id:newStopId()}
+          },
         id = scope.props.addStop(feat);
         if(id === undefined){
             featGroup.removeLayer(marker);
@@ -220,7 +225,7 @@ var Map = React.createClass({
                     var s = new Stop();
                     s.setLat(d._latlng.lat);
                     s.setLon(d._latlng.lng);
-                    s.setId('NewStop'+newstopindex++);
+                    s.setId(newStopId());
                     return s;
                 });
                 scope.props.createTrip(newstops);

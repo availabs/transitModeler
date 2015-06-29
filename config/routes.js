@@ -11,7 +11,7 @@ module.exports.routes = {
 
   //----------Main Page----------------------------
   '/': 'LandingController.index',
-  
+
   //---------User Session Routes ------------------
   '/login':'UserController.login',
   '/login/auth':'UserController.auth',
@@ -23,18 +23,19 @@ module.exports.routes = {
 
   '/acs/load':'DataSourceController.loadACSData',
   '/acs/delete/:id':'DataSourceController.deleteACS',
-  
+
   //------GTFS Routes------------------------------
-  //routes Geo :id is datasource id for gtfs 
+  //routes Geo :id is datasource id for gtfs
   '/datasources/gtfs/routes/geo/:id': 'DataSourceController.getRouteGeo',
   '/datasources/gtfs/stops/geo/:id': 'DataSourceController.getStopsGeo',
   '/datasources/gtfs/routes/:tablename':'DataSourceController.getRoutes',
   '/datasources/gtfs/schedule/:id':'GtfsController.getSimpleSchedule',
-
+  '/datasources/gtfs/schedule/:id/edit':'GtfsController.uploadGtfsEdits',
+  '/datasources/gtfs/schedule/:id/:rid':'GtfsController.routes',
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
   '/triptable/run':'TriptableController.runModel',
   '/triptable/list':'TriptableController.finishedModels',
   '/triptable/:id/modelrun':'TriptableController.getModelRun'
-  
+
 };

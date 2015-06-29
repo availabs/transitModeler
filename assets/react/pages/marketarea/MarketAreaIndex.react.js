@@ -12,7 +12,7 @@ var React = require('react'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
-    
+
 var i18n = {
     locales: ['en-US']
 };
@@ -23,22 +23,22 @@ var MarketAreaIndex = React.createClass({
     mixins: [Router.State],
 
     statics: {
-        
+
         willTransitionTo: function (transition, params) {
-            
+
             if(params.marketareaID){
                MarketAreaActionsCreator.setCurrentMarketArea(params.marketareaID);
             }
         }
-    
+
     },
-    
+
     getInitialState: function(){
-    
+
         var state = {}
         state.activeComponent = 'gtfs';
         return state;
-    
+
     },
 
     _setActiveComponent : function(e){
@@ -54,8 +54,8 @@ var MarketAreaIndex = React.createClass({
                 return (
                      <CensusOverview
                     tracts={this.props.tracts}
-                    activeVariable={this.props.activeCensusVariable} 
-                    censusData={this.props.censusData} 
+                    activeVariable={this.props.activeCensusVariable}
+                    censusData={this.props.censusData}
                     marketarea={this.props.marketarea} />
                 )
             break;
@@ -77,7 +77,8 @@ var MarketAreaIndex = React.createClass({
                         routesGeo ={this.props.routesGeo}
                         stopsGeo = {this.props.stopsGeo}
                         schedules = {this.props.schedules}
-                        routingGeo= {this.props.routingGeo}/>
+                        routingGeo= {this.props.routingGeo}
+                        editMessage={this.props.editMessage}/>
                     )
 
             break;
@@ -87,18 +88,18 @@ var MarketAreaIndex = React.createClass({
                      <span />
                 )
             break;
-            
+
         }
 
     },
 
     render: function() {
-       
+
         var censusData = this.props.censusData.getTotalData();
         var data = Object.keys(this.props.censusData.getCategories()).map(function(cat,id){
             return {"id":id,"text":cat};
         });
-        
+
 
 
         return (
@@ -113,7 +114,7 @@ var MarketAreaIndex = React.createClass({
                         </Link>
                     </div>
                 </h2>
-                
+
                 <div className="row">
                     <div className="col-lg-12">
                         <section className="widget widget-tabs">
@@ -138,13 +139,13 @@ var MarketAreaIndex = React.createClass({
                             </header>
                             <div className="body tab-content">
                                 <div id="acs" className="tab-pane active clearfix">
-                                   ACS 
+                                   ACS
                                 </div>
                                 <div id="ctpp" className="tab-pane clearfix">
-                                   
+
                                 </div>
                                 <div id="survey" className="tab-pane clearfix">
-                                   
+
                                 </div>
                                 <div id="gtfs" className="tab-pane clearfix">
                                    GTFS
@@ -152,7 +153,7 @@ var MarketAreaIndex = React.createClass({
                             </div>
                         </section>
                     </div>
-                    
+
                 </div>
                 {this._renderActiveComponent()}
         	</div>
