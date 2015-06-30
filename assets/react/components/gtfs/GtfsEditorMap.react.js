@@ -14,6 +14,7 @@ var React = require('react'),
     countyLayerID = 0,
     routingLayerId = 0,
     prevCountyLength=0,
+    prevCreationState=false,
     prevMode,
     prevStops=null;
 
@@ -67,9 +68,10 @@ var GtfsEditorMap = React.createClass({
             routingGeo = this.props.routingGeo;
 
         }
-        if(tracts.features.length !== prevTractLength){
+        if(tracts.features.length !== prevTractLength || this.props.isCreating !== prevCreationState){
             tractlayerID++;
             prevTractLength = tracts.features.length;
+            prevCreationState = this.props.isCreating;
         }
         if(routes.features.length !== prevRouteLength){
             routeLayerID++;
@@ -130,22 +132,14 @@ var GtfsEditorMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-
+                      function click(e){console.log('station_click',e.target.feature.properties);}
+                      function mouseover(e){e.target.setStyle({weight:6});}
+                      function mouseout(e){e.target.setStyle({weight:1});}
                         layer.on({
-
-                            click: function(e){
-                                console.log('station_click',e.target.feature.properties);
-                            },
-                            mouseover: function(e){
-                                e.target.setStyle({weight:6});
-
-                            },
-                            mouseout: function(e){
-                                 e.target.setStyle({weight:1});
-
-                            }
+                            click: click,
+                            mouseover: mouseover,
+                            mouseout: mouseout,
                         });
-
                     }
                 }
             },

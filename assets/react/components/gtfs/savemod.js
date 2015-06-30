@@ -55,7 +55,8 @@ SaveObj.prototype.setAddDels = function(){
 		stop.setSequence(rec.obj.position);
 		if(stop.hasNoGroups())
 			stop.setRemoval() //if no group from any route is associated, mark it for database removal.
-		stopC.push(stop);
+		if(!stopC.contains(stop))
+			stopC.push(stop);
 	});
 }
 

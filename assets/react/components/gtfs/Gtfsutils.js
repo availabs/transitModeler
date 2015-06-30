@@ -149,7 +149,7 @@ Stop.prototype.setId = function(id){
 	this.stop.properties.stop_id = id;
 }
 Stop.prototype.setName = function(name){
-	this.stop.properties.stop_name = id;
+	this.stop.properties.stop_name = name;
 }
 Stop.prototype.setRoutes = function(routes){
 	this.stop.properties.routes = routes;

@@ -54,7 +54,9 @@ var MarketAreaNew = React.createClass({
           })
     },
     form : function(){
-      var classes = 'btn btn-lg btn-warning'
+      var classes = 'btn btn-lg btn-warning',
+      idchange = this._onChange('stopId'),
+      nameChange = this._onChange('stopName');
       if(!this.state.editing){
         return (
             <div>
@@ -72,10 +74,10 @@ var MarketAreaNew = React.createClass({
       return (
             <div>
                 <label>ID: </label>
-                <input type="text" onChange={this._onChange('stopId')} value={this.state.stopId}/>
+                <input type="text" onChange={idchange} value={this.state.stopId}/>
                 <br/>
                 <label>Stop Name: </label>
-                <input type="text" onChange={this._onChange('stopName')} value={this.state.stopName}/>
+                <input type="text" onChange={nameChange} value={this.state.stopName}/>
                 <br/>
                 <button className={classes} onClick={this._setAction}>{'set'}</button>
                 <button className={classes} onClick={this._cancel}>{'cancel'}</button>

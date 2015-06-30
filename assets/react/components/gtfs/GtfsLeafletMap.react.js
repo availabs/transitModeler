@@ -11,8 +11,8 @@ var React = require('react'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
     Stop = require('./Gtfsutils').Stop,
-    topojson = require('topojson');
-
+    topojson = require('topojson'),
+    newStopId = require('./randomId');
 
 var map = null,
     layers = {},
@@ -20,11 +20,8 @@ var map = null,
                     className:'divMarker',
                     iconSize:[10,10],
                 }),
-    newstopindex = 0,
-    allowLayerAddAction = true,
-    newStopId = function(){
-      return 'NewStop'+newstopindex++
-    };
+    allowLayerAddAction = true;
+
 var _layerAddAction = function(featGroup,scope){
 
     function addLayer(e){
@@ -168,6 +165,7 @@ var Map = React.createClass({
             layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
+
         if(key === 'stopsLayer'){
             _layerAddAction(layers[key].layer,this);
             if( (layer.geo.features.length === 0) && isCreating){
@@ -175,6 +173,11 @@ var Map = React.createClass({
             }
         }
         map.addLayer(layers[key].layer);
+        if(key === 'tractsLayer' && isCreating){
+          if(map.hasLayer(layers[key].layer)){
+            map.removeLayer(layers[key].layer);
+          }
+        }
         if(layer.options.zoomOnLoad && isZooming && layer.geo.features.length > 0 && layer.geo.features[0].geometry.coordinates.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
@@ -213,7 +216,7 @@ var Map = React.createClass({
     _createTrip : function(){
         var count = 0, scope = this;
 
-        //stop the layeradd action from fire when initing a trip
+        //stop the layeradd action from firing when initing a trip
         layers.stopsLayer.layer.switchOffLayerAdd();
         function onClick(e){
             console.log(e);

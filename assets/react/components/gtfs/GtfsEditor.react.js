@@ -167,11 +167,13 @@ var MarketAreaNew = React.createClass({
                                   this.state.deltas,
                                   this.state.TripObj,
                                   this.state.schedules[this.state.currentRoute].id);
-        console.log('Request Object', saveObj.getReqObj());
+        var reqObj = saveObj.getReqObj();
+        console.log('Request Object', reqObj);
+
+        // post edited data to the server
+        GtfsActionsCreator.uploadEdit(reqObj);
         this.setState({edited:false}) //optimistically lock the save button
                                       // and continue
-        // post edited data to the server
-        GtfsActionsCreator.uploadEdit(saveObj.getReqObj());
     },
     _processResponse:function(data){
         if(this.state.currentTrip === null || Object.keys(data).length === 0)
@@ -332,7 +334,7 @@ var MarketAreaNew = React.createClass({
         trip.setServiceId(this.state.TripObj.getServiceId());
         trip.setIds(this.state.TripObj.getIds());
         // this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
-        this.setState({buffStopColl:buffStops,TripObj:trip,tripChange:true,edited:true});
+        this.setState({buffStopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
     },
     _addRoute : function(formObj){
         var id = formObj['New Route']
@@ -382,13 +384,20 @@ var MarketAreaNew = React.createClass({
     },
     changeStop : function(sInfo){
         //new stopid, stopName
-        if(this._getStop(sInfo.stopId)){
+        if(sInfo.stopId !== sInfo.oldId && this._getStop(sInfo.stopId)){
           return "Error Stop Exists"
         }
         var stop = this._getStop(sInfo.oldId); //get the old stop
-        stop.setId(sInfo.stopId);
+        var buffStops = this.state.buffStopColl;
+        if(sInfo.stopId !== sInfo.oldId){ //if it has a different id now
+          if(!stop){//add a new stop if it does not exist;
+            stop = new Stop();
+            buffStops.addStop(stop);
+          }
+        }
+        stop.setId(sInfo.stopId);//then set the stops info
         stop.setName(sInfo.stopName);
-        this.setState({edited:true});
+        this.setState({edited:true,buffStopColl:buffStops});
     },
     render: function() {
         var scope = this;

@@ -110,6 +110,7 @@ var Util = {
 				}
 			});
 			sql += updateStopTimes(datafile,trips,deltas);
+			console.log(sql);
 			// console.log(sql);
 			return sql;
 	},
@@ -155,12 +156,10 @@ var Util = {
 			sql += db.putStops(datafile,featlist,trips,deltas);
 			sql += db.putShape(datafile,route_id,trips,shape,dbhelper);
 			sql = 'BEGIN; ' + sql + ' COMMIT;'
-			console.log(sql);
       debugger;
       Datasource.query(sql,{},function(err, data){
 				if(err){
 					console.log(err);
-					console.log(sql);
 				}
 				cb(err,data);
 			});

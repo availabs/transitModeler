@@ -126,7 +126,7 @@ module.exports = {
 		db.putData(agency,featList,trips,deltas,route_id,shape,trip,function(err,data){
 			if(err){
 				console.log("Error in uploading");
-				res.send('{status:"error",message:'+JSON.stringify(errlist)+'}', 500)
+				res.send('{status:"error",message:'+JSON.stringify(err)+'}', 500)
 			}
 			else{
 				console.log("Successful Edit Upload");

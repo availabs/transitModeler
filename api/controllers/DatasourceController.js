@@ -147,9 +147,9 @@ module.exports = {
 	    	if(err){console.log('find datasource error',err)}
 
 			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code ' +
-                      'FROM fare_zones AS a ' +
-                      'JOIN "'+mgtfs.tableName+'".stops on a.stop_num = stops.stop_code ' +
-                      'where a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
+                      'FROM "'+mgtfs.tableName+'".stops  ' +
+                      'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num ' +
+                      'where a.line IS NULL OR a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
             Datasource.query(sql,{},function(err,data){
                 if (err) {
