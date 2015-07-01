@@ -1,5 +1,6 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
+/*jshint -W097*/
 var React = require('react'),
     //comps
     StopEdit = require('./StopEdit.react'),
@@ -26,26 +27,33 @@ var MarketAreaNew = React.createClass({
     form : function(){
 
       var jsx;
-      if(this.props.active && this.state.stop){
-        return (
-              <StopEdit
-                        saveInfo={this.props.saveStop}
-                        stop={this.state.stop}/>
-          );
+      if(this.props.active){
+        if(this.state.stop){
+          jsx += (
+                <StopEdit saveInfo={this.props.saveStop} stop={this.state.stop}/>);
+        }
+        if(this.state.trip){
+          jsx +=(<TripEdit saveInfo={this.props.saveTrip}
+                            trip={this.state.trip}/>);
+        }
+        if(this.state.route){
+          jsx += ( <RouteEdit saveInfo={this.props.saveRoute} route={this.state.route}/>);
+        }
+        return jsx;
       }
       else
         return (<div></div>);
     },
 
     render: function() {
-      
+
       return (
           <section className="widget">
                 <div className="body no-margin" >
                   {this.form()}
                 </div>
             </section>
-        )
+        );
     }
 });
 

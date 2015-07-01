@@ -5,6 +5,7 @@ DROP FUNCTION IF EXISTS del_stop_from_stop_times(sequence_id INT, ids TEXT[], sc
 DROP FUNCTION IF EXISTS update_st_times(trip_id TEXT, time_deltas INT[], schema TEXT);
 DROP FUNCTION IF EXISTS update_st_times(trip_ids TEXT[], time_deltas INT[], schema TEXT);
 DROP FUNCTION IF EXISTS delete_and_update_shapes_with_trips(trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[],schema TEXT);
+DROP FUNCTION IF EXISTS insert_into_shapes_with_trips(shape_id TEXT,trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[], schema TEXT);
 DROP FUNCTION IF EXISTS update_route_geom(route_id TEXT,schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, type INT, schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text);
@@ -142,6 +143,20 @@ RETURNS void as $$
 	END;
 	$$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION insert_into_shapes_with_trips(shape_id TEXT, trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[], schema TEXT)
+RETURNS void as $$
+	DECLARE
+		len INT :=array_length(geoms,1);
+		ix INT :=1;
+	BEGIN
+		WHILE ix <= len LOOP
+			EXECUTE format('INSERT INTO %I.shapes(shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,geom) VALUES
+							($1,$2,$3,$4,ST_SetSRID(ST_GeomFromGeoJSON($5),4326)) ',schema)
+							USING shape_id,lats[ix],lons[ix],ix,geoms[ix];
+			ix := ix +1;
+		END LOOP;
+		END;
+		$$LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION update_route_geom(route_id TEXT,schema TEXT)
 RETURNS void AS $$
 	DECLARE

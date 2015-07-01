@@ -1,5 +1,5 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
 var React = require('react'),
     //comps
     CreationForm     = require('./CreationForm.react'),
@@ -7,12 +7,14 @@ var React = require('react'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
+
+var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
     _crtTripButton : function(length){
       if(length < 2)
         return (
             <CreationForm
-              values={{Service_Id:'', Trip_Id:'',Shape_Id:'',Headsign:''}}
+              values={{Service_Id:idGen('Service'), Trip_Id:idGen('Id'),Shape_Id:idGen('Shape'),Headsign:idGen('HeadSign')}}
               buttonText={"Create New Trip"}
               id={"trips"}
               saveAction={this.props.addTrip} />

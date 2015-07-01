@@ -4,6 +4,8 @@
  * @description :: Server-side logic for managing landings
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
+/*globals confirm, console,module,require*/
+/*jshint -W097*/
 var topojson = require('topojson');
 var db = require('../support/editutils');
 var Stop = require('../../assets/react/components/gtfs/Gtfsutils').Stop;
@@ -12,8 +14,8 @@ var BasicRoute = function(id){
 	this.trips = [];
 	this.addTrip = function(trip){
 		this.trips.push(trip);
-	}
-}
+	};
+};
 
 function preserveProperties(feature) {
   return feature.properties;
@@ -27,7 +29,7 @@ var BasicTrip = function(id,route_id){
 	this.start_times = [];
 	this.stop_times  = [];
 	this.tripids     = [];
-	this.headsign = ''
+	this.headsign = '';
 	this.stops = [];
 	this.addInterval = function(start,stop){
 		this.start_times.push(start);
@@ -35,9 +37,9 @@ var BasicTrip = function(id,route_id){
 		this.intervals.push([start,stop]);
 		if(this.start_times.length !== this.stop_times.length)
 			console.log("Interval ERROR");
-	}
+	};
 
-}
+};
 
 module.exports = {
 	//id, day
@@ -71,7 +73,7 @@ module.exports = {
 					+'Group By T.trip_id '
 					+'Order By T.route_id, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
-					+'Group By T2.shape_id,T2.stops,T2.route_id,T2.trip_headsign;'
+					+'Group By T2.shape_id,T2.stops,T2.route_id,T2.trip_headsign;';
 				console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log(err);
@@ -109,6 +111,7 @@ module.exports = {
 		.map(function(d){
 				return new Stop(d.stop);
 			});
+		var newRoute = reqobj.newRoute;
 		console.log(featList);
 		debugger;
 		var trips = reqobj.trip_ids;
@@ -117,7 +120,7 @@ module.exports = {
 		var trip = reqobj.trip, route_id = trip.route_id;
 		var shape = reqobj.shape;
 		if(typeof agency === 'undefined'){
-			res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500)
+			res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500);
 		}
 		if(typeof featList === 'undefined'){
 			res.send('{status:"error",message:"Missing parameter:geometry"}', 500);
@@ -126,7 +129,7 @@ module.exports = {
 		db.putData(agency,featList,trips,deltas,route_id,shape,trip,function(err,data){
 			if(err){
 				console.log("Error in uploading");
-				res.send('{status:"error",message:'+JSON.stringify(err)+'}', 500)
+				res.send('{status:"error",message:'+JSON.stringify(err)+'}', 500);
 			}
 			else{
 				console.log("Successful Edit Upload");

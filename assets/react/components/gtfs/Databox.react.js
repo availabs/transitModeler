@@ -1,5 +1,5 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
 var React = require('react'),
     //comps
     Select2Component = require('../utils/Select2.react'),
@@ -9,12 +9,12 @@ var React = require('react'),
 
     // -- Stores
 
-
+var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
             selection:[]
-        }
+        };
     },
     updateGtfs:function(e,selection){
       var scope = this;
@@ -22,7 +22,7 @@ var MarketAreaNew = React.createClass({
         var canChange = this.props.onRouteChange(selection.id);
         if (this.isMounted() && canChange) {
           scope.setState({selection:selection.id});
-          console.log(selection.id)
+          console.log(selection.id);
         }else if(!canChange){
           scope.setState({selection:this.state.selection});//set the state to itself to force rerender
         }
@@ -58,7 +58,7 @@ var MarketAreaNew = React.createClass({
                       val={this.state.selection} />
                   <div>
                     <CreationForm
-                    values={{"New Route":''}}
+                    values={{"New Route":idGen('route')}}
                     buttonText={"Create New Route"}
                     id={"routes"}
                     saveAction={this.addingRouteAction}/>

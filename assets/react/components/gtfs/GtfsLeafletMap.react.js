@@ -1,5 +1,5 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
 var React = require('react'),
 
     //--Components
@@ -42,13 +42,13 @@ var _layerAddAction = function(featGroup,scope){
     featGroup.switchOnLayerAdd = function(){
         featGroup.on('layeradd',addLayer);
         allowLayerAddAction=true;
-    }
+    };
     featGroup.switchOffLayerAdd = function(){
         allowLayerAddAction=false;
         featGroup.off('layeradd',addLayer);
-    }
+    };
 
-}
+};
 
 var Map = React.createClass({
 
@@ -59,7 +59,7 @@ var Map = React.createClass({
             legendLayers : {},
             legendOptions: {location:'bottomRight'},
             mapId:'map_'+Math.floor((Math.random() * 100) + 1)
-        }
+        };
     },
 
     componentDidMount: function() {
