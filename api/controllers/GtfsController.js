@@ -63,7 +63,7 @@ module.exports = {
 					+'Order By T.route_id, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
 					+'Group By T2.stops,T2.route_id,T2.trip_headsign;'
-				console.log(sql);
+				//console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log(err);
 

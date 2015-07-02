@@ -47,6 +47,7 @@ module.exports = {
     RECEIVE_RAW_CENSUS_DATA:null,
     RECEIVE_RAW_STATE_TRACTS:null,
     RECEIVE_CTPP_DATA:null,
+    RECEIVE_SURVEYS:null,
 
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,

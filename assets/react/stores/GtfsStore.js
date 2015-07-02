@@ -187,7 +187,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return _gftsDataSets[gtfsId].routes;
       }
       else if(!_loading){
-        console.log('load stops', maId);
+        //console.log('load stops', maId);
         // _loadRoutes(gtfsId);
         // _loadRoutesGeo(maId,gtfsId,routes);
         
@@ -243,13 +243,13 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_GTFS_SCHEDS:
           _gtfsSchedules[action.Id] = action.data
-          console.log('Received Gtfs Scheds',action.id, action.data)
+          //console.log('Received Gtfs Scheds',action.id, action.data)
           GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_ROUTING_GEOS:
         _routingData = action.data
-        console.log('Received Routing Object',action.data);
+        //console.log('Received Routing Object',action.data);
         GtfsStore.emitChange();
     break;
 

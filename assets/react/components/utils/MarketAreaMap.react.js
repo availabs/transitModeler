@@ -13,6 +13,8 @@ var React = require('react'),
     prevRouteLength,
     countyLayerID = 0,
     prevCountyLength,
+    surveyLayerID = 0,
+    prevSurveyLength,
     prevMode;    
 
 
@@ -44,9 +46,10 @@ var MarketAreaMap = React.createClass({
             stops = emptyGeojson,
             tracts = emptyGeojson,
             routes = emptyGeojson,
-            counties = emptyGeojson;
+            counties = emptyGeojson,
+            survey = emptyGeojson;
         
-        //console.log('processLayers, diplay tracts',this.props.displayTracts);
+        //console.log('processLayers, diplay tracts',this.props.survey);
         if(this.props.stops){
             stops = this.props.stops
         }
@@ -59,7 +62,15 @@ var MarketAreaMap = React.createClass({
         if(this.props.counties){
             counties = this.props.counties
         }
-        
+        if(this.props.survey){
+            survey = this.props.survey
+        }
+
+        if(survey.features.length !== prevSurveyLength){
+            surveyLayerID++;
+            prevSurveyLength = survey.features.length;
+        }
+
         if(tracts.features.length !== prevTractLength){
             tractlayerID++;
             prevTractLength = tracts.features.length;
@@ -81,6 +92,46 @@ var MarketAreaMap = React.createClass({
             prevCountyLength = counties.features.length;
         }
         return {
+            surveyLayer:{
+                id:surveyLayerID,
+                geo:survey,
+                options:{
+                    pointToLayer: function (d, latlng) {
+                        //console.log('s',d)
+                        var options = {
+                           
+
+                            color: "#000" ,
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.3,
+                            stroke:false,
+                            className:'survey',
+                            fillColor:'#00a',
+                            radius: 5
+                        };
+                        return L.circleMarker(latlng, options);
+                    },
+                    onEachFeature: function (feature, layer) {
+                        
+                        layer.on({
+
+                            click: function(e){
+                                console.log('station_click',e.target.feature.properties);
+                            },
+                            mouseover: function(e){
+                                e.target.setStyle({weight:6,fillColor:'#a00',fillOpacity:0.8,stroke:true});
+                                
+                            },
+                            mouseout: function(e){
+                                 e.target.setStyle({weight:3,fillColor:'#00a',fillOpacity:0.3,stroke:false});
+                                
+                            }
+                        });
+                        
+                    }
+                }
+            },
             countiesLayer:{
                 id:countyLayerID,
                 geo:counties,

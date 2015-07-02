@@ -1,12 +1,29 @@
 var React = require('react'),
+
+    request = require('superagent'),
+    
     Dropzone = require('react-dropzone');
     
     //-- Components
   
 var GtfsDisplay = React.createClass({
 
-    onDrop: function (files) {
-      console.log('Received files: ', files);
+    onDrop: function(files){
+        var scope = this;
+        if(files && files.length > 0){
+            
+            files.forEach( function (file){
+                
+                var req = request.post('/farebox/upload')  
+                    .attach('file', file, file.name)
+                    .end(scope.uploadStarted)
+                    .on('progress', function(e) {
+                        console.log('Percentage done: ', e.percent);
+                    });
+            
+            });
+            
+        }
     },
 
     renderCurrentData: function(){

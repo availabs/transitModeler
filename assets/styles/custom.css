@@ -86,3 +86,12 @@ body {
   margin-top: -5px;
 }
 
+@media (min-width: 768px) {
+  .affix{
+    position: fixed;
+    top: 10px;
+    width: 48.5%;
+  }
+}
+
+
