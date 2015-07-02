@@ -26,16 +26,17 @@ Collection.prototype.filter  = function(cb){
 Collection.prototype.union = function(list){
 	var coll = this;
 	coll.concat(list.filter(function(d){
-			return !coll.contains(d)
-	}))
-}
+			return !coll.contains(d);
+	}));
+};
 Collection.prototype.intersect = function(list){
 	var coll = this;
 	return list.filter(function(d){
 		return coll.contains(d);
-	})
-}
-var SaveObj = function(graph,stops,saveList,deltas,trip,routeId){
+	});
+};
+
+var SaveObj = function(graph,stops,saveList,deltas,trip,route){
 	this.graph = graph;
 	this.stops = trip.getStops();
 	this.sDict = stops;
@@ -45,7 +46,7 @@ var SaveObj = function(graph,stops,saveList,deltas,trip,routeId){
 	this.deltas = deltas;
 	this.stopC = new Collection();
 	this.trip= trip;
-	this.routeId=routeId;
+	this.route=route;
 };
 
 SaveObj.prototype.setAddDels = function(){
@@ -54,22 +55,22 @@ SaveObj.prototype.setAddDels = function(){
 		var stop = rec.obj.data;
 		stop.setSequence(rec.obj.position);
 		if(stop.hasNoGroups())
-			stop.setRemoval() //if no group from any route is associated, mark it for database removal.
+			stop.setRemoval(); //if no group from any route is associated, mark it for database removal.
 		if(!stopC.contains(stop))
 			stopC.push(stop);
 	});
-}
+};
 
 SaveObj.prototype.setMovements = function(){
 	var stopC = this.stopC, sDict = this.sDict;
 	stopC.union(sDict.getEdited());
-}
+};
 
 SaveObj.prototype.buildReqObj = function(){
 	debugger;
 	this.setAddDels();
 	this.setMovements();
-}
+};
 
 SaveObj.prototype.getReqObj = function(){
 	this.buildReqObj();
@@ -77,33 +78,33 @@ SaveObj.prototype.getReqObj = function(){
 	shape.type = 'LineString';
 	shape.coordinates = shape.coordinates.reduce(function(p,c,i,a){
 		return p.concat(c);
-	})
+	});
 	return {
 		shape:shape,
 		data:this.stopC.coll,
 		trip_ids:this.trip_ids,
 		deltas:this.deltas,
 		trip:this.trip,
-		route:this.routeId,
-	}
-}
+		route:this.route,
+	};
+};
 SaveObj.prototype.markSaved = function(){
 	this.stopC.forEach(function(d){
-		d.setNormal()
+		d.setNormal();
 		if(d.isDeleted())
 			d.setDeleted(false);
 		if(d.isNew)
 			d.setNew(false);
-	})
-}
+	});
+};
 SaveObj.prototype.getDeleted = function(){
 	return this.stopC.filter(function(d){
 		return d.isDeleted();
-	})
-}
+	});
+};
 SaveObj.prototype.getAdded = function(){
 	return this.stopC.filter(function(d){
 		return d.isNew();
-	})
-}
+	});
+};
 module.exports=SaveObj;
