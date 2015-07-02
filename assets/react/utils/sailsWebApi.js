@@ -1,3 +1,4 @@
+
 /**
  * This file is provided by Facebook for testing and evaluation purposes
  * only. Facebook reserves all rights not expressly granted.
@@ -67,7 +68,9 @@ module.exports = {
   getRoutesSched: function(ma_id,gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/schedule/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-        console.log('getRoutesSched', ma_id, gtfsId,data)
+
+        //console.log('getRoutesSched', ma_id, gtfsId,data)     
+
         ServerActionCreators.receiveDataWithId('gtfs_sched',ma_id,data);
         if(cb){ cb(data); }
 
@@ -113,6 +116,13 @@ module.exports = {
   //---------------------------------------------
   // DataSources
   //---------------------------------------------
+  
+  loadSurvey:function(marketareaId){
+      d3.json('/datasources/survey/'+marketareaId,function(data){
+        ServerActionCreators.receiveDataWithId('survey',marketareaId,data)
+      })
+  },
+
   getRawCensus: function(marketareaId,year){
     io.socket.get('/datasources/acs/'+marketareaId+'/'+year,function(data){
       ServerActionCreators.receiveRawCensus(marketareaId,year,data.census);

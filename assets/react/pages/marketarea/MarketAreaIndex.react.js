@@ -8,6 +8,8 @@ var React = require('react'),
     CensusOverview = require('../../components/marketarea/CensusOverview.react'),
     CtppOverview = require('../../components/marketarea/CtppOverview.react'),
     GtfsEditor   = require('../../components/gtfs/GtfsEditor.react'),
+    SurveyAnalysis = require('../../components/survey/SurveyAnalysis.react'),
+    FareboxAnalysis = require('../../components/farebox/FareboxAnalysis.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -36,7 +38,7 @@ var MarketAreaIndex = React.createClass({
     getInitialState: function(){
 
         var state = {}
-        state.activeComponent = 'gtfs';
+        state.activeComponent = 'farebox';
         return state;
 
     },
@@ -46,7 +48,8 @@ var MarketAreaIndex = React.createClass({
     },
 
     _renderActiveComponent : function(){
-
+       
+        
 
         switch(this.state.activeComponent) {
 
@@ -82,6 +85,31 @@ var MarketAreaIndex = React.createClass({
                     )
 
             break;
+
+            case 'survey':{
+                return (
+                    <SurveyAnalysis
+                        marketarea={this.props.marketarea}
+                        tracts = {this.props.tracts}
+                        routesGeo ={this.props.routesGeo}
+                        stopsGeo = {this.props.stopsGeo} />
+
+                    )
+            }
+            break;
+
+             case 'farebox':{
+                return (
+                    <FareboxAnalysis
+                        tracts = {this.props.tracts}
+                        routesGeo ={this.props.routesGeo}
+                        stopsGeo = {this.props.stopsGeo} />
+
+                    )
+            }
+            break;
+
+
 
             default:
                 return (
@@ -138,18 +166,23 @@ var MarketAreaIndex = React.createClass({
                                 </ul>
                             </header>
                             <div className="body tab-content">
-                                <div id="acs" className="tab-pane active clearfix">
-                                   ACS
+                                <div id="acs" className="tab-pane clearfix">
+                                   ACS 
                                 </div>
                                 <div id="ctpp" className="tab-pane clearfix">
-
+                                 CTPP   
                                 </div>
                                 <div id="survey" className="tab-pane clearfix">
+                                   Survey Analysis
+                                </div>
+                                <div id="farebox" className="tab-pane clearfix">
+                                   farebox
 
                                 </div>
                                 <div id="gtfs" className="tab-pane clearfix">
                                    GTFS
                                 </div>
+                               
                             </div>
                         </section>
                     </div>

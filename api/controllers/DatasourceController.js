@@ -70,6 +70,60 @@ module.exports = {
 
 	},
 
+	getSurvey:function(req,res){
+		var maId = req.param('marketareaId')
+		
+		if(!maId){
+			 res.send({status: 500, error: 'You must supply marketarea Id.'}, 500);
+	      	return;
+		}
+
+		MarketArea.findOne(maId).exec(function(err,ma){
+	    	if(err){console.log('find datasource error',err)}
+			
+			var zones = JSON.stringify(ma.zones).replace(/\"/g,"'").replace("[","(").replace("]",")")
+			
+			var sql = 	'SELECT * ' +
+						'FROM survey_geo_full ' + 
+						'join survey_attributes on survey_attributes.id = survey_geo_full.id ' +
+						'where "o_geoid10" in '+zones+' or "d_geoid10" in '+zones ;
+
+			//console.log(sql)
+			Datasource.query(sql,{},function(err,data){
+		        if (err) {
+		            res.send('{status:"error",message:"'+err+'"}',500);
+		            return console.log(err);
+		        }
+		        var surveyGeo = {
+			        	type:"FeatureCollection",
+			        	features:[]
+			    };
+
+			    surveyGeo.features = data.rows.map(function(resp){
+			    	return {
+			    		type:'Feature',
+			    		properties : resp,
+			    		geometry : {
+			    			type: 'MultiPoint',
+			    			coordinates:[
+			    				[resp.o_mat_long,resp.o_mat_lat],
+			    				[resp.d_mat_long,resp.d_mat_lat]
+			    			].filter(function(d){
+			    				//console.log('f',d,!isNaN(parseInt(d[0])) && !isNaN(parseInt(d[1])) && parseInt(d[0]) !== 0 && parseInt(d[1]) !== 0);
+			    				return !isNaN(parseInt(d[0])) && !isNaN(parseInt(d[1])) && parseInt(d[0]) !== 0 && parseInt(d[1]) !== 0;
+			    			})
+			    		}
+			    	}
+
+			    })
+
+			    res.json(surveyGeo);
+
+		    });
+		});
+
+	},
+
 	getRouteGeo:function(req,res){
 		var gtfs_id = req.param('id'),
 	        route_id = req.param('route');
@@ -169,6 +223,7 @@ module.exports = {
                     Feature.properties = {};
                     Feature.properties.stop_code = stop.stop_code;
                     Feature.properties.fare_zone = stop.fare_zone;
+                    Feature.properties.line = stop.line;
                     Feature.properties.stop_id = stop.stop_id;
 
                     stopsCollection.features.push(Feature);
