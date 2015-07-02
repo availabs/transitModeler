@@ -6,53 +6,88 @@ var React = require('react'),
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
     
     // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator')
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     
     // -- Stores
+    FareboxStore = require('../../stores/FareboxStore');
     //TripTableStore = require('../../stores/TripTableStore'),
 
     // -- Comp Globals
-    ;
+    
 
 
 var FareboxAnalysis = React.createClass({
 
 
-   
-    getInitialState: function(){
+    
+    _getStateFromStore:function(){
         return {
-          
+            farebox : FareboxStore.getFarebox(this.props.marketarea.id),
+            filters:{}
         }
     },
 
-    willTransitionTo: function (transition, params) {
-      //console.log('will transition to',transition,params);
+    getInitialState: function(){
+        return this._getStateFromStore();
     },
 
     componentDidMount: function() {
-        
+        FareboxStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() {
-        
+        FareboxStore.removeChangeListener(this._onChange)
     },
-    
 
-    componentWillReceiveProps:function(nextProps){
+    _onChange:function(){
+        this.setState(this._getStateFromStore())
+    },
         
+    componentWillReceiveProps:function(nextProps){
+        //console.log(nextProps.marketarea.id,this.props.marketarea.id)
+        if(nextProps.marketarea && nextProps.marketarea.id !== this.props.marketarea.id){
+            //console.log('new ma',nextProps.marketarea.id)
+            this.setState({
+                farebox : FareboxStore.getFarebox(nextProps.marketarea.id),
+            })
+        }
     },
     
-    render: function() {
-        console.log('this.props.stopsGeo',this.props.stopsGeo)
-         var FareZones = [];
-         this.props.stopsGeo.features.forEach(function(d){
-            if(FareZones.indexOf(d.properties.fare_zone) === -1){
-                FareZones.push(d.properties.fare_zone)
+    _renderFareZones:function(){
+        var FareZones = {};
+        this.props.stopsGeo.features.forEach(function(d){
+            if(!FareZones[d.properties.line]){ FareZones[d.properties.line] = [] }
+            if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
+                FareZones[d.properties.line].push(d.properties.fare_zone)
             }
-         })
-         console.log(FareZones);
+        })
+
+        return Object.keys(FareZones).map(function(key){
+            
+            var secondRow =  FareZones[key].map(function(d){
+                return <td>{d}</td>
+            });
+
+            return (
+                <table className="table">
+                    <tbody>
+                        <tr colSpan={secondRow.length}>
+                            <td colSpan={secondRow.length} style={{textAlign:'center'}}>{key}</td>
+                        </tr>
+                        <tr>{secondRow}</tr>
+                    </tbody>
+                </table>
+            )
+        });
+
+        
+    },
+
+    render: function() {
+       
+        console.log(this.state.farebox,this.state.farebox.all)
         return (
-    	<div>
+    	   <div>
             	
                 
                 <div className="row">
@@ -70,7 +105,7 @@ var FareboxAnalysis = React.createClass({
                         
                         <section className="widget">
                            FareZones
-
+                           {this._renderFareZones()}
 
                         </section>
                     
