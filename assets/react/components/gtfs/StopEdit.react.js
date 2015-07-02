@@ -1,5 +1,6 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
+/*jshint -W097*/
 var React = require('react'),
     //comps
     // -- Actions
@@ -10,15 +11,31 @@ var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
             stopId:this.props.stop.getId(),
+            stopCode:this.props.stop.getStopCode(),
             stopName:this.props.stop.getName(),
+            stopDesc:this.props.stop.getStopDesc(),
+            stopZoneId:this.props.stop.getZoneId(),
+            stopUrl: this.props.stop.getStopUrl(),
+            location_type: this.props.stop.getLocationType(),
+            parent_station: this.props.stop.getParentStation(),
+            stopTimeZone: this.props.stop.getStopTimeZone(),
+            wheelchair_boarding: this.props.stop.getWheelchairBoarding(),
             editing:false,
-        }
+        };
     },
     componentWillReceiveProps : function(nextProps,nextState){
       if(nextProps.stop && this.props.stop && (nextProps.stop.getId() !== this.props.stop.getId()) ){
         this.setState({
                       stopId:nextProps.stop.getId(),
+                      stopCode:nextProps.stop.getStopCode(),
                       stopName:nextProps.stop.getName(),
+                      stopDesc: nextProps.stop.getStopDesc(),
+                      stopZoneId: nextProps.stop.getZoneId(),
+                      stopUrl: nextProps.stop.getStopUrl(),
+                      location_type:nextProps.stop.getLocationType(),
+                      parent_station: nextProps.stop.getParentStation(),
+                      stopTimeZone: nextProps.stop.getStopTimeZone(),
+                      wheelchair_boarding: nextProps.stop.getWheelchairBoarding(),
                       editing:false,
                     });
       }
@@ -26,20 +43,23 @@ var MarketAreaNew = React.createClass({
     _onChange : function(field){
         var scope = this;
         return function(e){
-            var partialState = {}
+            var partialState = {};
             partialState[field] = e.target.value;
             scope.setState(partialState);
-        }
+        };
     },
     _editAction : function(){
       this.setState({editing:true});
     },
     _setAction : function(){
-      var error = this.props.saveInfo({
-                        oldId: this.props.stop.getId(),
-                        stopId:this.state.stopId,
-                        stopName:this.state.stopName,
-                    })
+      var saveObj = {};
+      //clone the object;
+      Object.keys(this.state).forEach(function(d){
+        saveObj[d] = this.state[d];
+      });
+      //add the old Id for a check;
+      saveObj.oldId= this.props.stop.getId();
+      var error = this.props.saveInfo(saveObj);
       if(!error)
         this.setState({editing:false});
       else{
@@ -51,12 +71,17 @@ var MarketAreaNew = React.createClass({
             stopId:this.props.stop.getId(),
             stopName:this.props.stop.getName(),
             editing:false,
-          })
+          });
     },
     form : function(){
       var classes = 'btn btn-lg btn-warning',
       idchange = this._onChange('stopId'),
-      nameChange = this._onChange('stopName');
+      nameChange = this._onChange('stopName'),
+      codeChange = this._onChange('stopCode'),
+      descChange = this._onChange('stopDesc'),
+      zoneChange = this._onChange('stopZoneId'),
+      urlChange =  this._onChange('stopUrl');
+      //Need to add special components for
       if(!this.state.editing){
         return (
             <div>
@@ -76,9 +101,22 @@ var MarketAreaNew = React.createClass({
                 <label>ID: </label>
                 <input type="text" onChange={idchange} value={this.state.stopId}/>
                 <br/>
+                <label>Stop Code:</label>
+                <input type="text" onChange={codeChange} value={this.state.stopCode}/>
+                <br/>
                 <label>Stop Name: </label>
                 <input type="text" onChange={nameChange} value={this.state.stopName}/>
                 <br/>
+                <label>Stop Description:</label>
+                  <input type="text" onChange={descChange} value={this.state.stopDesc}/>
+                  <br/>
+                <label>Stop Zone Id:</label>
+                  <input type="text" onChange={zoneChange} value={this.state.stopZoneId}/>
+                  <br/>
+                <label>Stop URL:</label>
+                  <input type="text" onChange={urlChange} value={this.state.stopUrl}/>
+                  <br/>
+
                 <button className={classes} onClick={this._setAction}>{'set'}</button>
                 <button className={classes} onClick={this._cancel}>{'cancel'}</button>
             </div>
@@ -89,7 +127,7 @@ var MarketAreaNew = React.createClass({
     render: function() {
 
       if(!this.props.stop)
-        return (<div></div>)
+        return (<div></div>);
       else
         return this.form();
     }

@@ -11,6 +11,7 @@ var db = require('../support/editutils');
 var Stop = require('../../assets/react/components/gtfs/Gtfsutils').Stop;
 var BasicRoute = function(id){
 	this.id = id;
+	this.shortName = '';
 	this.trips = [];
 	this.addTrip = function(trip){
 		this.trips.push(trip);
@@ -25,12 +26,15 @@ function preserveProperties(feature) {
 var BasicTrip = function(id,route_id){
 	this.id = id;
 	this.route_id = route_id;
+	this.route_short_name = '';
+	this.service_id = '';
 	this.intervals = [];
 	this.start_times = [];
 	this.stop_times  = [];
 	this.tripids     = [];
 	this.headsign = '';
 	this.stops = [];
+	this.direction_id = -1;
 	this.addInterval = function(start,stop){
 		this.start_times.push(start);
 		this.stop_times.push(stop);
@@ -55,12 +59,12 @@ module.exports = {
 	    }
 
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
-	    	if(err){console.log('find datasource error',err)}
+	    	if(err){console.log('find datasource error',err);}
 	    	var datafile = mgtfs.tableName;
 	    	var route_short_names = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
-		  	var sql = 'Select T2.shape_id,T2.trip_headsign,T2.stops, array_agg(T2.starting ORDER BY T2.starting)as starts,T2.route_id, array_agg(T2.ending ORDER BY T2.starting) as ends, array_agg(T2.trip_id ORDER BY T2.starting) as trips from ( '
-					+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, T.shape_id, '
+		  	var sql = 'Select T2.route_short_name, T2.service_id, T2.direction_id,T2.shape_id,T2.trip_headsign,T2.stops, array_agg(T2.starting ORDER BY T2.starting)as starts,T2.route_id, array_agg(T2.ending ORDER BY T2.starting) as ends, array_agg(T2.trip_id ORDER BY T2.starting) as trips from ( '
+					+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, T.shape_id, R.route_short_name, '
 		  			+'T.trip_headsign,T.route_id, T.service_id, T.trip_id,T.direction_id, array_agg(ST.stop_id Order By ST.stop_sequence) as stops '
 					+'FROM \"'+datafile+'\".trips as T '
 					+'JOIN \"'+datafile+'\".stop_times as ST '
@@ -70,10 +74,10 @@ module.exports = {
 					+'JOIN \"'+datafile+'\".routes as R '
 					+'ON T.route_id=R.route_id '
 					+'WHERE R.route_short_name in '+ route_short_names + ' '
-					+'Group By T.trip_id '
-					+'Order By T.route_id, starting, T.trip_id,T.trip_headsign '
+					+'Group By T.trip_id, R.route_short_name '
+					+'Order By T.route_id,R.route_short_name, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
-					+'Group By T2.shape_id,T2.stops,T2.route_id,T2.trip_headsign;';
+					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
 				console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log(err);
@@ -84,20 +88,29 @@ module.exports = {
 						var id = trip.shape_id;
 						var stops = trip.stops;
 						trips[id] = trips[id] || new BasicTrip(id,trip.route_id);
+						trips[id].route_short_name = trip.route_short_name;
 						for(var i = 0; i < trip.starts.length; i++){
 							trips[id].addInterval(trip.starts[i],trip.ends[i]);
 						}
 						trips[id].tripids = trip.trips;
 						trips[id].headsign = trip.trip_headsign;
 						trips[id].stops = stops;
-					})
+						trips[id].direction_id = trip.direction_id;
+						trips[id].service_id = trip.service_id;
+					});
 
 					Object.keys(trips).forEach(function(trip_id){
 						var trip = trips[trip_id];
 						var rid = trip.route_id;
 						Routes[rid] = Routes[rid] || new BasicRoute(rid);
+						Routes[rid].shortName = trip.route_short_name;
 						Routes[rid].addTrip(trip);
-					})
+					});
+					Object.keys(Routes).forEach(function(rid){//sort the trips in the schedule by direction
+						Routes[rid].trips.sort(function(a,b){
+							return a.direction_id - b.direction_id;
+						});
+					});
 					res.json(Routes);
 		  	});
 

@@ -20,32 +20,36 @@ var MarketAreaNew = React.createClass({
               saveAction={this.props.addTrip} />
           );
       else{
-        return (<div></div>)
+        return (<div></div>);
       }
     },
     render: function() {
         var buttons = <span/>,scope=this;
         if(this.props.route && this.props.route.trips){
           buttons = scope.props.route.trips.map(function(trip,i){
-            var classes = "btn btn-lg btn-warning btn-block";
+            var classes = "btn btn-lg btn-block";
             if(scope.props.currentTrip === i){
               classes+=' active';
             }
+            if(trip.direction_id===0){
+              classes+=' btn-success';
+            }else{
+              classes+=' btn-primary';
+            }
+
             return (
               <button style={{fontSize:'10px'}} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
                                 {i+" "+trip.headsign };
               </button>
-              )
-          })
+            );
+          });
         }
         //var routesGeo = this.state.routesGeo || emptyGeojson;
-        var scope = this;
         var divstyle = {
           'overflowY':'scroll',
-          height:300,
-
-        }
+          maxHeight:300,
+        };
         return (
             <section className="widget">
                 <div className="body no-margin" style={divstyle}>
