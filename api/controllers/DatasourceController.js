@@ -223,6 +223,7 @@ module.exports = {
                     Feature.properties = {};
                     Feature.properties.stop_code = stop.stop_code;
                     Feature.properties.fare_zone = stop.fare_zone;
+                    Feature.properties.line = stop.line;
                     Feature.properties.stop_id = stop.stop_id;
 
                     stopsCollection.features.push(Feature);

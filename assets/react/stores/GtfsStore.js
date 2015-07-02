@@ -289,15 +289,13 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_ROUTING_GEOS:
         _routingData = action.data
         //console.log('Received Routing Object',action.data);
-<<<<<<< HEAD
-=======
+
         GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_EDITOR_RESPONSES:
         _editResponse = action.data;
         //console.log('Receive Upload Response:',action.data);
->>>>>>> 7136ee36dc320be3c9d20c1b5466de110f2d2459
         GtfsStore.emitChange();
     break;
 
