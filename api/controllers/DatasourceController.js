@@ -7,9 +7,9 @@
  */
 var models = require('../../config/models'),
 	connections = require('../../config/connections');
-	var connection = connections.connections[models.models.connection]; 
+	var connection = connections.connections[models.models.connection];
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
-	
+
 var database = {
 	host: connection.host ? connection.host : 'lor.availabs.org' ,
 	port: connection.port ? connection.port : '5432',
@@ -36,13 +36,13 @@ var preserveProperties = function(feature) {
 var topojson = require('topojson');
 
 module.exports = {
-	
+
 	getACS:function(req,res){
 		if(!req.param('year')){
 			res.send('{status:"error",message:"Must send 4 digit [year] of data."}',500);
 		}
 	    var censusTable = 'acs5_34_'+req.param('year')+'_tracts';
-	   
+
 	    //Allow user to specify census table
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
@@ -50,14 +50,14 @@ module.exports = {
 	          res.json({census:census})
 	        })
 	    })
-	    
+
  	},
- 	
+
  	getRoutes:function(req,res){
 		if(!req.param('tablename')){
 			res.send('{status:"error",message:"Must send gtfs tablename."}',500);
 		}
-		
+
 		var sql = 'SELECT route_id, route_short_name, route_long_name FROM '+req.param('tablename')+'.routes';
 
 	    Datasource.query(sql,{},function(err,data){
@@ -67,7 +67,7 @@ module.exports = {
 	      return res.json(output);
 
 	    });
-		
+
 	},
 
 	getSurvey:function(req,res){
@@ -133,13 +133,13 @@ module.exports = {
 	      res.send({status: 500, error: 'You must supply a gtfs_id and route ID'}, 500);
 	      return;
 	    }
-	   
+
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err)}
 	    	var sql = "SELECT route_id, route_color,route_short_name, route_long_name, ST_AsGeoJSON(geom) as the_geom " +
 		              "FROM "+mgtfs.tableName+".routes " +
 		              "WHERE route_short_name in " + JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
-		             
+
 
 		    Datasource.query(sql,{},function(err,data){
 		        if (err) {
@@ -161,7 +161,7 @@ module.exports = {
 		            		short_name : route.route_short_name,
 		            		long_name : route.route_long_name
 		            	}
-		            }    
+		            }
 		        });
 		        //console.log('Getting Data?',routesCollection.features.length);
 		        var topology = topojson.topology(
@@ -184,7 +184,7 @@ module.exports = {
 		        res.send(newJson);
 		    });
 		});
-   	
+
   	},
 
   	getStopsGeo:function(req,res){
@@ -196,14 +196,14 @@ module.exports = {
 	      res.send({status: 500, error: 'You must supply a gtfs_id and route ID'}, 500);
 	      return;
 	    }
-	   
+
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err)}
-			
+
 			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code ' +
-                      'FROM fare_zones AS a ' +
-                      'JOIN "njtransit_bus_07-12-2013".stops on a.stop_num = stops.stop_code ' +
-                      'where a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
+                      'FROM "'+mgtfs.tableName+'".stops  ' +
+                      'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num ' +
+                      'where a.line IS NULL OR a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
             Datasource.query(sql,{},function(err,data){
                 if (err) {
@@ -232,12 +232,12 @@ module.exports = {
                 //console.log(stopsCollection);
                 res.json(stopsCollection);
 
-            });	    
-		   
+            });
+
 		});
-   	
+
   	},
-  	
+
 	getCTPP: function(req, res) {
 		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
@@ -253,7 +253,7 @@ module.exports = {
 			          res.send({status: 500, message: 'internal error'}, 500);
 			          return;
 			    }
-			   
+
 			    res.send(data.rows);
 			})
 		});
@@ -262,11 +262,11 @@ module.exports = {
 	deleteACS:function(req,res){
 
 		Datasource.findOne(req.param('id')).exec(function(err,found){
-			
-			var query = 'DROP TABLE public."'+found.tableName+'"';
-			
 
-			Datasource.query(query,{} ,function(err, result) { 
+			var query = 'DROP TABLE public."'+found.tableName+'"';
+
+
+			Datasource.query(query,{} ,function(err, result) {
 				if(err) { console.error('error running query:',query, err); }
 
 				Datasource.destroy(found.id).exec(function(err,destroyed){
@@ -279,7 +279,7 @@ module.exports = {
 			});
 
 		});
-		
+
 	},
 	loadACSData:function(req,res){
 		var state=req.param('state'),
@@ -288,12 +288,12 @@ module.exports = {
 		sumlevel=req.param('sumLevel');
 
 		console.log('Datasource.loadData',state,dataSource,year,sumlevel)
-		
+
 		Datasource //Check to see if this data set has been loaded
 		.find({ stateFips:state})
 		.exec(function(err,data){
 			console.log(err,data);
-			
+
 			data = data.filter(function(d){
 				return d.stateFips == state && d.settings.year == year && d.settings.level == sumlevel;
 			})
@@ -307,11 +307,11 @@ module.exports = {
 				req.session.flash = {
 					err: flashMessage
 				}
-				
+
 
 				res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
-			
-			}else{//the data source doesn't exists 
+
+			}else{//the data source doesn't exists
 
 				Job.create({
 					isFinished:false,
@@ -339,14 +339,14 @@ module.exports = {
 					req.session.flash = {
 						err: flashMessage
 					}
-				
+
 					res.json({responseText:'ACS Job Created'});
 					return;
-					
+
 				})
 			}
 
-		})//Check for data source	
+		})//Check for data source
 	}
 };
 
@@ -359,7 +359,7 @@ function spawnACSJob(job){
   	 		year:job.info[0].year,
   	 		level:job.info[0].sumlevel
   	 	},
-  	 	acsEntry = { 
+  	 	acsEntry = {
 		tableName:'',
 		type:'acs',
   	 	stateFips:job.info[0].state,
@@ -377,7 +377,7 @@ function spawnACSJob(job){
 	    	Job.update({id:job.id},{status:data.split(":")[1],progress:0})
     		.exec(function(err,updated_job){
     			if(err){ console.log('job update error',error); }
-    			sails.sockets.blast('job_updated',updated_job);		
+    			sails.sockets.blast('job_updated',updated_job);
     		});
 	    	current_progress =0;
 	    }
@@ -389,7 +389,7 @@ function spawnACSJob(job){
 	    		Job.update({id:job.id},{progress:current_progress})
     			.exec(function(err,updated_job){
     				if(err){ console.log('job update error',error); }
-    				sails.sockets.blast('job_updated',updated_job);		
+    				sails.sockets.blast('job_updated',updated_job);
     			});
 	    	}
 	    }
@@ -402,32 +402,32 @@ function spawnACSJob(job){
 		code = code*1;
 	    console.log('child process exited with code ' + code);
 	    if(code == 0){
-	    	
+
 	    	Job.findOne(job.id).exec(function(err,newJob){
 	    		if(err){ console.log('Job check err',err);}
-	    		
+
 	    		if(newJob.status != 'Cancelled'){
-			    	
+
 			    	Datasource.create(acsEntry)
 				    .exec(function(err,newEntry){
 				    	if(err){ console.log('Datasource create error',err);}
-							
+
 					    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
 						.exec(function(err,updated_job){
 							if(err){ console.log('job update error',err); }
-							sails.sockets.blast('job_updated',updated_job);		
+							sails.sockets.blast('job_updated',updated_job);
 						});
 					});
 				}else{
 					console.log('Exit from Job Cancel');
 				}
 			});
-					
+
 		}else{
 			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Failure'})
 			.exec(function(err,updated_job){
 				if(err){ console.log('job update error',error); }
-				sails.sockets.blast('job_updated',updated_job);		
+				sails.sockets.blast('job_updated',updated_job);
 			});
 		}
 	});
@@ -443,10 +443,10 @@ function spawnACSJob(job){
 	    	+' '+job.info[0].dataSource
 	    	+' '+job.info[0].year
 	    	+'\n');
-	    
+
 	    Job.update({id:job.id},{pid:terminal.pid}).exec(function(err,updated_job){
 	    	if(err){ console.log('job update error',error); }
-			sails.sockets.blast('job_updated',updated_job);		
+			sails.sockets.blast('job_updated',updated_job);
 	    })
 
 	    terminal.stdin.end();

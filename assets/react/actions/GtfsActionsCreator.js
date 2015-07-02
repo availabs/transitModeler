@@ -17,5 +17,11 @@ module.exports = {
       waypoints: waypts
     });
   },
+  uploadEdit : function(uploadData){
+    AppDispatcher.handleViewAction({
+      type : ActionTypes.SET_EDITOR_SAVE,
+      data:uploadData,
+    });
+  },
 
 };

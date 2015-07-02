@@ -1,5 +1,5 @@
 'use strict';
-
+/*globals confirm, console,module,require*/
 var React = require('react'),
 
     //--Components
@@ -11,8 +11,8 @@ var React = require('react'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
     Stop = require('./Gtfsutils').Stop,
-    topojson = require('topojson');
-
+    topojson = require('topojson'),
+    newStopId = require('./randomId');
 
 var map = null,
     layers = {},
@@ -20,7 +20,6 @@ var map = null,
                     className:'divMarker',
                     iconSize:[10,10],
                 }),
-    newstopindex = 0,
     allowLayerAddAction = true;
 
 var _layerAddAction = function(featGroup,scope){
@@ -29,7 +28,10 @@ var _layerAddAction = function(featGroup,scope){
         var marker = e.layer, //This makes the reasonable assumption that the only layers to be added to this layer group will be markers
         stopPoint = marker._latlng,
         coors = [stopPoint.lng,stopPoint.lat],
-        feat = {type:'Feature',geometry:{type:'Point',coordinates:coors},properties:{}},
+        feat = {type:'Feature',
+                geometry:{type:'Point',coordinates:coors},
+                properties:{stop_id:newStopId()}
+          },
         id = scope.props.addStop(feat);
         if(id === undefined){
             featGroup.removeLayer(marker);
@@ -40,13 +42,13 @@ var _layerAddAction = function(featGroup,scope){
     featGroup.switchOnLayerAdd = function(){
         featGroup.on('layeradd',addLayer);
         allowLayerAddAction=true;
-    }
+    };
     featGroup.switchOffLayerAdd = function(){
         allowLayerAddAction=false;
         featGroup.off('layeradd',addLayer);
-    }
+    };
 
-}
+};
 
 var Map = React.createClass({
 
@@ -57,7 +59,7 @@ var Map = React.createClass({
             legendLayers : {},
             legendOptions: {location:'bottomRight'},
             mapId:'map_'+Math.floor((Math.random() * 100) + 1)
-        }
+        };
     },
 
     componentDidMount: function() {
@@ -66,6 +68,7 @@ var Map = React.createClass({
     _setStopOptions : function(map){
         var scope = this;
         return {
+
                     pointToLayer: function (d, latlng) {
                         var options = {
                             icon:divmarker,
@@ -93,13 +96,12 @@ var Map = React.createClass({
                             })
 
                     },
-                    zoomOnLoad:true,
                 }
     },
     _setRoutingOptions : function(map){
         var scope = this;
         return {
-
+                    zoomOnLoad:true,
                     style:function(feature){
                         return {
                             color:'yellow',
@@ -135,11 +137,11 @@ var Map = React.createClass({
                 if(layers[key]){
                     //if layer existed previously check version ids
                     if(currLayer.id !== layers[key].id && currLayer.geo.features.length >= 0){
-                        scope._updateLayer(key,currLayer,nextProps.isCreating)
+                        scope._updateLayer(key,currLayer,nextProps.isCreating,nextProps.needZoom)
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
-                    scope._updateLayer(key,currLayer)
+                    scope._updateLayer(key,currLayer,nextProps.isCreating,nextProps.needZoom)
                 }else{
                     console.log('MAP/recieve props/ DEAD END')
                 }
@@ -147,7 +149,7 @@ var Map = React.createClass({
         }
     },
 
-    _updateLayer : function(key,layer,isCreating){
+    _updateLayer : function(key,layer,isCreating,isZooming){
         var scope = this;
         if(map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer)
@@ -163,15 +165,20 @@ var Map = React.createClass({
             layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
+
         if(key === 'stopsLayer'){
             _layerAddAction(layers[key].layer,this);
-            console.log('CreateDebug',layer.geo.features.length,isCreating);
             if( (layer.geo.features.length === 0) && isCreating){
                    this._createTrip();
             }
         }
         map.addLayer(layers[key].layer);
-        if(layer.options.zoomOnLoad && this.props.needZoom){
+        if(key === 'tractsLayer' && isCreating){
+          if(map.hasLayer(layers[key].layer)){
+            map.removeLayer(layers[key].layer);
+          }
+        }
+        if(layer.options.zoomOnLoad && isZooming && layer.geo.features.length > 0 && layer.geo.features[0].geometry.coordinates.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
@@ -209,7 +216,7 @@ var Map = React.createClass({
     _createTrip : function(){
         var count = 0, scope = this;
 
-        //stop the layeradd action from fire when initing a trip
+        //stop the layeradd action from firing when initing a trip
         layers.stopsLayer.layer.switchOffLayerAdd();
         function onClick(e){
             console.log(e);
@@ -220,7 +227,7 @@ var Map = React.createClass({
                     var s = new Stop();
                     s.setLat(d._latlng.lat);
                     s.setLon(d._latlng.lng);
-                    s.setId('NewStop'+newstopindex++);
+                    s.setId(newStopId());
                     return s;
                 });
                 scope.props.createTrip(newstops);
@@ -268,7 +275,7 @@ var Map = React.createClass({
 
                 }
                 map.addLayer(layers[key].layer);
-                if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
+                if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0 && currLayer.geo.features[0].geometry.coordinates.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);
                     map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
                 }

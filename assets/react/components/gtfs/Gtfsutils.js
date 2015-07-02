@@ -149,7 +149,7 @@ Stop.prototype.setId = function(id){
 	this.stop.properties.stop_id = id;
 }
 Stop.prototype.setName = function(name){
-	this.stop.properties.stop_name = id;
+	this.stop.properties.stop_name = name;
 }
 Stop.prototype.setRoutes = function(routes){
 	this.stop.properties.routes = routes;
@@ -221,17 +221,30 @@ Stop.prototype.getSequence = function(){
 	return this.stop.sequence;
 }
 
-var Trip = function(){
-	this.id = '';
-	this.stops = [];
-	this.route_id = '';
-	this.intervals = [];
-	this.start_times = [];
-	this.stop_times = [];
-	this.trip_ids = [];
-	this.service_id = '';
-	this.headsign = '';
-	this.isNew = false;
+var Trip = function(T){
+	if(T){
+		this.id=T.id
+		this.stops = T.stops
+		this.route_id = T.route_id
+		this.intervals = T.intervals
+		this.start_times = T.start_times
+		this.stop_times = T.start_times
+		this.trip_ids = T.trip_ids
+		this.service_id = T.service_id
+		this.headsign = T.headsign
+		this.isNew = T.isNew
+	}else{
+		this.id = '';
+		this.stops = [];
+		this.route_id = '';
+		this.intervals = [];
+		this.start_times = [];
+		this.stop_times = [];
+		this.trip_ids = [];
+		this.service_id = '';
+		this.headsign = '';
+		this.isNew = false;
+	}
 };
 Trip.prototype.getId = function(){
 	return this.id;
@@ -271,10 +284,8 @@ Trip.prototype.setIds = function(ids){
 }
 Trip.prototype.setId = function(id){
 	this.id = id;
-	this.stops = JSON.parse(id);
 }
 Trip.prototype.setStops = function(stops){
-	this.id = JSON.stringify(stops);
 	this.stops = stops;
 }
 Trip.prototype.setRouteId = function(rid){
@@ -311,7 +322,6 @@ Trip.prototype.addTripId = function(tid){
 }
 Trip.prototype.addStop = function(sid,ix){
 	this.stops.splice(ix,0,sid);
-	this.id = JSON.stringify(this.stops);
 }
 Trip.prototype.setNew = function(){
 	this.isNew = true;
@@ -322,7 +332,6 @@ Trip.prototype.isNewTrip = function(){
 Trip.prototype.removeStop = function(sid){
 	var ix = this.stops.indexOf(sid);
 	this.stops.splice(ix,1); //remove stop from stop list;
-	this.id = JSON.stringify(this.stops);
 }
 var Route = function(id){
 	this.id = id;

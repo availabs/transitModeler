@@ -35,31 +35,33 @@ Collection.prototype.intersect = function(list){
 		return coll.contains(d);
 	})
 }
-var SaveObj = function(graph,stopIds,stops,trip_ids,path_id,saveList,deltas,trip){
+var SaveObj = function(graph,stops,saveList,deltas,trip,routeId){
 	this.graph = graph;
-	this.stops = stopIds;
+	this.stops = trip.getStops();
 	this.sDict = stops;
-	this.trip_ids = trip_ids;
-	this.path_id = path_id;
+	this.trip_ids = trip.getIds();
+	this.path_id = trip.getId();
 	this.saveList = saveList;
 	this.deltas = deltas;
 	this.stopC = new Collection();
 	this.trip= trip;
+	this.routeId=routeId;
 };
 
 SaveObj.prototype.setAddDels = function(){
 	var stopC = this.stopC;
 	this.saveList.forEach(function(rec){
 		var stop = rec.obj.data;
-		stop.setSequence(rec.obj.position); 
+		stop.setSequence(rec.obj.position);
 		if(stop.hasNoGroups())
 			stop.setRemoval() //if no group from any route is associated, mark it for database removal.
-		stopC.push(stop);
+		if(!stopC.contains(stop))
+			stopC.push(stop);
 	});
 }
 
 SaveObj.prototype.setMovements = function(){
-	var stops = this.stops, stopC = this.stopC, sDict = this.sDict;
+	var stopC = this.stopC, sDict = this.sDict;
 	stopC.union(sDict.getEdited());
 }
 
@@ -70,7 +72,7 @@ SaveObj.prototype.buildReqObj = function(){
 }
 
 SaveObj.prototype.getReqObj = function(){
-	this.buildReqObj();	
+	this.buildReqObj();
 	var shape = this.graph.toFeatureCollection().features[0].geometry;
 	shape.type = 'LineString';
 	shape.coordinates = shape.coordinates.reduce(function(p,c,i,a){
@@ -81,8 +83,9 @@ SaveObj.prototype.getReqObj = function(){
 		data:this.stopC.coll,
 		trip_ids:this.trip_ids,
 		deltas:this.deltas,
-		trip:this.trip
-	}	
+		trip:this.trip,
+		route:this.routeId,
+	}
 }
 SaveObj.prototype.markSaved = function(){
 	this.stopC.forEach(function(d){

@@ -15,7 +15,7 @@ var React = require('react'),
     CensusStore = require('../stores/CensusStore'),
     GtfsStore = require('../stores/GtfsStore'),
     ModelRunStore = require('../stores/ModelRunStore');
-    
+
 
 function marketAreasToMenuItems(marketareas){
     return Object.keys(marketareas).map(function(key){
@@ -54,12 +54,13 @@ var App = React.createClass({
                 stopsGeo : GtfsStore.getStopsGeo(),
                 schedules : GtfsStore.getRouteSchedules(),
                 routingGeo : GtfsStore.getRoutingGeo(),
-        
+                editResponse : GtfsStore.putGtfsData(),
+
             };
     },
- 
-    getInitialState: function(){   
-        return this.getState(); 
+
+    getInitialState: function(){
+        return this.getState();
     },
 
     _onChange: function() {
@@ -94,20 +95,21 @@ var App = React.createClass({
     	    	<Sidebar activeJobs={this.state.activeJobs} menuItems={this.state.menu} />
     	    	<div className="wrap">
                     <Header />
-    	    		 <RouteHandler 
+    	    		 <RouteHandler
                         marketarea={this.state.currentMarketarea}
                         marketareas ={this.state.marketareas}
-                        tracts={this.state.tracts} 
+                        tracts={this.state.tracts}
                         datasources={this.state.datasources}
                         regressions={this.state.regressions}
                         censusData={this.state.censusData}
-                        activeCensusVariable = {this.state.activeCensusVariable} 
+                        activeCensusVariable = {this.state.activeCensusVariable}
                         ctppData = {this.state.ctppData}
                         routes = {this.state.routes}
                         routesGeo = {this.state.routesGeo}
                         stopsGeo = {this.state.stopsGeo}
                         schedules = {this.state.schedules}
                         routingGeo = {this.state.routingGeo}
+                        editMessage= {this.state.editResponse}
                         loadedModels = {this.state.loadedModels}
                         stateTracts = {this.state.stateTracts}
                         stateCounties = {this.state.stateCounties} />
@@ -115,7 +117,7 @@ var App = React.createClass({
         	</div>
         );
     },
-  
+
     _populateMenu: function(marketareas){
         var maMenu = marketAreasToMenuItems(marketareas);
         if(!maMenu){
