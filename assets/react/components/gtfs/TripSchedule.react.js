@@ -49,7 +49,7 @@ var TripSchedule = React.createClass({
         var total = this.state.lengths.reduce(function(p,c){return p+c;});
         switch (unit.toLowerCase()) {
           case 'mi':
-            return (total/1000)*1.609;
+            return (total/1000)*0.621371;
           case 'm':
             return total;
           case 'km':
