@@ -48,8 +48,8 @@ var MarketAreaIndex = React.createClass({
     },
 
     _renderActiveComponent : function(){
-       
-        
+
+
 
         switch(this.state.activeComponent) {
 
@@ -81,7 +81,8 @@ var MarketAreaIndex = React.createClass({
                         stopsGeo = {this.props.stopsGeo}
                         schedules = {this.props.schedules}
                         routingGeo= {this.props.routingGeo}
-                        editMessage={this.props.editMessage}/>
+                        editMessage={this.props.editMessage}
+                        frequencyData={this.props.frequencyData}/>
                     )
 
             break;
@@ -168,10 +169,10 @@ var MarketAreaIndex = React.createClass({
                             </header>
                             <div className="body tab-content">
                                 <div id="acs" className="tab-pane clearfix">
-                                   ACS 
+                                   ACS
                                 </div>
                                 <div id="ctpp" className="tab-pane clearfix">
-                                 CTPP   
+                                 CTPP
                                 </div>
                                 <div id="survey" className="tab-pane clearfix">
                                    Survey Analysis
@@ -183,7 +184,7 @@ var MarketAreaIndex = React.createClass({
                                 <div id="gtfs" className="tab-pane clearfix">
                                    GTFS
                                 </div>
-                               
+
                             </div>
                         </section>
                     </div>

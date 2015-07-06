@@ -10,6 +10,11 @@ var React = require('react'),
 
 var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
+    getInitialState : function(){
+      return {
+        trips:this.props.route.trips,
+      };
+    },
     _crtTripButton : function(length){
       if(length < 2)
         return (
@@ -23,10 +28,15 @@ var MarketAreaNew = React.createClass({
         return (<div></div>);
       }
     },
+    componentWillReceiveProps : function(nextProps){
+      if(nextProps.route.trips && (nextProps.route.trips !== this.props.route.trips) ){
+          this.setState({trips:nextProps.route.trips});
+      }
+    },
     render: function() {
         var buttons = <span/>,scope=this;
         if(this.props.route && this.props.route.trips){
-          buttons = scope.props.route.trips.map(function(trip,i){
+          buttons = scope.state.trips.map(function(trip,i){
             var classes = "btn btn-lg btn-block";
             if(scope.props.currentTrip === i){
               classes+=' active';

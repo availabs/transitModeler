@@ -26,8 +26,8 @@ function marketAreasToMenuItems(marketareas){
                 {text:'Overview',type:'Route',action:'MarketAreaIndex',params:{marketareaID:marketareas[key].id}},
                 {text:'Modeling',type:'Route',action:'ModelAnalysis',params:{marketareaID:marketareas[key].id}},
             ]
-        }
-    })
+        };
+    });
 }
 
 
@@ -54,6 +54,7 @@ var App = React.createClass({
                 stopsGeo : GtfsStore.getStopsGeo(),
                 schedules : GtfsStore.getRouteSchedules(),
                 routingGeo : GtfsStore.getRoutingGeo(),
+                frequencyData:GtfsStore.getFrequencyData(),
                 editResponse : GtfsStore.putGtfsData(),
 
             };
@@ -110,6 +111,7 @@ var App = React.createClass({
                         schedules = {this.state.schedules}
                         routingGeo = {this.state.routingGeo}
                         editMessage= {this.state.editResponse}
+                        frequencyData={this.state.frequencyData}
                         loadedModels = {this.state.loadedModels}
                         stateTracts = {this.state.stateTracts}
                         stateCounties = {this.state.stateCounties} />

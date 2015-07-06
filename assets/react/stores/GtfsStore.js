@@ -14,7 +14,7 @@ var assign = require('object-assign');
 var MarketAreaStore = require('./MarketAreaStore');
 var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
-var SailsWebApi = require('../utils/sailsWebApi')
+var SailsWebApi = require('../utils/sailsWebApi');
 
 var _currentGtfs = null,
     _gftsDataSets = {}, //by gtfs ID
@@ -25,6 +25,8 @@ var _currentGtfs = null,
     _loading = false,
     _uploadGtfs = {},
     _editResponse = null,
+    _trip_ids = [],
+    _frequencyData = {},
     _routingWaypoints = [];
 
 function _addRoutes(id,rawData) {
@@ -33,7 +35,7 @@ function _addRoutes(id,rawData) {
 
   _gftsDataSets[id].routes = rawData;
 
-};
+}
 
 function _addDatasets(rawData){
 
@@ -44,30 +46,30 @@ function _addDatasets(rawData){
       _gftsDataSets[ds.id] = ds;
     }
   });
-};
+}
 
 
 function _loadRoutes(gtfsId){
   //console.log('loading Routes')
-  SailsWebApi.getGtfsRoutes(_gftsDataSets[gtfsId].tableName,gtfsId)
+  SailsWebApi.getGtfsRoutes(_gftsDataSets[gtfsId].tableName,gtfsId);
 
-};
+}
 
 function _loadRoutesGeo(maId,gtfsId,routes){
   if(!_gtfsRoutesGeo[maId] && _gtfsRoutesGeo[maId] !== 'loading' ){
-    SailsWebApi.getRoutesGeo(maId,gtfsId,routes)
+    SailsWebApi.getRoutesGeo(maId,gtfsId,routes);
     _gtfsRoutesGeo[maId] = 'loading';
   }
 
-};
+}
 
 function _loadStopsGeo(maId,gtfsId,routes){
   if(!_gtfsStopsGeo[maId] && _gtfsStopsGeo[maId] !== 'loading'){
-    SailsWebApi.getStopsGeo(maId,gtfsId,routes)
+    SailsWebApi.getStopsGeo(maId,gtfsId,routes);
     _gtfsStopsGeo[maId] = 'loading';
   }
 
-};
+}
 
 function _loadRouteSchedule(maId,gtfsId,routes){
   if(!_gtfsSchedules[maId] && _gtfsSchedules[maId]!=='loading'){
@@ -75,7 +77,7 @@ function _loadRouteSchedule(maId,gtfsId,routes){
     _gtfsSchedules[maId] = 'loading';
   }
 
-};
+}
 
 
 //------RoutingData-------------------------------------
@@ -89,7 +91,16 @@ function _loadRouteSchedule(maId,gtfsId,routes){
   function _setWaypoints(waypts){
       _routingWaypoints = waypts;
   }
-
+//------FrequencyData-----------------------------------
+  function _loadFrequencyData(ids,gtfsId){
+    if(ids.length > 0){
+      SailsWebApi.getFrequencyData(ids,gtfsId);
+      _frequencyData = 'loading';
+    }
+  }
+  function _setTrips(trips){
+    _trip_ids = trips;
+  }
 //-----EditingData---------------------------------------
   function _setUploadGtfs(udata){
     _uploadGtfs = udata;
@@ -97,7 +108,7 @@ function _loadRouteSchedule(maId,gtfsId,routes){
   function _putGtfsData(data,gtfsId){
     if(data && gtfsId){
       SailsWebApi.putGtfsData(data,gtfsId);
-      _editResponse = 'loading'
+      _editResponse = 'loading';
     }
   }
 //======================================================
@@ -127,7 +138,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
     if( ma ){
         var _currentID = ma.id,
-        gtfsId = ma.origin_gtfs
+        gtfsId = ma.origin_gtfs,
         routes = ma.routes;
         if(_gtfsRoutesGeo[_currentID] && _gtfsRoutesGeo[_currentID] !=='loading')
           return  _gtfsRoutesGeo[_currentID];
@@ -136,7 +147,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         }
         return {type:'FeatureCollection',features:[]};
     }
-    return {type:'FeatureCollection',features:[]}
+    return {type:'FeatureCollection',features:[]};
 
   },
 
@@ -145,7 +156,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
     if( ma ){
         var _currentID = ma.id,
-        gtfsId = ma.origin_gtfs
+        gtfsId = ma.origin_gtfs,
         routes = ma.routes;
         if(_gtfsStopsGeo[_currentID] && _gtfsStopsGeo[_currentID] !=='loading')
           return  _gtfsStopsGeo[_currentID];
@@ -155,7 +166,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
         return {type:'FeatureCollection',features:[]};
     }
-    return {type:'FeatureCollection',features:[]}
+    return {type:'FeatureCollection',features:[]};
 
   },
   getRouteSchedules : function(){
@@ -164,7 +175,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
     if( ma ){
         var _currentID = ma.id,
-        gtfsId = ma.origin_gtfs
+        gtfsId = ma.origin_gtfs;
         routes = ma.routes;
         if(_gtfsSchedules[_currentID] && _gtfsSchedules[_currentID] !=='loading')
           return  _gtfsSchedules[_currentID];
@@ -173,12 +184,12 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         }
         return {};
     }
-    return {}
+    return {};
 
   },
   getRoutingGeo : function(){
 
-      if(_routingWaypoints.length === 0 && Object.keys(_routingData).length > 0 )
+      if(_routingWaypoints.length === 0 && _routingData && Object.keys(_routingData).length > 0 )
         return _routingData;
       if(_routingWaypoints.length > 0){
         _loadRoutingData(_routingWaypoints); //send requrest
@@ -186,6 +197,21 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return {};
       }
       return {};
+  },
+  getFrequencyData : function(){
+    var ma = MarketAreaStore.getCurrentMarketArea(),gtfsId;
+
+    if( !ma )
+      return undefined;
+
+    if(_trip_ids.length === 0 && _frequencyData && Object.keys(_frequencyData).length > 0)
+      return _frequencyData;
+    if(_trip_ids.length > 0){
+      _loadFrequencyData(_trip_ids,ma.origin_gtfs); //send requrest
+      _trip_ids = [];                 //reset TripIds
+      return {};
+    }
+    return {};
   },
   putGtfsData : function(){
 
@@ -258,6 +284,11 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         GtfsStore.emitChange();
     break;
 
+    case ActionTypes.SET_TRIPS:
+        _setTrips(action.data);
+        GtfsStore.emitChange();
+    break;
+
     case ActionTypes.RECEIVE_DATASOURCES:
       _addDatasets(action.data);
       GtfsStore.emitChange();
@@ -265,29 +296,29 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_GTFS_ROUTES:
         _addRoutes(action.Id,action.data);
-        _loading = false
+        _loading = false;
         GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_GTFS_GEOS:
-        _gtfsRoutesGeo[action.Id] = action.data
+        _gtfsRoutesGeo[action.Id] = action.data;
         GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_GTFS_STOPS_GEOS:
         //console.log('gtfsStore / RECEIVE_GTFS_STOPS_GEOS',action)
-        _gtfsStopsGeo[action.Id] = action.data
+        _gtfsStopsGeo[action.Id] = action.data;
         GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_GTFS_SCHEDS:
-          _gtfsSchedules[action.Id] = action.data
+          _gtfsSchedules[action.Id] = action.data;
           //console.log('Received Gtfs Scheds',action.id, action.data)
           GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_ROUTING_GEOS:
-        _routingData = action.data
+        _routingData = action.data;
         //console.log('Received Routing Object',action.data);
 
         GtfsStore.emitChange();
@@ -296,6 +327,11 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_EDITOR_RESPONSES:
         _editResponse = action.data;
         //console.log('Receive Upload Response:',action.data);
+        GtfsStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_TRIP_FREQUENCIES:
+        _frequencyData = action.data;
         GtfsStore.emitChange();
     break;
 

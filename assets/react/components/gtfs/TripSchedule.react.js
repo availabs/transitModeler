@@ -31,11 +31,10 @@ var React = require('react'),
 var TripSchedule = React.createClass({
     getInitialState:function(){
         return {
-            startTime:null,
-            endTime:null,
-            headWay:null,
+            frequencies:this.props.frequencies,
             timeDeltas:null,
             lengths:null,
+            units:'mi',
         };
     },
     _totaltime :function(){
@@ -45,7 +44,7 @@ var TripSchedule = React.createClass({
       }
     },
     _totalDistance : function(unit){
-      if(this.state.lengths && unit.toLowerCase){
+      if(this.state.lengths){
         var total = this.state.lengths.reduce(function(p,c){return p+c;});
         switch (unit.toLowerCase()) {
           case 'mi':
@@ -63,31 +62,15 @@ var TripSchedule = React.createClass({
       }
     },
     componentWillReceiveProps : function(nextProps){
-      if(!nextProps.trip){
-        this.setState({startTime:null,endTime:null,headWay:null});
+      if(!nextProps.frequencies){
+        this.setState({frequencies:null,timeDeltas:null,lengths:null});
+      }
+      else{
+        this.setState({frequencies:nextProps.frequencies});
       }
     },
     componentWillUpdate : function(nextProps,nextState){
-      //console.log('Select Check',nextProps,nextState)
-      if(nextProps.trip && (this.props.trip !== nextProps.trip) ){
-        var Trip  = nextProps.trip,
-        startTimes = Trip.getStartTimes(),
-        startTime = Trip.getStartTime(0),
-        stopTime  = Trip.getLastStartTime(),
-        headway=0;
 
-        if(startTimes.length > 1){
-          startTimes.reduce(function(p,c,i,a){
-                    headway += diffSecs(p,c);
-                    return c;
-          });
-          headway = Math.ceil(headway/((startTimes.length -1) * 60));
-        }
-        else{
-          headway = 0;
-        }
-        this.setState({startTime:startTime,endTime:stopTime,headWay:headway});
-      }
       if(nextProps.deltas && (this.props.deltas !== nextProps.deltas))
       {
         this.setState({timeDeltas:nextProps.deltas});
@@ -97,38 +80,45 @@ var TripSchedule = React.createClass({
         this.setState({lengths:nextProps.lengths});
       }
     },
-    _roundNice : function(real){
+    getGroupBox : function(s,e,h){
+      var style={overflow:'hidden'};
+      return(<div className="body no-margin" style={style} >
+        <table className="table table-bordered ">
+          <thead>
+            <tr>
+              <th>{'Start Time'}</th>
+              <th>{'End Time'}</th>
+              <th>{'Headway'}</th>
+              <th>{'RunTime'}</th>
+              <th>{'Distance'}</th>
 
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{s}</td>
+              <td>{e}</td>
+              <td>{h + ' min'}</td>
+              <td>{Math.round(this._totaltime()) + 'mins'}</td>
+              <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>);
+    },
+    buildGroups : function(groups){
+      var jsx = [],scope=this;
+      groups.forEach(function(g){
+        jsx.push(scope.getGroupBox(g.start_time,g.end_time,g.headway_secs));
+      });
+      return jsx;
     },
     render: function() {
-        var scope = this, units='km',
-        style={overflow:'hidden'};
-        if(this.state.headWay !== null){
+        if(this.state.frequencies && Object.keys(this.state.frequencies).length > 0){
+          var tables = this.buildGroups(this.state.frequencies);
           return (
               <section className="widget">
-                  <div className="body no-margin" style={style} >
-                    <table className="table table-bordered ">
-                      <thead>
-                        <tr>
-                          <th>{'First Departure'}</th>
-                          <th>{'Last Departure'}</th>
-                          <th>{'Headway'}</th>
-                          <th>{'RunTime'}</th>
-                          <th>{'Distance'}</th>
-
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>{this.state.startTime}</td>
-                          <td>{this.state.endTime}</td>
-                          <td>{this.state.headWay + ' min'}</td>
-                          <td>{Math.round(this._totaltime()) + 'mins'}</td>
-                          <td>{Math.round(this._totalDistance(units)*10)/10 +' '+ units}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                {tables}
               </section>
           );
         }else{

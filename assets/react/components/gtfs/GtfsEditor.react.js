@@ -32,7 +32,7 @@ var React = require('react'),
 
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
-
+var idGen = require('./randomId');
 var check = function(obj){
     return (obj && obj!=='loading')?obj:emptyGeojson;
 };
@@ -74,7 +74,8 @@ var MarketAreaNew = React.createClass({
             routingGeo:emptyGeojson,
             deltas:[],
             lengths:[],
-            routeColl:null,
+            routeColl:[],
+            frequencies:null,
 
         };
     },
@@ -124,7 +125,7 @@ var MarketAreaNew = React.createClass({
         T.setStopTimes(temp.stop_times);
         T.setHeadSign(temp.headsign);
         T.setIds(temp.tripids);
-
+        GtfsActionsCreator.setTrips(temp.tripids);
         if(T.getStops().length === 0)
             this.setState({TripObj:T,
               currentTrip:ix,
@@ -258,7 +259,7 @@ var MarketAreaNew = React.createClass({
         }
         //console.log(nextProps.routingGeo);
         if(nextProps.routingGeo && Object.keys(nextProps.routingGeo).length > 0 &&
-          (nextProps.routingGeo.legs.length > 0) &&
+           nextProps.routingGeo.legs &&(nextProps.routingGeo.legs.length > 0) &&
            nextProps.routingGeo !== this.props.routingGeo){
 
             this._processResponse(nextProps.routingGeo);
@@ -273,6 +274,11 @@ var MarketAreaNew = React.createClass({
             console.log('Data upload unsuccessful');
             this.setState({edited:true});
           }
+        }
+        if(nextProps.frequencyData && nextProps.frequencyData !=='loading' &&
+          (Object.keys(nextProps.frequencyData).length > 0) && (this.props.frequencyData !== nextProps.frequencyData)){
+          console.log(nextProps.frequencyData);
+          this.setState({frequencies:nextProps.frequencyData});
         }
     },
     componentWillUpdate:function(nextProps, nextState){
@@ -379,11 +385,26 @@ var MarketAreaNew = React.createClass({
         this.setState({buffStopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
     },
     _addRoute : function(formObj){
-        var id = formObj['New Route'];
+        var id = formObj['New Route'],
+        service_id = idGen('service'),
+        rndmtrip;
         if(this.state.schedules[id])
             return false;
         else{
-            this.state.schedules[id] = {trips:[],id:id};
+          //create at least one randomly generated trip to defined this route
+          rndmtrip = {
+              headsign:idGen('headsign'),
+              id:idGen('shape'),
+              stops:[],
+              intervals:[],
+              route_id:id,
+              start_times:[],
+              stop_times:[],
+              tripids:[idGen('trip')],
+              service_id:service_id,
+              isNew:true,
+          };
+            this.state.schedules[id] = {trips:[rndmtrip],id:id,service_id:service_id};
             var route = new RouteObj();
             route.setId(id);
             this.state.routeColl.push(route);
@@ -510,7 +531,7 @@ var MarketAreaNew = React.createClass({
                             editStop = {this.editStopAction} />
 
                         <TripSchedule
-                            trip={this.state.TripObj}
+                            frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}/>
                     </div>

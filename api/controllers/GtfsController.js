@@ -200,4 +200,33 @@ module.exports = {
 		  	});
 	  	});
 	},
+
+	getFrequencies : function(req,res){
+		var body = req.body;
+
+		if(!body.trip_ids){
+			 res.send('{status:"error",message:"Need Trip Ids"}',500);
+		}
+		if(!body.id){
+			res.send('{status:"error",message:"Need Agency Id"}',500);
+		}
+		Datasource.findOne(body.id).exec(function(err,data){
+			console.log(data);
+			if(err){console.log('error finding agency'); res.send('{status:"error",message:"'+err+'"}',500);}
+			var idString = 'Array['+body.trip_ids.map(function(str){return '\''+str+'\'';})+']',
+			tableName = data.tableName,
+			sql = 'SELECT trip_id,start_time,end_time,headway_secs FROM '+tableName+'.frequencies ' +
+						'WHERE '+idString +' && string_to_array(trip_id,\',\')';
+			console.log(sql);
+			Datasource.query(sql,{},function(err,data){ //if there is an error with the query logg and send it
+				if(err){console.log('Error Executing query'); res.send('{status:"error",message:"'+err+'"}',500);}
+
+				data.rows.forEach(function(d){//if rows were returned process them
+					d.group = d.trip_id.split(',');
+				});
+				res.json(data.rows);
+			});
+		});
+
+	}
 };

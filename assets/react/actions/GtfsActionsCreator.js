@@ -23,5 +23,11 @@ module.exports = {
       data:uploadData,
     });
   },
+  setTrips : function(tripData){
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_TRIPS,
+      data:tripData
+    });
+  },
 
 };
