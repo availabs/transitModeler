@@ -66,14 +66,16 @@ var MarketAreaNew = React.createClass({
             tracker:new EditTracker(),
             TripObj:undefined,
             buffStopColl:null,
-            schedules:null,
+            schedules:this.props.schedules || null,
             isCreating:false,
             needEdit:false,
             editInfo:{},
             tripChange:true,
             routingGeo:emptyGeojson,
             deltas:[],
+            lengths:[],
             routeColl:null,
+
         };
     },
     setRoute:function(id){  //on route change
@@ -209,11 +211,13 @@ var MarketAreaNew = React.createClass({
     _processResponse:function(data){
         if(this.state.currentTrip === null || Object.keys(data).length === 0)
             return emptyGeojson;
+        console.log(data);
         var routing_geo = data,
         graph = this.state.graph,
         emptyGraph = graph.isEmpty(),
-        stops = this.state.TripObj.getStops(),
-        deltas = this.state.deltas;
+        stops = this.state.TripObj.getStops();
+
+
         for(var i =0; i< stops.length-1; i++){//Go through the list of stops on our current route
           var point_range;
             try{
@@ -228,7 +232,7 @@ var MarketAreaNew = React.createClass({
             else
                 graph.updateEdge(stops[i],stops[i+1],newdata);
         }
-        this.setState({deltas:routing_geo.getAllDeltas(),graph:graph});
+        this.setState({lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
     },
     componentWillReceiveProps:function(nextProps){
         if(((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features &&
@@ -311,7 +315,7 @@ var MarketAreaNew = React.createClass({
             stopList.push(stops[inx+1]);
         }
         trip.removeStop(id);
-        victim = this.state.stopColl.getStop(id);
+        victim = this._getStop(id);
         victim.setDeleted(true);
         victim.setEdited();
         this.state.tracker.addEvent('d',{id:id,position:inx+1,data:victim});
@@ -504,12 +508,11 @@ var MarketAreaNew = React.createClass({
                             isCreating={this.state.isCreating}
                             tripChange={this.state.tripChange}
                             editStop = {this.editStopAction} />
-                          <EditBox
-                              schedules={this.state.schedules}
-                              stopSearch={this._getStop}
-                              data={this.state.editInfo}
-                              saveStop={this.changeStop}
-                              active={this.state.needEdit}/>
+
+                        <TripSchedule
+                            trip={this.state.TripObj}
+                            deltas={this.state.deltas}
+                            lengths={this.state.lengths}/>
                     </div>
                     <div className="col-lg-3">
                        <Databox
@@ -523,8 +526,12 @@ var MarketAreaNew = React.createClass({
                             onTripSelect={this.setTrip}
                             currentTrip={this.state.currentTrip}
                             addTrip = {this._addTrip}/>
-                        <TripSchedule
-                            trip={this.state.TripObj}/>
+                        <EditBox
+                            schedules={this.state.schedules}
+                            stopSearch={this._getStop}
+                            data={this.state.editInfo}
+                            saveStop={this.changeStop}
+                            active={this.state.needEdit}/>
                        <SaveBox
                         Edited={this.state.edited}
                         onSave={this._saveEdits}/>

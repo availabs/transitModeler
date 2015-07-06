@@ -8,7 +8,7 @@ var pastPoint = function(p1,p2,q){
     qvec   = [ q[0] - p2[0], q[1] - p2[1] ],
     dot    = v1[0]*qvec[0] + v1[1]*qvec[1];      //take the dot product
                                                 //if the cosine of the angle between the two vectors is greater than
-                                                //zero then it lies in the space 
+                                                //zero then it lies in the space
     if(dot > 0)
         return 0
     else
@@ -108,7 +108,7 @@ var miniGraph = function(){
         }else if(pos === 1){
             inx = pos+1;
         }
-        
+
         seg1 =  edge.data.geometry.coordinates.splice(0, inx);
         seg2 =  edge.data.geometry.coordinates.map(function(x){return x;});
         this.deleteEdge(v1,v2); //this will destroy the edge variable
@@ -125,10 +125,10 @@ var miniGraph = function(){
         edge2 = this.getEdge(victim,survive2),
         line1 = edge1.data.geometry.coordinates,
         line2 = edge2.data.geometry.coordinates;
-        
+
         line1.concat(line2);    //order here could matter!!
 
-        
+
         this.deleteEdge(survive1,victim); //delete the previous edges
         this.deleteEdge(victim,survive2); //this could delete victim
         // s1.removeadj(v);    //remove victim node from the other 2
@@ -154,7 +154,7 @@ var miniGraph = function(){
     //if the
     this.deleteEdge = function(v1,v2){
         var n1 = this.getNode(v1);
-        var n2 = this.getNode(v2);    
+        var n2 = this.getNode(v2);
         var currEdge = this.getEdge(v1,v2);
         if(currEdge){
             delete this.edges[currEdge.id];
@@ -171,13 +171,13 @@ var miniGraph = function(){
     }
 
     //Function to add an edge to the graph
-    //Edge is determined by its 2 ending 
+    //Edge is determined by its 2 ending
     this.addEdge = function(v1,v2,data){
 		if(!this.testEdge(v1,v2)){
 		    var n1 = this.insertNode(v1);
 		    var n2 = this.insertNode(v2);
 		    n1.addadj(v2);
-		    n2.addadj(v1);	
+		    n2.addadj(v1);
 		    var e = new edge(n1,n2,data);
 		    this.edges[e.id] = e;
 		    this.numedges++;
@@ -223,7 +223,7 @@ var miniGraph = function(){
     }
 
     //Perform breadth first search to find paths within the graph
-    //Inputs starting point and ending point, returns all 
+    //Inputs starting point and ending point, returns all
     //intermediary points inbetween
     this.bfs = function(v1,v2){
 		v1 = v1.toString();
@@ -231,22 +231,22 @@ var miniGraph = function(){
 		var queue = [];
 		var set = [];
 		var parents = {};
-		queue.push(v1);//push the starting point on 
+		queue.push(v1);//push the starting point on
 		set.push(v1);  //both the queue and seen list
 		while(queue.length != 0){
 		    var t = queue.splice(0,1)[0] //get the oldes item in the queue
 		    if(t === v2){                //if it is the endpoint
-			var pathStack = [v2];    //initially add end point to pathlist 
+			var pathStack = [v2];    //initially add end point to pathlist
 			var child = v2, parent = parents[v2.toString()];//set it as the child and get its parent node in the path
 			pathStack.unshift(parent);// add the parent to the list
 			while(parent !== v1){
 			    child = parent;      //set the child to the parent node.
-			    parent = parents[child.toString()]; //get its parent node 
+			    parent = parents[child.toString()]; //get its parent node
 			    pathStack.unshift(parent);//add the parent to the list
 			}
 			return pathStack;        //return the final list
 		    }
-		    
+
 		    var adjs = this.getNode(t).adjs;      //if its not the end point
 		    adjs.forEach(function(vert){ //get the nodes adjacent to the current node
 			if(set.indexOf(vert) < 0){//if the current vertex hasn't been seen
@@ -257,8 +257,8 @@ var miniGraph = function(){
 		    });
 		}
     }
-    
-    
+
+
 }
 
 module.exports = miniGraph

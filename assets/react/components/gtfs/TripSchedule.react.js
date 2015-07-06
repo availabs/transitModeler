@@ -34,7 +34,33 @@ var TripSchedule = React.createClass({
             startTime:null,
             endTime:null,
             headWay:null,
+            timeDeltas:null,
+            lengths:null,
         };
+    },
+    _totaltime :function(){
+      if(this.state.timeDeltas){
+        var totalTime = this.state.timeDeltas.reduce(function(p,c){return p+c;});
+        return totalTime/60;
+      }
+    },
+    _totalDistance : function(unit){
+      if(this.state.lengths && unit.toLowerCase){
+        var total = this.state.lengths.reduce(function(p,c){return p+c;});
+        switch (unit.toLowerCase()) {
+          case 'mi':
+            return (total/1000)*1.609;
+          case 'm':
+            return total;
+          case 'km':
+            return (total/1000);
+          default:
+            return 'unknown units';
+        }
+      }
+      else {
+        return 0;
+      }
     },
     componentWillReceiveProps : function(nextProps){
       if(!nextProps.trip){
@@ -62,19 +88,34 @@ var TripSchedule = React.createClass({
         }
         this.setState({startTime:startTime,endTime:stopTime,headWay:headway});
       }
+      if(nextProps.deltas && (this.props.deltas !== nextProps.deltas))
+      {
+        this.setState({timeDeltas:nextProps.deltas});
+      }
+      if(nextProps.lengths && (this.props.lengths !== nextProps.lengths))
+      {
+        this.setState({lengths:nextProps.lengths});
+      }
+    },
+    _roundNice : function(real){
+
     },
     render: function() {
-        var scope = this;
+        var scope = this, units='km',
+        style={overflow:'hidden'};
         if(this.state.headWay !== null){
           return (
               <section className="widget">
-                  <div className="body no-margin" >
+                  <div className="body no-margin" style={style} >
                     <table className="table table-bordered ">
                       <thead>
                         <tr>
                           <th>{'First Departure'}</th>
                           <th>{'Last Departure'}</th>
                           <th>{'Headway'}</th>
+                          <th>{'RunTime'}</th>
+                          <th>{'Distance'}</th>
+
                         </tr>
                       </thead>
                       <tbody>
@@ -82,6 +123,8 @@ var TripSchedule = React.createClass({
                           <td>{this.state.startTime}</td>
                           <td>{this.state.endTime}</td>
                           <td>{this.state.headWay + ' min'}</td>
+                          <td>{Math.round(this._totaltime()) + 'mins'}</td>
+                          <td>{Math.round(this._totalDistance(units)*10)/10 +' '+ units}</td>
                         </tr>
                       </tbody>
                     </table>
