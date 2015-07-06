@@ -123,6 +123,12 @@ module.exports = {
       })
   },
 
+  loadFarebox:function(marketareaId){
+      d3.json('/datasources/farebox/'+marketareaId,function(data){
+        ServerActionCreators.receiveDataWithId('farebox',marketareaId,data)
+      })
+  },
+
   getRawCensus: function(marketareaId,year){
     io.socket.get('/datasources/acs/'+marketareaId+'/'+year,function(data){
       ServerActionCreators.receiveRawCensus(marketareaId,year,data.census);

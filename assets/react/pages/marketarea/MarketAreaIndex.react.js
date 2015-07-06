@@ -101,6 +101,7 @@ var MarketAreaIndex = React.createClass({
              case 'farebox':{
                 return (
                     <FareboxAnalysis
+                        marketarea={this.props.marketarea}
                         tracts = {this.props.tracts}
                         routesGeo ={this.props.routesGeo}
                         stopsGeo = {this.props.stopsGeo} />
