@@ -32,7 +32,15 @@ var MarketAreaNew = React.createClass({
       console.log(this.state.selection);
     },
     componentWillUpdate : function(nextProps,nextState){
-      //console.log('Select Check',nextProps,nextState)
+
+    },
+    componentWillReceiveProps : function(nextProps){
+      if(nextProps.currentRoute && this.state.selection !== nextProps.currentRoute){
+        this.setState({selection:nextProps.currentRoute});
+      }
+      if(nextProps.currentService && this.state.serviceSelection !== nextProps.currentService){
+        this.setState({serviceSelection:nextProps.currentService});
+      }
     },
     addingRouteAction : function(data){
       var err = this.props.addRoute(data);

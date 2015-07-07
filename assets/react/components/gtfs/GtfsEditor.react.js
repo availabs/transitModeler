@@ -76,7 +76,6 @@ var MarketAreaNew = React.createClass({
             lengths:[],
             routeColl:[],
             frequencies:null,
-
         };
     },
     setRoute:function(id){  //on route change
@@ -408,7 +407,7 @@ var MarketAreaNew = React.createClass({
             var route = new RouteObj();
             route.setId(id);
             this.state.routeColl.push(route);
-            this.setState({schedules:this.state.schedules,routeColl:this.state.routeColl});
+            this.setState({schedules:this.state.schedules,routeColl:this.state.routeColl,currentRoute:id});
         }
         console.log(id);
     },
@@ -559,7 +558,9 @@ var MarketAreaNew = React.createClass({
                            onRouteChange={this.setRoute}
                            onServiceChange={this.setService}
                            EditRoute = {this.setRouteEdit}
-                           addRoute = {this._addRoute}/>
+                           addRoute = {this._addRoute}
+                           currentRoute={this.state.currentRoute}
+                           currentService={this.state.currentService}/>
                         <Trips
                             route={route}
                             onTripSelect={this.setTrip}

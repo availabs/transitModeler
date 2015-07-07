@@ -2,6 +2,7 @@
 /*globals confirm, console,module,require*/
 var React = require('react'),
     //comps
+    GroupBox = require('./GroupBox.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -68,6 +69,14 @@ var TripSchedule = React.createClass({
       else{
         this.setState({frequencies:nextProps.frequencies});
       }
+      if(nextProps.deltas && (this.props.deltas !== nextProps.deltas))
+      {
+        this.setState({timeDeltas:nextProps.deltas});
+      }
+      if(nextProps.lengths && (this.props.lengths !== nextProps.lengths))
+      {
+        this.setState({lengths:nextProps.lengths});
+      }
     },
     componentWillUpdate : function(nextProps,nextState){
 
@@ -80,45 +89,31 @@ var TripSchedule = React.createClass({
         this.setState({lengths:nextProps.lengths});
       }
     },
-    getGroupBox : function(s,e,h){
-      var style={overflow:'hidden'};
-      return(<div className="body no-margin" style={style} >
-        <table className="table table-bordered ">
-          <thead>
-            <tr>
-              <th>{'First Departure'}</th>
-              <th>{'Last Departure'}</th>
-              <th>{'Headway'}</th>
-              <th>{'RunTime'}</th>
-              <th>{'Distance'}</th>
-
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{s}</td>
-              <td>{e}</td>
-              <td>{Math.round(h/60) + ' min'}</td>
-              <td>{Math.round(this._totaltime()) + 'mins'}</td>
-              <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>);
-    },
-    buildGroups : function(groups){
-      var jsx = [],scope=this;
-      groups.forEach(function(g){
-        jsx.push(scope.getGroupBox(g.start_time,g.end_time,g.headway_secs));
-      });
-      return jsx.reverse();
-    },
     render: function() {
-        if(this.state.frequencies && Object.keys(this.state.frequencies).length > 0){
-          var tables = this.buildGroups(this.state.frequencies);
+        if(this.state.frequencies && this.state.timeDeltas &&  Object.keys(this.state.frequencies).length > 0){
+          var scope = this;
+          var tables = this.state.frequencies.map(function(d){
+              return (
+                <GroupBox
+                  frequency={d}
+                  deltas={scope.state.timeDeltas}
+                  lengths = {scope.state.lengths}/>
+              );
+          });
           return (
               <section className="widget">
-                {tables}
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>{'First Departure'}</th>
+                      <th>{'Last Departure'}</th>
+                      <th>{'Headway'}</th>
+                      <th>{'RunTime'}</th>
+                      <th>{'Distance'}</th>
+                    </tr>
+                  </thead>
+                  {tables.reverse()}
+              </table>
               </section>
           );
         }else{
