@@ -86,8 +86,8 @@ var TripSchedule = React.createClass({
         <table className="table table-bordered ">
           <thead>
             <tr>
-              <th>{'Start Time'}</th>
-              <th>{'End Time'}</th>
+              <th>{'First Departure'}</th>
+              <th>{'Last Departure'}</th>
               <th>{'Headway'}</th>
               <th>{'RunTime'}</th>
               <th>{'Distance'}</th>
@@ -98,7 +98,7 @@ var TripSchedule = React.createClass({
             <tr>
               <td>{s}</td>
               <td>{e}</td>
-              <td>{h + ' min'}</td>
+              <td>{Math.round(h/60) + ' min'}</td>
               <td>{Math.round(this._totaltime()) + 'mins'}</td>
               <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
             </tr>
@@ -111,7 +111,7 @@ var TripSchedule = React.createClass({
       groups.forEach(function(g){
         jsx.push(scope.getGroupBox(g.start_time,g.end_time,g.headway_secs));
       });
-      return jsx;
+      return jsx.reverse();
     },
     render: function() {
         if(this.state.frequencies && Object.keys(this.state.frequencies).length > 0){

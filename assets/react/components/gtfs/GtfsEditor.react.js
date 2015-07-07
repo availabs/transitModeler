@@ -473,7 +473,27 @@ var MarketAreaNew = React.createClass({
     },
 
     changeRoute : function(sInfo){
-
+    },
+    routeClick : function(data){
+      console.log('route_click',data);
+      var allowEdit = editCheckConfirm(this),scope = this;
+      if(this.state.schedules && allowEdit){
+        var tripobj,service;
+        tripobj = this.state.schedules[data.route_id].trips[0];
+        service = tripobj.service_id;
+        console.log(tripobj);
+        this.setState({ //set the state of the route and service
+                        currentRoute:data.route_id,
+                        currentService:service,
+                        currentTrip:null ,
+                        TripObj:undefined,
+                        edited:false,
+                        tripChange:false,
+                        graph:new Graph(),
+                        editInfo:{},
+                      },function(){scope.setTrip(0);});//once that is complete
+                      //set the trip to the first one available
+      }
     },
     getTrips : function(){
       var collection  = {},scope=this;
@@ -511,9 +531,7 @@ var MarketAreaNew = React.createClass({
             	<h2 className="page-title">
                     Create Market Area
                     <br />
-
                 </h2>
-
                 <div className="row">
                 	<div className="col-lg-9">
 
@@ -528,8 +546,8 @@ var MarketAreaNew = React.createClass({
                             createTrip={this._crtTrip}
                             isCreating={this.state.isCreating}
                             tripChange={this.state.tripChange}
-                            editStop = {this.editStopAction} />
-
+                            editStop = {this.editStopAction}
+                            onRouteClick={this.routeClick}/>
                         <TripSchedule
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
