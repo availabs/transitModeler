@@ -89,6 +89,20 @@ var TripSchedule = React.createClass({
         this.setState({lengths:nextProps.lengths});
       }
     },
+    notifyChange : function(change){
+      var isEdited;
+      var editList = this.state.frequencies.map(function(f){
+        return f.edited;
+      });
+
+      if(editList.length === 1)
+        isEdited = editList[0];
+      else
+        isEdited = editList.reduce(function(p,c){
+          return p||c;
+        });
+      this.props.notifyChange(isEdited);
+    },
     render: function() {
         if(this.state.frequencies && this.state.timeDeltas &&  Object.keys(this.state.frequencies).length > 0){
           var scope = this;
@@ -97,7 +111,8 @@ var TripSchedule = React.createClass({
                 <GroupBox
                   frequency={d}
                   deltas={scope.state.timeDeltas}
-                  lengths = {scope.state.lengths}/>
+                  lengths = {scope.state.lengths}
+                  notifyChange={scope.notifyChange}/>
               );
           });
           return (
@@ -108,8 +123,10 @@ var TripSchedule = React.createClass({
                       <th>{'First Departure'}</th>
                       <th>{'Last Departure'}</th>
                       <th>{'Headway'}</th>
+                      <th>{'Idle'}</th>
                       <th>{'RunTime'}</th>
                       <th>{'Distance'}</th>
+                      <th>{'Runs'}</th>
                     </tr>
                   </thead>
                   {tables.reverse()}

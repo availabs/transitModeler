@@ -38,6 +38,8 @@ module.exports.routes = {
   '/datasources/gtfs/schedule/:id/edit':'GtfsController.uploadGtfsEdits',
   '/datasources/gtfs/frequencies':'GtfsController.getFrequencies',
   '/datasources/gtfs/schedule/:id/:rid':'GtfsController.routes',
+  '/datasources/gtfs/frequencyUpload/:id' : 'GtfsController.uploadFreqEdits',
+
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
   '/triptable/run':'TriptableController.runModel',

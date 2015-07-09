@@ -205,6 +205,7 @@ var MarketAreaNew = React.createClass({
 
         // post edited data to the server
         GtfsActionsCreator.uploadEdit(reqObj);
+        GtfsActionsCreator.uploadEditFreqs(this.state.frequencies);
         this.setState({edited:false}); //optimistically lock the save button
                                       // and continue
     },
@@ -274,6 +275,15 @@ var MarketAreaNew = React.createClass({
             this.setState({edited:true});
           }
         }
+        if(nextProps.freqMessage && nextProps.freqMessage !== 'loading'){
+          if(nextProps.freqMessage.status && nextProps.freqMessage.status === 'success'){
+            console.log('Frequency Data Upload Successfull');
+          }else{
+            console.log('Error uploading frequency data');
+            this.setState({edited:true});
+          }
+        }
+
         if(nextProps.frequencyData && nextProps.frequencyData !=='loading' &&
           (Object.keys(nextProps.frequencyData).length > 0) && (this.props.frequencyData !== nextProps.frequencyData)){
           console.log(nextProps.frequencyData);
@@ -508,6 +518,11 @@ var MarketAreaNew = React.createClass({
       }
       return collection;
     },
+    freqChange : function(editStatus){
+      if(editStatus){
+        this.setState({edited:true});
+      }
+    },
     render: function() {
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
@@ -550,7 +565,8 @@ var MarketAreaNew = React.createClass({
                         <TripSchedule
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
-                            lengths={this.state.lengths}/>
+                            lengths={this.state.lengths}
+                            notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
                        <Databox

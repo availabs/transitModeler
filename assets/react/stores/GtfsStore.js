@@ -27,6 +27,8 @@ var _currentGtfs = null,
     _editResponse = null,
     _trip_ids = [],
     _frequencyData = {},
+    _uFrequencyData = {},
+    _frequencyEditResponse = null,
     _routingWaypoints = [];
 
 function _addRoutes(id,rawData) {
@@ -100,6 +102,15 @@ function _loadRouteSchedule(maId,gtfsId,routes){
   }
   function _setTrips(trips){
     _trip_ids = trips;
+  }
+  function _setUploadFrequencyData(data){
+    _uFrequencyData = data;
+  }
+  function _putFrequencyData(data,gtfsId){
+    if(data && gtfsId){
+      SailsWebApi.putFrequencyData(data,gtfsId);
+      _frequencyEditResponse = 'loading';
+    }
   }
 //-----EditingData---------------------------------------
   function _setUploadGtfs(udata){
@@ -261,7 +272,26 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
 
     }
   },
+  putFrequencyData : function(){
+    var ma = MarketAreaStore.getCurrentMarketArea(),gtfsId;
 
+    if( !ma )
+      return undefined;
+
+    if(_frequencyEditResponse){
+      var retval = _frequencyEditResponse;     //save the response into a temp variable
+      if(_frequencyEditResponse !== 'loading') //if the response has been fully recieved
+        _frequencyEditResponse = null;         //reset the response variable for latter
+      return retval;
+    }
+    else if(!_frequencyEditResponse && Object.keys(_uFrequencyData).length > 0){
+      gtfsId = ma.origin_gtfs;
+      _putGtfsData(_uFrequencyData,gtfsId);
+      _uFrequencyData = {};
+      return _frequencyEditResponse;
+    }
+    return undefined;
+  },
   getAll: function() {
     return _gftsDataSets;
   }
@@ -274,6 +304,10 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   switch(action.type) {
 
+    case ActionTypes.SET_FREQS:
+        _setUploadFrequencyData(action.data);
+        GtfsStore.emitChange();
+    break;
     case ActionTypes.SET_WAYPOINTS:
         _setWaypoints(action.waypoints);
         GtfsStore.emitChange();
@@ -335,6 +369,10 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         GtfsStore.emitChange();
     break;
 
+    case ActionTypes.RECEIVE_FREQ_EDIT_RESPONSES:
+        _frequencyEditResponse = action.data;
+        GtfsStore.emitChange();
+    break;
     default:
       // do nothing
   }

@@ -95,6 +95,17 @@ module.exports = {
         if(cb){cb(data);}
       });
   },
+  putFrequencyData : function(data,gtfsid,cb){
+    d3.json('/datasources/gtfs/schedule/'+gtfsId+'/freqEdit')
+      .post(JSON.stringify(data),function(err,data){
+          if(err){
+            ServerActionCreators.receiveData('FREQ_EDIT_RESPONSE',{status:'error',response:err});
+          }else{
+            ServerActionCreators.receiveData('FREQ_EDIT_RESPONSE',data);
+          }
+          if(cb){cb(data);}
+      });
+  },
         //---------------------------------------------
         // External GeoData
         //---------------------------------------------

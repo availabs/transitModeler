@@ -82,6 +82,7 @@ var MarketAreaIndex = React.createClass({
                         schedules = {this.props.schedules}
                         routingGeo= {this.props.routingGeo}
                         editMessage={this.props.editMessage}
+                        freqMessage={this.props.freqEditResponse}
                         frequencyData={this.props.frequencyData}/>
                     )
 

@@ -23,6 +23,12 @@ module.exports = {
       data:uploadData,
     });
   },
+  uploadEditFreqs : function(freqdata){
+    AppDispatcher.handleViewAction({
+      type : ActionTypes.SET_FREQ_SAVE,
+      data : freqdata,
+    });
+  },
   setTrips : function(tripData){
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_TRIPS,

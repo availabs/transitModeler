@@ -55,6 +55,7 @@ var App = React.createClass({
                 schedules : GtfsStore.getRouteSchedules(),
                 routingGeo : GtfsStore.getRoutingGeo(),
                 frequencyData:GtfsStore.getFrequencyData(),
+                freqEditResponse:GtfsStore.putFrequencyData(),
                 editResponse : GtfsStore.putGtfsData(),
 
             };
@@ -112,6 +113,7 @@ var App = React.createClass({
                         routingGeo = {this.state.routingGeo}
                         editMessage= {this.state.editResponse}
                         frequencyData={this.state.frequencyData}
+                        freqEditResponse={this.state.freqEditResponse}
                         loadedModels = {this.state.loadedModels}
                         stateTracts = {this.state.stateTracts}
                         stateCounties = {this.state.stateCounties} />

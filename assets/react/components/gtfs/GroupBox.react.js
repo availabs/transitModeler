@@ -35,12 +35,36 @@ var TripSchedule = React.createClass({
             timeDeltas:this.props.deltas,
             lengths:this.props.lengths,
             units:'mi',
+            idle:0,
+            idlebuffer:'0',
+            headwaybuffer:this.props.frequency.headway_secs/60,
         };
     },
-    _totaltime :function(){
+    _totalTime :function(){
       if(this.state.timeDeltas){
-        var totalTime = this.state.timeDeltas.reduce(function(p,c){return p+c;});
+        var scope=this,totalTime = this.state.timeDeltas.reduce(function(p,c){return p+c+(scope.state.idle*60);});
+        return totalTime;
+      }else{
+        return 0;
+      }
+    },
+    _totalTimeMin : function(){
+        var totalTime = this._totalTime();
         return totalTime/60;
+    },
+    _totalruns : function(){
+      if(this.state.frequency){
+        var totalTime = diffSecs(this.state.frequency.start_time,this.state.frequency.end_time);
+        if(this.state.frequency.headway_secs === 0){
+          return 1;
+        }
+        //The number of trips that could run with a given headway
+        //between two times is the total number of headways that will
+        //fit in that period of time plus the initial trip
+        var runs = Math.ceil(totalTime / this.state.frequency.headway_secs) + 1;
+        return runs;
+      }else {
+        return 0;
       }
     },
     _totalDistance : function(unit){
@@ -66,7 +90,7 @@ var TripSchedule = React.createClass({
         this.setState({headway:null,startTime:null,endTime:null});
       }
       else{
-        this.setState({frequency:nextProps.frequency});
+        this.setState({frequency:nextProps.frequency,headwaybuffer:Math.round(nextProps.frequency.headway_secs/60).toString()});
       }
     },
     componentWillUpdate : function(nextProps,nextState){
@@ -83,8 +107,6 @@ var TripSchedule = React.createClass({
     fieldClick : function(field){
       var scope = this;
       return function(e){
-          console.log($('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')));
-          console.log($('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_')));
           $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')).hide();
           var textfield = $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_'));
           textfield.show();
@@ -93,31 +115,64 @@ var TripSchedule = React.createClass({
       };
 
     },
-    fieldFocus : function(field){
-      var scope=this;
-      return function(e){
-        console.log(e);
-      };
-    },
     fieldBlur : function(field){
       var scope = this;
       return function(e){
         console.log(e);
         $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')).show();
-        console.log($('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')))
+
         $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_')).hide();
-        console.log($('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_')))
+
       };
+    },
+    _parseNum : function(str){
+
+      str = str.match(/\d+(\.)?\d{0,2}|\d*(\.)\d{1,2}/); //check if it is a valid/almost valid number
+      if(!str){
+        str = '0';
+      }else{
+        str = str[0];
+      }
+      var val = parseFloat(str);
+      if(str[0] === '.')
+        str = '0' + str;
+      if(str.indexOf('.') === -1)
+        str = val.toString();
+      return {val:val,string:str};
     },
     _onChange : function(field){
         var scope = this;
         return function(e){
-            var partialState = scope.state.frequency;
-            if(typeof scope.state.frequency[field] === 'number')
-              partialState[field] = parseInt(e.target.value)*60;
-            else
-              partialState[field] = e.target.value;
-            scope.setState({frequency:partialState});
+            var partialState = {},valstr;
+            if(scope.state.frequency[field] || scope.state.frequency[field] === 0){
+              partialState.frequency = scope.state.frequency;
+              if(field === 'headway_secs'){
+                valstr = scope._parseNum(e.target.value);
+                partialState.frequency[field] = valstr.val*60;
+                partialState.headwaybuffer = valstr.string;
+              }
+              else
+                partialState.frequency[field] = e.target.value;
+
+              var change = partialState.frequency[field]!==scope.props.frequency[field];
+              if(change){
+                partialState.edited = true;
+              }else{
+                partialState.edited = undefined;
+              }
+              scope.props.notifyChange(change);
+              scope.setState(partialState);
+            }else{
+                if(field === 'idle'){
+                  valstr = scope._parseNum(e.target.value);
+                  partialState[field] = valstr.val;
+                  partialState.idlebuffer = valstr.string;
+                }else{
+                  partialState[field] = e.target.value;
+                }
+                scope.setState(partialState);
+            }
+
         };
     },
     render : function(){
@@ -127,17 +182,20 @@ var TripSchedule = React.createClass({
           e = this.state.frequency.end_time,
           id= this.state.frequency.trip_id,
           h = this.state.frequency.headway_secs,
-          field1 = 'start_time',field2='end_time',field3='headway_secs';
+          field1 = 'start_time',field2='end_time',
+          field3='headway_secs',field4='idle';
       var sclick = this.fieldClick(field1),
           eclick = this.fieldClick(field2),
           hclick = this.fieldClick(field3),
+          iclick = this.fieldClick(field4),
           sblur = this.fieldBlur(field1),
           eblur = this.fieldBlur(field2),
           hblur = this.fieldBlur(field3),
+          iblur = this.fieldBlur(field4),
           schange= this._onChange(field1),
           echange= this._onChange(field2),
           hchange= this._onChange(field3),
-          sfocus = this.fieldFocus(field1);
+          ichange= this._onChange(field4);
       var style={overflow:'hidden'};
       return(
 
@@ -145,7 +203,7 @@ var TripSchedule = React.createClass({
             <tr>
               <td onClick={sclick}>
                 <div id={field1+id.replace(/\,/g,'_')}>{s}</div>
-                <input size={8} className={'form-control'} onFocus={sfocus}type='text'id={field1+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
+                <input size={8} className={'form-control'} type='text'id={field1+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
               </td>
 
               <td onClick={eclick} >
@@ -155,11 +213,17 @@ var TripSchedule = React.createClass({
 
               <td onClick={hclick} >
                 <div id={field3+id.replace(/\,/g,'_')}>{h/60 + ' min'}</div>
-                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id.replace(/\,/g,'_')} type='text'onChange={hchange} value={this.state.frequency.headway_secs/60} onBlur={hblur}></input>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id.replace(/\,/g,'_')} type='text'onChange={hchange} value={this.state.headwaybuffer} onBlur={hblur}></input>
               </td>
 
-              <td>{Math.round(this._totaltime()) + 'mins'}</td>
+              <td onClick={iclick} >
+                <div id={field4+id.replace(/\,/g,'_')}>{this.state.idle + ' min'}</div>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field4+'b'+id.replace(/\,/g,'_')} type='text'onChange={ichange} value={this.state.idlebuffer} onBlur={iblur}></input>
+              </td>
+
+              <td>{Math.round(this._totalTimeMin()) + 'mins'}</td>
               <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
+              <td>{this._totalruns()}</td>
             </tr>
           </tbody>
       );

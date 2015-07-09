@@ -78,9 +78,8 @@ module.exports = {
 					+'Order By T.route_id,R.route_short_name, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
 					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
-				console.log(sql);
 			Datasource.query(sql,{},function(err,data){
-				if(err) console.log(err);
+				if(err) console.log('error',err);
 
 					var Routes = {};
 					var trips = {};
@@ -115,6 +114,13 @@ module.exports = {
 		  	});
 
 		});
+	},
+
+	uploadFreqEdits : function(req,res){
+		var freqData = req.body;
+		var agency = req.param('id');
+		console.log('error',freqData);
+		res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500);
 	},
 
 	uploadGtfsEdits: function(req,res){
@@ -211,13 +217,12 @@ module.exports = {
 			res.send('{status:"error",message:"Need Agency Id"}',500);
 		}
 		Datasource.findOne(body.id).exec(function(err,data){
-			console.log(data);
 			if(err){console.log('error finding agency'); res.send('{status:"error",message:"'+err+'"}',500);}
 			var idString = 'Array['+body.trip_ids.map(function(str){return '\''+str+'\'';})+']',
 			tableName = data.tableName,
 			sql = 'SELECT trip_id,start_time,end_time,headway_secs FROM '+tableName+'.frequencies ' +
 						'WHERE '+idString +' && string_to_array(trip_id,\',\')';
-			console.log(sql);
+
 			Datasource.query(sql,{},function(err,data){ //if there is an error with the query logg and send it
 				if(err){console.log('Error Executing query'); res.send('{status:"error",message:"'+err+'"}',500);}
 
@@ -228,5 +233,8 @@ module.exports = {
 			});
 		});
 
-	}
+	},
+	editFrequencies : function(req,res){
+
+	},
 };
