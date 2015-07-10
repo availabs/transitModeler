@@ -32,6 +32,7 @@ var TripSchedule = React.createClass({
     getInitialState:function(){
         return {
             frequency:this.props.frequency,
+            original: JSON.parse(JSON.stringify(this.props.frequency)),
             timeDeltas:this.props.deltas,
             lengths:this.props.lengths,
             units:'mi',
@@ -90,7 +91,7 @@ var TripSchedule = React.createClass({
         this.setState({headway:null,startTime:null,endTime:null});
       }
       else{
-        this.setState({frequency:nextProps.frequency,headwaybuffer:Math.round(nextProps.frequency.headway_secs/60).toString()});
+        this.setState({original:JSON.parse(JSON.stringify(nextProps.frequency)),frequency:nextProps.frequency,headwaybuffer:Math.round(nextProps.frequency.headway_secs/60).toString()});
       }
     },
     componentWillUpdate : function(nextProps,nextState){
@@ -154,13 +155,13 @@ var TripSchedule = React.createClass({
               else
                 partialState.frequency[field] = e.target.value;
 
-              var change = partialState.frequency[field]!==scope.props.frequency[field];
+              var change = partialState.frequency[field]!==scope.state.original[field];
               if(change){
-                partialState.edited = true;
+                partialState.frequency.edited = true;
               }else{
-                partialState.edited = undefined;
+                partialState.frequency.edited = undefined;
               }
-              scope.props.notifyChange(change);
+              scope.props.notifyChange(partialState.frequency.edited);
               scope.setState(partialState);
             }else{
                 if(field === 'idle'){

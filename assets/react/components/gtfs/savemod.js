@@ -67,7 +67,6 @@ SaveObj.prototype.setMovements = function(){
 };
 
 SaveObj.prototype.buildReqObj = function(){
-	debugger;
 	this.setAddDels();
 	this.setMovements();
 };

@@ -96,7 +96,7 @@ module.exports = {
       });
   },
   putFrequencyData : function(data,gtfsid,cb){
-    d3.json('/datasources/gtfs/schedule/'+gtfsId+'/freqEdit')
+    d3.json('/datasources/gtfs/frequencyUpload/'+gtfsid)
       .post(JSON.stringify(data),function(err,data){
           if(err){
             ServerActionCreators.receiveData('FREQ_EDIT_RESPONSE',{status:'error',response:err});

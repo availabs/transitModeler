@@ -10,6 +10,7 @@ DROP FUNCTION IF EXISTS update_route_geom(route_id TEXT,schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, type INT, schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text);
 DROP FUNCTION IF EXISTS create_or_update_service(text,text);
+DROP FUNCTION IF EXISTS create_or_update_freq(text,text,text,integer,text);
 CREATE OR REPLACE FUNCTION add_stop_to_stop_times(stop TEXT, sequence_id INTEGER, id TEXT, schema TEXT)
 RETURNS void AS $$
 	DECLARE
@@ -226,6 +227,24 @@ RETURNS void AS $$
 		END IF;
 		END;
 		$$LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION create_or_update_freq(tripid TEXT, starttime TEXT, endtime TEXT, headwaysecs INT, schema TEXT)
+RETURNS void as $$
+DECLARE
+	isThere BOOLEAN;
+BEGIN
+	EXECUTE format('SELECT EXISTS (SELECT * FROM %I.frequencies WHERE trip_id = $1)',schema)
+					INTO isThere USING tripid;
+	IF isThere THEN
+		EXECUTE format('UPDATE %I.frequencies SET start_time=$1,end_time=$2,headway_secs=$3 WHERE trip_id=$4',schema)
+						USING starttime,endtime,headwaysecs,tripid;
+	ELSE
+		EXECUTE format('INSERT INTO %I.frequencies(trip_id,start_time,end_time,headway_secs) VALUES ($1,$2,$3,$4)',schema)
+						USING tripid,starttime,endtime,headwaysecs;
+	END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 
 --CREATE OR REPLACE FUNCTION create_or_update_trip(trip_id TEXT,)
 --SELECT * FROM add_stops(text '00000',ARRAY[12],ARRAY['2328042-AUG13-Albany-Weekday-01']);

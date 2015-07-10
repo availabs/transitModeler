@@ -128,7 +128,6 @@ var Util = {
 
 	putStops: function(datafile,featlist,trips,deltas){
 		var updates,insertsDeletes,sql = '';
-		debugger;
 		updates = featlist.filter(function(feat){return !(feat.isNew() || feat.isDeleted());});
 		insertsDeletes = featlist.filter(function(feat){return feat.isNew() || feat.isDeleted();});
 		if(insertsDeletes.length > 0){
@@ -166,21 +165,26 @@ var Util = {
 		return sql;
 	},
 
-	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,cb){
+	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
 			var sql = '', datafile=agency.tableName ;
-			if(trip.isNew){
-				sql += db.putService(datafile,trip.service_id);
-				sql += db.putRoute(datafile,route_id);
-				sql += db.putTrip(datafile,trip);
+			if(trip.isNew){ //if we are adding a new trip
+				sql += db.putService(datafile,trip.service_id); //add its associated service
+				sql += db.putRoute(datafile,route_id);	//add the associated route
+				sql += db.putTrip(datafile,trip);	// add the trip itself
 			}
-			sql += db.putStops(datafile,featlist,trips,deltas);
-			sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper);
+			if(featlist.length > 0){ //if any stops were moved,added or edited
+				sql += db.putStops(datafile,featlist,trips,deltas); //store the stops
+				sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper); //and store the new shape of the trip
+			}
+			if(freqs.length > 0){
+				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
+			}
+
 			// sql += db.updateRouteGeo(datafile,route_id);
-			sql = 'BEGIN; ' + sql + ' COMMIT;';
-      debugger;
-      Datasource.query(sql,{},function(err, data){
+			sql = 'BEGIN; ' + sql + ' COMMIT;'; //Wait to commit to avoid bad db state
+      Datasource.query(sql,{},function(err, data){ //execute the combined query;
 				if(err){
 					console.log(err);
 				}
@@ -217,6 +221,30 @@ var Util = {
 
 	createTrip: function(datafile,featlist,trip,deltas,cb){
 
+	},
+	putFrequencies : function(datafile,frequencies,cb){
+		if(frequencies.length === 0){
+			cb(null);
+			return;
+		}
+		var template = 'Select create_or_update_freq(\'?\',\'?\',\'?\',?,\'?\');';
+		var map = ['trip_id','start_time','end_time','headway_secs','file'];
+		var data = frequencies.map(function(d){return {
+																						trip_id:d.trip_id,
+																						start_time:d.start_time,
+																						end_time:d.end_time,
+																						headway_secs:d.headway_secs,
+																						file:datafile
+																						};
+																});
+		debugger;
+		var dbhelp = new dbhelper(template,data);
+		dbhelp.setMapping(map);
+		var sql = dbhelp.getQuery();
+		return sql;
+		// Datasource.query(sql,{},function(err,data){
+		// 	cb(err,data);
+		// });
 	},
 };
 

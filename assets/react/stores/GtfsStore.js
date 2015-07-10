@@ -286,7 +286,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     }
     else if(!_frequencyEditResponse && Object.keys(_uFrequencyData).length > 0){
       gtfsId = ma.origin_gtfs;
-      _putGtfsData(_uFrequencyData,gtfsId);
+      _putFrequencyData(_uFrequencyData,gtfsId);
       _uFrequencyData = {};
       return _frequencyEditResponse;
     }

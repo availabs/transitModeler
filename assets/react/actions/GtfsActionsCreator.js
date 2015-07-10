@@ -25,7 +25,7 @@ module.exports = {
   },
   uploadEditFreqs : function(freqdata){
     AppDispatcher.handleViewAction({
-      type : ActionTypes.SET_FREQ_SAVE,
+      type : ActionTypes.SET_FREQS,
       data : freqdata,
     });
   },

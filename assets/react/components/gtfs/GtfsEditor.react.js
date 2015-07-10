@@ -204,8 +204,14 @@ var MarketAreaNew = React.createClass({
         console.log('Request Object', reqObj);
 
         // post edited data to the server
+
+        if(this.state.frequencies){
+          var changedFrequencies = this.state.frequencies.filter(function(d){
+            return d.edited;
+          });
+          reqObj.frequencies = changedFrequencies;
+        }
         GtfsActionsCreator.uploadEdit(reqObj);
-        GtfsActionsCreator.uploadEditFreqs(this.state.frequencies);
         this.setState({edited:false}); //optimistically lock the save button
                                       // and continue
     },
@@ -279,7 +285,7 @@ var MarketAreaNew = React.createClass({
           if(nextProps.freqMessage.status && nextProps.freqMessage.status === 'success'){
             console.log('Frequency Data Upload Successfull');
           }else{
-            console.log('Error uploading frequency data');
+            console.log('Error uploading frequency data',nextProps.freqMessage);
             this.setState({edited:true});
           }
         }

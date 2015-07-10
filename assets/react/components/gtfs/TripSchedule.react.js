@@ -126,7 +126,7 @@ var TripSchedule = React.createClass({
                       <th>{'Idle'}</th>
                       <th>{'RunTime'}</th>
                       <th>{'Distance'}</th>
-                      <th>{'Runs'}</th>
+                      <th>{'Buses'}</th>
                     </tr>
                   </thead>
                   {tables.reverse()}

@@ -1,43 +1,40 @@
 var batchmod = function(template,paramlist){
 	var paramMatching = {};
-	var minion = (function(){var t = template.trim(); return (t[t.length-1] === ';') ? t:(t+';') })();
-
-
-	if(paramlist.length && paramlist.length !== 0 && Object.keys(paramlist[0]).length !== (minion.split('?').length -1) ){
-		throw {"error":"Error", "message":"number of parameters and substitutions don't match"}
-	} //if number of attributes != number of input params throw error
+	var minion = (function(){var t = template.trim(); return (t[t.length-1] === ';') ? t:(t+';'); })();
 	this.setParam = function(key,index){
 		paramMatching[index] = key;
 		return this;
-	}
+	};
 	this.setMapping = function(map){
 		paramMatching = map;
-	}
+		if(map.length !== (minion.split('?').length-1))
+			throw {"error":"Error", "message":"number of parameters and substitutions don't match"};
+	};
 	this.getQuery = function(){
 		var query = '';
-		var re = /\?/
+		var re = /\?/;
 		if(!paramlist.length){
 			obj = paramlist;
 			Object.keys(paramMatching).sort().forEach(function(key){
 				var value = obj[paramMatching[key]];
 				minion = minion.replace(re,value);
-			})
+			});
 			query += (minion+';');
 		}else{
 			paramlist.forEach(function(obj){
 				var minion = template; //copy the template waiting for substitutions
-				Object.keys(paramMatching).sort().forEach(function(key){
-					var value = obj[paramMatching[key]];
+				paramMatching.forEach(function(key){
+					var value = obj[key];
 					minion = minion.replace(re,value);
-				})
+				});
 				query += (minion+';');
 			});
 		}
 
 
 		return query;
-	}
-}
+	};
+};
 
 
 module.exports = batchmod;
