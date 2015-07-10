@@ -236,7 +236,7 @@ var Map = React.createClass({
                 count = 0;
                 map.off('click',onClick);
             }
-        };
+        }
         if(!map.hasEventListeners('click')){
             map.on('click',onClick);
         }

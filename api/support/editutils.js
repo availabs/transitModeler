@@ -56,13 +56,11 @@ var Util = {
 				//use the distinct shape id's associated with all trips involved
 				//to reforge the geometry of the associated route in the routes table
 				var template1, map, lons=[], lats=[], geoms,sql = '';
-				if(trip.isNew){
 					template1 = 'SELECT delete_and_update_shapes_with_trips(?,?,?,?,\'?\')';
 					map = ['trips','lats','lons','geoms','file'];
-				}else{
-					template1='SELECT insert_into_shapes_with_trips(\'?\',?,?,?,?,\'?\')';
-					map = ['shape_id','trips','lats','lons','geoms','file'];
-				}
+
+					// template1='SELECT insert_into_shapes_with_trips(\'?\',?,?,?,?,\'?\')';
+					// map = ['shape_id','trips','lats','lons','geoms','file'];
 
 				geoms = geojson.coordinates.map(function(pt){
 					lats.push(pt[1]);
@@ -77,7 +75,7 @@ var Util = {
 				dbhelp = new dbhelper(template1,data);
 				dbhelp.setMapping(map);
 				sql = dbhelp.getQuery(); //ends shapes table edit
-
+				console.log(sql);
 				return sql;
 	},
 

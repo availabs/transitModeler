@@ -230,20 +230,20 @@ RETURNS void AS $$
 
 CREATE OR REPLACE FUNCTION create_or_update_freq(tripid TEXT, starttime TEXT, endtime TEXT, headwaysecs INT, schema TEXT)
 RETURNS void as $$
-DECLARE
-	isThere BOOLEAN;
-BEGIN
-	EXECUTE format('SELECT EXISTS (SELECT * FROM %I.frequencies WHERE trip_id = $1)',schema)
-					INTO isThere USING tripid;
-	IF isThere THEN
-		EXECUTE format('UPDATE %I.frequencies SET start_time=$1,end_time=$2,headway_secs=$3 WHERE trip_id=$4',schema)
-						USING starttime,endtime,headwaysecs,tripid;
-	ELSE
-		EXECUTE format('INSERT INTO %I.frequencies(trip_id,start_time,end_time,headway_secs) VALUES ($1,$2,$3,$4)',schema)
-						USING tripid,starttime,endtime,headwaysecs;
-	END IF;
-END;
-$$ LANGUAGE plpgsql;
+	DECLARE
+		isThere BOOLEAN;
+	BEGIN
+		EXECUTE format('SELECT EXISTS (SELECT * FROM %I.frequencies WHERE trip_id = $1)',schema)
+						INTO isThere USING tripid;
+		IF isThere THEN
+			EXECUTE format('UPDATE %I.frequencies SET start_time=$1,end_time=$2,headway_secs=$3 WHERE trip_id=$4',schema)
+							USING starttime,endtime,headwaysecs,tripid;
+		ELSE
+			EXECUTE format('INSERT INTO %I.frequencies(trip_id,start_time,end_time,headway_secs) VALUES ($1,$2,$3,$4)',schema)
+							USING tripid,starttime,endtime,headwaysecs;
+		END IF;
+	END;
+	$$ LANGUAGE plpgsql;
 
 
 --CREATE OR REPLACE FUNCTION create_or_update_trip(trip_id TEXT,)

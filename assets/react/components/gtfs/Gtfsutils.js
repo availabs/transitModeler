@@ -99,6 +99,21 @@ var Stops = function(){
 	Stops.prototype.getLength = function(){
 		return this.list.length;
 	};
+	Stops.prototype.takeNew = function(stops2){
+		var stops = this;
+		stops2.ids.forEach(function(d,i){
+			if(stops.ids.indexOf(d) < 0){
+				stops.ids.push(d);
+				stops.list.push(stops2.list[i]);
+			}
+		});
+	};
+	Stops.prototype.clean = function(){
+		this.list.forEach(function(d){
+			d.setNew(false);
+			d.setNormal();
+		});
+	};
 
 var Stop = function(stop){
 	if(stop)
@@ -240,10 +255,10 @@ var Stop = function(stop){
 		this.stop.edited = false;
 	};
 	Stop.prototype.isEdited = function(){
-		return this.stop.edited === true;
+		return this.stop.edited;
 	};
 	Stop.prototype.setRemoval = function(){
-		return this.stop.properties.removed = true;
+		this.stop.properties.removed = true;
 	};
 	Stop.prototype.wasRemoved = function(){
 		return this.stop.properties.removed;

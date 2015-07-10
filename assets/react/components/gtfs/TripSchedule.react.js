@@ -104,7 +104,7 @@ var TripSchedule = React.createClass({
       this.props.notifyChange(isEdited);
     },
     render: function() {
-        if(this.state.frequencies && this.state.timeDeltas &&  Object.keys(this.state.frequencies).length > 0){
+        if(this.state.frequencies &&  Object.keys(this.state.frequencies).length > 0){
           var scope = this;
           var tables = this.state.frequencies.map(function(d){
               return (
