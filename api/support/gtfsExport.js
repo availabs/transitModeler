@@ -1,7 +1,8 @@
 var fs = require('fs');
 var path = require('path');
-var dir = 'gtfsFiles';
+var dir = 'api/support/gtfsFiles/';
 var dirname = dir+'/';
+var zipName='gtfsFiles';
 
 var exec = require('child_process').exec;
 //All gtfs table field names
@@ -118,7 +119,7 @@ var commands =  Object.keys(file).map(function(filename){
   return temp;
 });
 var command = '(' + commands.reduce(function(p,c){return p + ' && ' + c;}) + ')';
-var zipCommand = 'cd '+dirname+' && zip -r '+dir +'.zip *' ;
+var zipCommand = 'cd '+dirname+' && zip -r '+zipName +'.zip *' ;
 
 var handler = function(err,sout,serr){
   if(err) console.error(err);
