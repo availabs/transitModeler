@@ -10,6 +10,7 @@ var topojson = require('topojson');
 var db = require('../support/editutils');
 var Stop = require('../../assets/react/components/gtfs/Gtfsutils').Stop;
 var frequencybuilder = require('../support/frequencybuilder');
+var exec = require('child_process').exec;
 var BasicRoute = function(id){
 	this.id = id;
 	this.shortName = '';
@@ -329,4 +330,27 @@ module.exports = {
 		}
 		res.json({status:message, code:statusCode});
 	},
+
+	downloadGtfs   : function(req,res){
+		var tableName = req.param('name');
+		exec('node ./api/support/gtfsExport.js ' + tableName ,function(err,sout,serr){
+			if(err){
+				console.log(err);
+				res.send('{status:"Error", message:"Internal Server Failure"}',500);
+			}else{
+				if(sout) console.log('stdout : ',sout);
+				if(serr){
+					console.log('stderr : ',serr);
+					res.send('{status:"Error", message:"Internal Server Failure"}',500);
+				}
+				else{
+					console.log('generated');
+					res.download('./api/support/gtfsFiles/gtfsFiles.zip','gtfs.zip',function(err){
+						if(err)
+							console.log(err);
+					});
+				}
+			}
+		});
+	}
 };

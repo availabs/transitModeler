@@ -25,6 +25,7 @@ var React = require('react'),
     SaveBox = require('./SaveBox.react'),
     EditBox = require('./EditBox.react'),
     TripSchedule=require('./TripSchedule.react'),
+    Download = require('./Download.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     GtfsActionsCreator       = require('../../actions/GtfsActionsCreator');
@@ -610,6 +611,7 @@ var MarketAreaNew = React.createClass({
                             notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
+
                        <Databox
                            schedules = {scheds}
                            onRouteChange={this.setRoute}
@@ -632,6 +634,8 @@ var MarketAreaNew = React.createClass({
                        <SaveBox
                         Edited={this.state.edited}
                         onSave={this._saveEdits}/>
+
+                      <Download/>
                     </div>
 
                 </div>

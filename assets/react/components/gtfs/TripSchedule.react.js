@@ -106,7 +106,7 @@ var TripSchedule = React.createClass({
     render: function() {
         if(this.state.frequencies &&  Object.keys(this.state.frequencies).length > 0){
           var scope = this;
-          var tables = this.state.frequencies.map(function(d){
+          var tables = this.state.frequencies.sort(function(d1,d2){return diffSecs(d2.start_time,d1.start_time);}).map(function(d){
               return (
                 <GroupBox
                   frequency={d}

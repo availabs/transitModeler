@@ -41,6 +41,7 @@ module.exports.routes = {
   '/datasources/gtfs/frequencyUpload/:id' : 'GtfsController.uploadFreqEdits',
   '/datasources/gtfs/backup' : 'GtfsController.backupSource',
   '/datasources/gtfs/backupStatus': 'GtfsController.statusCheck',
+  '/datasources/gtfs/generate' : 'GtfsController.downloadGtfs',
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
   '/triptable/run':'TriptableController.runModel',
