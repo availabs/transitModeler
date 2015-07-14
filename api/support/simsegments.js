@@ -50,7 +50,6 @@ var buildSegments = function(List,ranges){
     crange = ranges.splice(ix,1)[0];//get the current largest range
 
     //update the other ranges if necessary
-    console.log(ix,crange,len);
     if(ix === 0 && len > 1){  //if its the first element of the list increment
       if(ranges[ix][0] === crange[1])         //the beginning of range in front
         ranges[ix][0]++;

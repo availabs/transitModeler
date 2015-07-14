@@ -77,13 +77,15 @@ var MarketAreaIndex = React.createClass({
                 return (
                         <GtfsEditor
                         tracts = {this.props.tracts}
-                        routesGeo ={this.props.routesGeo}
-                        stopsGeo = {this.props.stopsGeo}
+                        routesGeo ={this.props.eRoutesGeo}
+                        stopsGeo = {this.props.eStopsGeo}
                         schedules = {this.props.schedules}
                         routingGeo= {this.props.routingGeo}
                         editMessage={this.props.editMessage}
                         freqMessage={this.props.freqEditResponse}
-                        frequencyData={this.props.frequencyData}/>
+                        frequencyData={this.props.frequencyData}
+                        marketarea = {this.props.marketarea}
+                        datasources={this.props.datasources.gtfs}/>
                     )
 
             break;

@@ -26,6 +26,7 @@ var React = require('react'),
     EditBox = require('./EditBox.react'),
     TripSchedule=require('./TripSchedule.react'),
     Download = require('./Download.react'),
+    Datasources = require('./DataSourceDrop.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     GtfsActionsCreator       = require('../../actions/GtfsActionsCreator');
@@ -57,6 +58,7 @@ var editCheckConfirm = function(obj){
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
+            currentGtfs : null,
             currentRoute:null,
             currentService:null,
             currentTrip:null,
@@ -78,6 +80,11 @@ var MarketAreaNew = React.createClass({
             routeColl:[],
             frequencies:null,
         };
+    },
+    setGtfs : function(id){
+      var partialState = this.getInitialState();
+      partialState.currentGtfs = id;
+      this.setState(partialState);
     },
     setRoute:function(id){  //on route change
         if(!editCheckConfirm(this))
@@ -187,35 +194,44 @@ var MarketAreaNew = React.createClass({
         stop.setEdited();
         this.setState({edited:true,tripChange:false});
     },
+    _buildSave:function(){
+      console.log('attempted save');
+      var route = this.state.routeColl.filter(function(d){
+        return d.isNew;
+      })[0];
+      if(route)
+        route = route.getFeature();
+      var saveObj = new SaveObj(this.state.graph,
+                                this.state.stopColl,
+                                this.state.tracker.getEventList(),
+                                this.state.deltas,
+                                this.state.TripObj,
+                                this.state.schedules[this.state.currentRoute].id,
+                                route);
+      var reqObj = saveObj.getReqObj();
+      console.log('Request Object', reqObj);
+      if(this.state.frequencies){
+        var changedFrequencies = this.state.frequencies.filter(function(d){
+          return d.edited;
+        });
+        reqObj.frequencies = changedFrequencies;
+      }
+      return reqObj;
+    },
+    _cloneAndSave:function(name,fips,setting){
+      var obj = {};
+      var reqObj = this._buildSave();
+      obj.name = name;
+      obj.fips=fips;
+      obj.setting=setting;
+      GtfsActionsCreator.uploadEdit(obj);
+    },
     _saveEdits:function(){
-        console.log('attempted save');
-        var route = this.state.routeColl.filter(function(d){
-          return d.isNew;
-        })[0];
-        if(route)
-          route = route.getFeature();
-        var saveObj = new SaveObj(this.state.graph,
-                                  this.state.stopColl,
-                                  this.state.tracker.getEventList(),
-                                  this.state.deltas,
-                                  this.state.TripObj,
-                                  this.state.schedules[this.state.currentRoute].id,
-                                  route);
-        var reqObj = saveObj.getReqObj();
-        console.log('Request Object', reqObj);
-
         //post edited data to the server
-
-        if(this.state.frequencies){
-          var changedFrequencies = this.state.frequencies.filter(function(d){
-            return d.edited;
-          });
-          reqObj.frequencies = changedFrequencies;
-        }
+        var reqObj = this._buildSave();
         GtfsActionsCreator.uploadEdit(reqObj);
         this.setState({edited:false}); //optimistically lock the save button
                                       // and continue
-
     },
     _processResponse:function(data){
         if(this.state.currentTrip === null || Object.keys(data).length === 0)
@@ -564,6 +580,7 @@ var MarketAreaNew = React.createClass({
       };
       return freq;
     },
+
     render: function() {
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
@@ -576,6 +593,10 @@ var MarketAreaNew = React.createClass({
             tempColl.addStops(ids.map(function(id){return scope._getStop(id);}));
             stopsGeo = tempColl.getFeatureCollection();
 
+        }
+        var gtfs = null;
+        if(this.state.currentGtfs){
+          gtfs = this.props.datasources[this.state.currentGtfs];
         }
         var tracts = check(this.props.tracts) ;
         var scheds = this.state.schedules || {};
@@ -611,6 +632,10 @@ var MarketAreaNew = React.createClass({
                             notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
+                      <Datasources
+                        data={this.props.datasources}
+                        marketarea={this.props.marketarea}
+                        setDataSource={this.setGtfs}/>
 
                        <Databox
                            schedules = {scheds}
@@ -633,7 +658,9 @@ var MarketAreaNew = React.createClass({
                             active={this.state.needEdit}/>
                        <SaveBox
                         Edited={this.state.edited}
-                        onSave={this._saveEdits}/>
+                        onSave={this._saveEdits}
+                        cloneSave={this._cloneAndSave}
+                        gtfs = {gtfs}/>
 
                       <Download/>
                     </div>

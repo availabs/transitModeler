@@ -1,3 +1,5 @@
+var pg = require('pg');
+var connString = require('./pg');
 var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');
 var frequencybuilder = function(schema,cb){
@@ -71,27 +73,6 @@ var frequencybuilder = function(schema,cb){
 		});
 		return groups;
 	};
-	//function to group data into logical groups based on
-	//common and connected time deltas
-	// var parseData = function(data,deltaMat){
-	//
-	// 	deltaMat.forEach(function(deltaList,i){
-	// 		var deltas=[] ,trip_ids = data[i].trips,tripList = [], starts = data[i].starts, startsList = [], ends=data[i].ends, endList=[];
-	// 		groupList = parseGroups(deltaList);//get a list of grouped time deltas
-	// 		groupList.forEach(function(group){ //for each grouping of time deltas
-	// 			deltas.push(group.delta);
-	// 			tripList.push(trip_ids.splice(0,group.size+1)); //add to the trip list the corresponding trips for each group
-	// 			startsList.push(starts.splice(0,group.size+1)); //add to the starts list the corresponding start times for each group
-	// 			endList.push(ends.splice(0,group.size+1));		//same for the end times
-	// 		});
-	// 		data[i].trips = tripList;
-	// 		data[i].starts = startsList;
-	// 		data[i].ends = endList;
-	// 		data[i].deltas = deltas;
-	// 	});
-	// 	console.log('write finished');
-	// 	return data;
-	// };
 
 	var newParseData = function(data){
 
@@ -166,7 +147,7 @@ var frequencybuilder = function(schema,cb){
 		var sql = 'DELETE FROM '+schema+'.frequencies WHERE true;'+createFrequencies(data.rows);
 		return sql;
 	};
-	//pg.connect(connString,function(err,client,done){
+
 		var temp = 'Select array_agg(T2.starting ORDER BY T2.starting)as starts, array_agg(T2.ending ORDER BY T2.starting) as ends, T2.service_id, array_agg(T2.trip_id ORDER BY T2.starting) as trips from ( '
 							+'SELECT MIN(ST.departure_time)as starting,MAX(ST.arrival_time)as ending, '
 				  			+'T.route_id, T.service_id, T.shape_id, T.trip_id,T.direction_id, array_agg(ST.stop_id Order By ST.stop_sequence) as stops '
@@ -180,26 +161,35 @@ var frequencybuilder = function(schema,cb){
 							+	' ) as T2 '
 					+'Group by T2.shape_id,T2.stops,T2.route_id,T2.service_id;'
 
+	pg.connect(connString,function(err,client,done){
+		if(err){
+			return console.error('error fetching client from pool',err);
+		}
 		dbhelp = new dbhelper(temp,[{table:schema,table2:schema,table3:schema}]);
 		dbhelp.setMapping(['table','table2','table3']);
-		Datasource.query(dbhelp.getQuery(),[],function(err,data){
+		client.query(dbhelp.getQuery(),[],function(err,data){
 			if(err){
 				return console.error('error running query',err);
 			}
 			console.log('total Rows: ',data.rows.length);
 			var newquery = handleResponse(data);
-			Datasource.query(newquery,[],function(err,data){
+			client.query(newquery,[],function(err,data){
+				done();
 				if(err){
 					console.error('error running query',err);
 					cb(err,data);
 				}else
 					cb(err,data);
 			});
-		} );
-	// });
+		});
+	});
 
 
 };
 // frequencybuilder('gtfs_20141014_13_1_edited');
-
+if(process.argv[2] && (typeof process.argv[2] ==='string') ){
+	frequencybuilder(process.argv[2],function(err,data){
+		console.log(err,data);
+	});
+}
 module.exports= frequencybuilder;

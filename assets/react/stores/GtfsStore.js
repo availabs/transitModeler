@@ -29,6 +29,9 @@ var _currentGtfs = null,
     _frequencyData = {},
     _uFrequencyData = {},
     _frequencyEditResponse = null,
+    _editGtfs = null,
+    _eGtfsStopsGeo={},
+    _eGtfsRoutesGeo={},
     _routingWaypoints = [];
 
 function _addRoutes(id,rawData) {
@@ -70,7 +73,25 @@ function _loadStopsGeo(maId,gtfsId,routes){
     SailsWebApi.getStopsGeo(maId,gtfsId,routes);
     _gtfsStopsGeo[maId] = 'loading';
   }
+}
 
+function _loadEditRoutesGeo(gtfsId,routes){
+  if(!_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !== 'loading'){
+    SailsWebApi.getEditRoutesGeo(gtfsId,routes);
+    _eGtfsRoutesGeo[gtfsId] = 'loading';
+  }
+}
+
+
+function _loadEditStopsGeo(gtfsId,routes){
+  if(!_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !== 'loading'){
+    SailsWebApi.getEditStopsGeo(gtfsId,routes);
+    _eGtfsStopsGeo[gtfsId] = 'loading';
+  }
+}
+
+function _setEditGtfs(gtfsId){
+  _editGtfs = gtfsId;
 }
 
 function _loadRouteSchedule(maId,gtfsId,routes){
@@ -103,6 +124,7 @@ function _loadRouteSchedule(maId,gtfsId,routes){
   function _setTrips(trips){
     _trip_ids = trips;
   }
+
   function _setUploadFrequencyData(data){
     _uFrequencyData = data;
   }
@@ -119,6 +141,12 @@ function _loadRouteSchedule(maId,gtfsId,routes){
   function _putGtfsData(data,gtfsId){
     if(data && gtfsId){
       SailsWebApi.putGtfsData(data,gtfsId);
+      _editResponse = 'loading';
+    }
+  }
+  function _putAndCloneGtfsData(data,gtfsId){
+    if(data && gtfsId){
+      SailsWebApi.putAndCloneGtfsData(data,gtfsId);
       _editResponse = 'loading';
     }
   }
@@ -143,8 +171,45 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     return _marketAreas[id];
   },
 
-  getRoutesGeo : function(){
+  getEditRoutesGeo : function(){
+    var ma = MarketAreaStore.getCurrentMarketArea();
+    if( ma ){
+      if(!_editGtfs){
+        return {type:'FeatureCollection',features:[]};
+      }
+      gtfsId = _editGtfs;
+      routes = ma.routes;
+      if(_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !=='loading'){
+        return _eGtfsRoutesGeo[gtfsId];
+      }
+      else if(!_eGtfsRoutesGeo[gtfsId]){
+        _loadEditRoutesGeo(gtfsId,routes);
+      }
+      return {type:'FeatureCollection',features:[]};
+    }
+    return {type:'FeatureCollection',features:[]};
+  },
 
+  getEditStopsGeo : function(){
+    var ma = MarketAreaStore.getCurrentMarketArea();
+    if( ma ){
+      if(!_editGtfs){
+        return {type:'FeatureCollection',features:[]};
+      }
+      gtfsId = _editGtfs;
+      routes = ma.routes;
+      if(_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !=='loading'){
+        return _eGtfsStopsGeo[gtfsId];
+      }
+      else if(!_eGtfsStopsGeo[gtfsId]){
+        _loadEditStopsGeo(gtfsId,routes);
+      }
+      return {type:'FeatureCollection',features:[]};
+    }
+    return {type:'FeatureCollection',features:[]};
+  },
+
+  getRoutesGeo : function(){
     var ma = MarketAreaStore.getCurrentMarketArea();
 
     if( ma ){
@@ -159,7 +224,6 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return {type:'FeatureCollection',features:[]};
     }
     return {type:'FeatureCollection',features:[]};
-
   },
 
   getStopsGeo : function(){
@@ -237,9 +301,13 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         _editResponse = null;         //reset the response variable for latter
       return retval;
     }
-    else if(!_editResponse && Object.keys(_uploadGtfs).length > 0){
+    else if(!_editResponse && _uploadGtfs && Object.keys(_uploadGtfs).length > 0){
       gtfsId = ma.origin_gtfs;
-      _putGtfsData(_uploadGtfs,gtfsId);
+      if(_uploadGtfs.name){ //this has slightly different format
+          _putAndCloneGtfsData(_uploadGtfs,gtfsId);
+      }else{
+          _putGtfsData(_uploadGtfs,gtfsId);
+      }
       _uploadGtfs = {};
       return _editResponse;
     }
@@ -326,6 +394,23 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_DATASOURCES:
       _addDatasets(action.data);
       GtfsStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_GTFS_EDIT_ROUTES:
+        _eGtfsRoutesGeo[action.Id] = action.data;
+        GtfsStore.emitChange();
+        console.log('Editable Routes',_eGtfsRoutesGeo);
+    break;
+
+    case ActionTypes.RECEIVE_GTFS_EDIT_STOPS:
+        _eGtfsStopsGeo[action.Id] = action.data;
+        GtfsStore.emitChange();
+        console.log('Editable Stops',_eGtfsStopsGeo);
+    break;
+
+    case ActionTypes.SET_GTFS:
+        _editGtfs = action.data;
+        GtfsStore.emitChange();
     break;
 
     case ActionTypes.RECEIVE_GTFS_ROUTES:

@@ -166,6 +166,14 @@ var Util = {
 	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
+			if(agency.settings.readOnly){
+				console.log('Attempt to edit readonly Data: Aborting');
+				cb({status:'Failure',message:'ReadOnly'},{});
+				return;
+				}
+			else{
+				console.log('Everything is Good');
+			}
 			var sql = '', datafile=agency.tableName ;
 			if(trip.isNew){ //if we are adding a new trip
 				sql += db.putService(datafile,trip.service_id); //add its associated service

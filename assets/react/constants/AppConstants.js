@@ -51,6 +51,9 @@ module.exports = {
     RECEIVE_SURVEYS:null,
     RECEIVE_FAREBOXS:null,
 
+    SET_GTFS: null,
+    RECEIVE_GTFS_EDIT_ROUTES:null,
+    RECEIVE_GTFS_EDIT_STOPS: null,
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,
     RECEIVE_GTFS_STOPS_GEOS:null,

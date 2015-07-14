@@ -56,7 +56,20 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
-
+  getEditRoutesGeo : function(gtfsId,routes,cb){
+    d3.json('datasources/gtfs/routes/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){
+        ServerActionCreators.receiveDataWithId('gtfs_edit_route',gtfsId,data);
+        if(cb){cb(gtfsId,data);}
+      });
+  },
+  getEditStopsGeo : function(gtfsId,routes,cb){
+    d3.json('datasources/gtfs/stops/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){
+        ServerActionCreators.receiveDataWithId('gtfs_edit_stop',gtfsId,data);
+        if(cb){cb(gtfsId,data);}
+      });
+  },
   getRoutesGeo: function(ma_id,gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/routes/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
@@ -129,10 +142,22 @@ module.exports = {
           }else{
               ServerActionCreators.receiveData('EDITOR_RESPONSE',data);
           }
-          if(cb){cb(data)}
+          if(cb){cb(data);}
       });
   },
-
+  putAndCloneGtfsData : function(data,gtfsId,cb){
+    var url = '/datasources/gtfs/schedule/clone/'+gtfsId;
+    console.log(url);
+    d3.json(url)
+      .post(JSON.stringify(data),function(err,data){
+        if(err){
+          ServerActionCreators.receiveData('EDITOR_RESPONSE',{status:'error',response:err});
+        }else{
+          ServerActionCreators.receiveData('EDITOR_RESPONSE',data);
+        }
+        if(cb){cb(data);}
+      });
+  },
 
   //---------------------------------------------
   // DataSources

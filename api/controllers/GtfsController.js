@@ -9,7 +9,6 @@
 var topojson = require('topojson');
 var db = require('../support/editutils');
 var Stop = require('../../assets/react/components/gtfs/Gtfsutils').Stop;
-var frequencybuilder = require('../support/frequencybuilder');
 var exec = require('child_process').exec;
 var BasicRoute = function(id){
 	this.id = id;
@@ -159,16 +158,22 @@ module.exports = {
 			res.send('{status:"error",message:"Missing parameter:geometry"}', 500);
 		}
 
-		db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,function(err,data){
-			if(err){
-				console.log("Error in uploading");
-				res.send('{status:"error",message:'+JSON.stringify(err)+'}', 500);
-			}
-			else{
-				console.log("Successful Edit Upload");
-				res.json({status:'success'});
-			}
+		Datasource.findOne({id:agency}).exec(function(err,data){
+			debugger;
+			if(err){ console.log(err); return;}
+			console.log(data);
+			db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,function(err,data){
+				if(err){
+					console.log(err);
+					res.json(err);
+				}
+				else{
+					console.log("Successful Edit Upload");
+					res.json({status:'success'});
+				}
+			});
 		});
+
 	},
 	//added to api for debugging purposes
 	routes: function(req,res){
@@ -250,85 +255,67 @@ module.exports = {
 	},
 
 	backupSource   : function(req,res){
-		if(typeof req.param('name') === 'undefined'){
+		var name = req.body.name,
+		fips = req.body.fips || -1,
+		settings = req.body.settings || {},
+		dsID = req.params('id');
+		savedata = req.body.savedata;
+		console.log('dsID',dsID);
+
+		if(typeof name === 'undefined'){
 			res.send('{status:"error",message:"Error Need New Edit Name"}',500);
 		}
-		if(longProcessStatus.status !== 0){
-			res.json({status:'Backup in process, please try again later'});
-			return;
-		}
 		//First query the database to check if the table name exists;
-		var chksql = 'SELECT count(*) from gtfs_edits WHERE name=\''+req.param('name')+'\';';
-		Datasource.query(chksql,{},function(err,chk){
-			if(err){
-				console.log(err);
-				res.send('{status:"error",message:"Check Failure"}',500);
-				return;
-			}
-			if(chk.data !== 0){
-				res.json({status:'Failure',message:'Edit Already Exists'});
-				return;
-			}
-			Datasource.findOne({type:'gtfs'}).exec(function(err,data){
-				if(err){
-							res.send('{status:"error",message:"Failed building frequency Table"}');
-							return;
-				}
-				var backupName = 'gtfs_edit_'+req.param('name');
-				var sql = 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;';
-				console.log(sql);
-				sql += 'SELECT clone_schema(\''+data.tableName+'\',\''+backupName+'\');';
-				longProcessStatus.status = 01;
-				res.json({status:'Backing Up' });
-				console.log(longProcessStatus.status);
-				Datasource.query(sql,{},function(err,data){
-					console.log('backup finished');
-					if(err){
-						longProcessStatus.status = 11;
-						return;
-					}else{
-						longProcessStatus.status = 02;
-						frequencybuilder(backupName,function(err,data){
-							if(err){
-								longProcessStatus.status = 10;
-							}else{
-								longProcessStatus.status = 03;
-							}
-						});
-					}
-				});
+		Datasource.find({type:'gtfs'}).sort('id').exec(function(err,data){
+			console.log(err,data);
+			var chk = data.filter(function(d){//collect those with the same name
+				return d.tableName == name;
 			});
-		});
-	},
+			var source = data.filter(function(d){
+					return d.id === dsID;
+			})[0].tableName;
+			console.log(err,data);
+			if(chk.length >0){ //if that schema already exists
+				var flashMessage = [{
+					name:'Data Exists',
+					message: 'That Name is already present'
+				}];
+				req.session.flash={err:flashMessage}; //disregard the request
+				res.json({status:'error',responseText:'Gtfs dataset already exists.' + name+'.'});
 
-	statusCheck    : function(req,res){
-		var statusCode = longProcessStatus.status, message='';
-		switch (statusCode){
-			case 0:
-				message = 'All Clear';
-			break;
-			case 01:
-				message = 'Backing Up Data';
-			break;
-			case 02:
-				message = 'Building Frequencies';
-			break;
-			case 03:
-				message = 'Build Complete';
-				longProcessStatus.status = 0;
-			break;
-			case 10:
-				message = 'Error Constructing Frequencies';
-				longProcessStatus.status = 0;
-			break;
-			case 11:
-				message = 'Error Backing Up';
-				longProcessStatus.status = 0;
-			break;
-			default:
-				message = 'All Clear';
-		}
-		res.json({status:message, code:statusCode});
+			}else{//if it is not present
+
+				Job.create({
+					isFinished:false,	//initialize job object
+					type:'clone gtfs',
+					info:[{'state':fips,'name':name}],
+					status:'Started'
+				})
+				.exec(function(err,job){//start the job
+					if(err){
+						console.log('create job error',err);
+						req.session.flash={
+							err:err
+						};
+						res.json({responseText:'GTFS Job Clone Error'});
+						return;
+					}
+					sails.sockets.blast('job_created',job); //notify client of started process;
+					var flashMessage = [{
+						name:'gtfsclone',
+						message:'job created '+job.id,
+					}];
+					//Do the cloning
+					var names = {clone:name,source:source},
+					config = {fips:fips,settings:settings};
+					spawnGtfsClone(job,names,config,savedata);
+					req.session.flash={
+						err:flashMessage
+					};
+					res.json({status:'success',responseText:'GTFS Job Created'});
+				});
+			}
+		});
 	},
 
 	downloadGtfs   : function(req,res){
@@ -354,3 +341,48 @@ module.exports = {
 		});
 	}
 };
+function spawnGtfsClone(job,names,config,savedata){
+
+	var exec = require('child_process').exec;
+	var current_progress = 0;
+	var backupName = 'gtfs_edit_'+names.clone.toLowerCase();//set the name of the gtfs file
+	var sql = 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
+	sql += 'SELECT clone_schema(\''+names.source+'\',\''+backupName+'\');'; //clone the source schema
+	//Add this entry to the datasources table
+	sql += 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
+	sql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now())';
+	console.log(sql);
+	Datasource.query(sql,{},function(err,data){//run the queries
+		if(err){ console.log(err); return; }
+		Job.update({id:job.id},{progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done
+			if(error){console.log('job update error',error); return;}
+			sails.sockets.blast('job_updated',updated_job); //update the client
+			console.log('Building Frequencies');
+			exec('node api/support/frequencybuilder.js '+backupName,function(err,sout,serr){ //build the frequencies table of the new set
+				if(err){console.log(err);return;}
+				if(serr){console.log(serr);return;}
+				if(sout){console.log(sout);}
+				Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success',progress:100})//complete the job
+					.exec(function(err,updated_job){
+						if(err){console.log('job update error',err);}
+						sails.sockets.blast('job_updated',updated_job);
+						if(savedata && Object.keys(savedata).length > 0){
+							save(savedata);
+						}
+					});
+			});
+		});
+	});
+}
+
+function save(data){
+	var agency = data.agency,featList= data.feats,deltas=data.deltas,
+	route_id=data.route_id,shape=data.shape,trip=data.trip,freqs=data.freqs;
+	db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,function(err,data){
+		if(err){
+			console.log(err);
+			sails.sockets.blast('Save Status',{status:'Failure'});
+		}
+		sails.sockets.blast('Save Status',{status:'success'});
+	});
+}
