@@ -224,6 +224,7 @@ var MarketAreaNew = React.createClass({
       obj.name = name;
       obj.fips=fips;
       obj.setting=setting;
+      obj.savedata=reqObj;
       GtfsActionsCreator.uploadEdit(obj);
     },
     _saveEdits:function(){
@@ -606,7 +607,7 @@ var MarketAreaNew = React.createClass({
         return (
         	<div className="content container">
             	<h2 className="page-title">
-                    Create Market Area
+                    {'Edit GTFS'}
                     <br />
                 </h2>
                 <div className="row">

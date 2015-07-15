@@ -275,14 +275,14 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
   },
   getFrequencyData : function(){
     var ma = MarketAreaStore.getCurrentMarketArea(),gtfsId;
-
     if( !ma )
       return undefined;
 
     if(_trip_ids.length === 0 && _frequencyData && Object.keys(_frequencyData).length > 0)
       return _frequencyData;
     if(_trip_ids.length > 0){
-      _loadFrequencyData(_trip_ids,ma.origin_gtfs); //send requrest
+      gtfsId = _editGtfs || ma.origin_gtfs;
+      _loadFrequencyData(_trip_ids,gtfsId); //send requrest
       _trip_ids = [];                 //reset TripIds
       return {};
     }
@@ -302,7 +302,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       return retval;
     }
     else if(!_editResponse && _uploadGtfs && Object.keys(_uploadGtfs).length > 0){
-      gtfsId = ma.origin_gtfs;
+      gtfsId = _editGtfs;
       if(_uploadGtfs.name){ //this has slightly different format
           _putAndCloneGtfsData(_uploadGtfs,gtfsId);
       }else{

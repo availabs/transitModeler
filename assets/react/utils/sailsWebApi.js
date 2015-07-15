@@ -146,7 +146,7 @@ module.exports = {
       });
   },
   putAndCloneGtfsData : function(data,gtfsId,cb){
-    var url = '/datasources/gtfs/schedule/clone/'+gtfsId;
+    var url = '/datasources/gtfs/clone/'+gtfsId;
     console.log(url);
     d3.json(url)
       .post(JSON.stringify(data),function(err,data){

@@ -166,7 +166,8 @@ var Util = {
 	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
-			if(agency.settings.readOnly){
+			debugger;
+			if(agency && agency.settings && agency.settings.readOnly){
 				console.log('Attempt to edit readonly Data: Aborting');
 				cb({status:'Failure',message:'ReadOnly'},{});
 				return;
@@ -180,11 +181,11 @@ var Util = {
 				sql += db.putRoute(datafile,route_id);	//add the associated route
 				sql += db.putTrip(datafile,trip);	// add the trip itself
 			}
-			if(featlist.length > 0){ //if any stops were moved,added or edited
+			if(featlist && featlist.length > 0){ //if any stops were moved,added or edited
 				sql += db.putStops(datafile,featlist,trips,deltas); //store the stops
 				sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper); //and store the new shape of the trip
 			}
-			if(freqs.length > 0){
+			if(freqs && freqs.length > 0){
 				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
 			}
 

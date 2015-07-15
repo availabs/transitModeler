@@ -1,4 +1,5 @@
 var pg = require('pg');
+var fs = require('fs');
 var connString = require('./pg');
 var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');
@@ -143,7 +144,7 @@ var frequencybuilder = function(schema,cb){
 		// var deltaMat = processData(data.rows);
 		// parseData(data.rows,deltaMat);
 		newParseData(data.rows);
-		process.stderr.write('Finished Parsing, now Building Query\n');
+		process.stdout.write('Finished Parsing, now Building Query\n');
 		var sql = 'DELETE FROM '+schema+'.frequencies WHERE true;'+createFrequencies(data.rows);
 		return sql;
 	};
@@ -172,6 +173,7 @@ var frequencybuilder = function(schema,cb){
 				return console.error('error running query',err);
 			}
 			console.log('total Rows: ',data.rows.length);
+			fs.writeFileSync('test.txt',JSON.stringify(data));
 			var newquery = handleResponse(data);
 			client.query(newquery,[],function(err,data){
 				done();
@@ -192,4 +194,5 @@ if(process.argv[2] && (typeof process.argv[2] ==='string') ){
 		console.log(err,data);
 	});
 }
+
 module.exports= frequencybuilder;
