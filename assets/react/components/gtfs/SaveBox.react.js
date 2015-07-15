@@ -32,8 +32,7 @@ var MarketAreaNew = React.createClass({
       if(this.props.gtfs && this.props.gtfs.settings.readOnly && this.state.modal){
         return (
           <div className="body">
-              <button type="button" className="btn btn-warning btn-block" data-toggle="modal" data-target={"#myModal" + this.props.id} data-backdrop="static">{this.props.buttonText}</button>
-              <div id={"myModal" + this.props.id} className="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style={{display: 'none',fontSize:'12px'}}>
+              <div id={"myModal"} className="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style={{display: 'none',fontSize:'12px'}}>
                   <div className="modal-dialog">
                       <div className="modal-content">
 
@@ -70,7 +69,7 @@ var MarketAreaNew = React.createClass({
         if(this.props.Edited){
             buttons = (
 
-              <button style={{fontSize:'20px'}} className={classes}
+              <button style={{fontSize:'20px'}} data-toggle="modal" data-target={'#myModal'} data-backdrop="static" className={classes}
               onClick={this.onSave}>
                                 {'Save Changes'};
               </button>

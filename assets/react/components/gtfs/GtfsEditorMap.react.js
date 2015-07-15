@@ -16,6 +16,7 @@ var React = require('react'),
     prevCountyLength=0,
     prevCreationState=false,
     prevMode,
+    prevRoutes = null,
     prevStops=null;
 
 
@@ -73,12 +74,17 @@ var GtfsEditorMap = React.createClass({
             prevTractLength = tracts.features.length;
             prevCreationState = this.props.isCreating;
         }
-        if(routes.features.length !== prevRouteLength){
+        if( (routes.features.length !== prevRouteLength) ||
+            !prevRoutes || (prevRoutes !== routes.id)){
             routeLayerID++;
             prevRouteLength = routes.features.length;
+            if(routes && routes.id){
+              prevRoutes = routes.id;
+            }
+
         }
-        if( (stops.features.length !== prevStopsLength)
-            || !prevStops || (prevStops !== stops)  ){
+        if( (stops.features.length !== prevStopsLength) ||
+            !prevStops || (prevStops !== stops)  ){
             stopslayerID++;
             prevStopsLength = stops.features.length;
             prevStops = stops;
@@ -92,6 +98,7 @@ var GtfsEditorMap = React.createClass({
             prevCountyLength = counties.features.length;
         }
         routingLayerId++;
+
         return {
 
             routingLayer:{

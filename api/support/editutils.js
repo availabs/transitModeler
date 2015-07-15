@@ -75,7 +75,7 @@ var Util = {
 				dbhelp = new dbhelper(template1,data);
 				dbhelp.setMapping(map);
 				sql = dbhelp.getQuery(); //ends shapes table edit
-				console.log(sql);
+				// console.log(sql);
 				return sql;
 	},
 
@@ -166,7 +166,7 @@ var Util = {
 	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
-			debugger;
+			// debugger;
 			if(agency && agency.settings && agency.settings.readOnly){
 				console.log('Attempt to edit readonly Data: Aborting');
 				cb({status:'Failure',message:'ReadOnly'},{});
@@ -195,6 +195,7 @@ var Util = {
 				if(err){
 					console.log(err);
 				}
+				// debugger;
 				//if all the inserts and updates went through update the routes table with
 				//the new geometry.
 				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){

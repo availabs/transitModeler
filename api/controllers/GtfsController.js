@@ -391,7 +391,7 @@ function save(backupName,data){
 		.map(function(d){
 				return new Stop(d.stop);
 			});
-		db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,function(err,data){
+		db.putData(agency,featList,trips,deltas,trip.route_id,shape,trip,freqs,function(err,data){
 			if(err){
 				console.log(err);
 				sails.sockets.blast('Save Status',{status:'Failure'});

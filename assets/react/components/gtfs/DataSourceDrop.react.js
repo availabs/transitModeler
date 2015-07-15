@@ -13,13 +13,12 @@ var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
-            gtfsSelection:this.props.data[this.props.marketarea.origin_gtfs],
+            gtfsSelection:this.props.marketarea.origin_gtfs,
         };
     },
     updateData : function(e,selection){
       if(selection && this.isMounted()){
         this.props.setDataSource(selection.id);
-        GtfsActionsCreator.setGtfsChange(selection.id);
         this.setState({gtfsSelection:selection.id});
         console.log(selection.id);
       }
@@ -48,7 +47,6 @@ var MarketAreaNew = React.createClass({
                       onSelection={this.updateData}
                       placeholder={"Select a Gtfs DataSource"}
                       val={this.state.gtfsSelection}/>
-
                 </div>
 
 

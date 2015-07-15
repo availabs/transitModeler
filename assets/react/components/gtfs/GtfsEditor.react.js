@@ -62,7 +62,7 @@ var MarketAreaNew = React.createClass({
             currentRoute:null,
             currentService:null,
             currentTrip:null,
-            stopColl:initStops(this.props.stopsGeo.features),
+            stopColl:initStops([]),
             graph:new Graph(),
             buffStops:null,
             edited:false,
@@ -85,6 +85,8 @@ var MarketAreaNew = React.createClass({
       var partialState = this.getInitialState();
       partialState.currentGtfs = id;
       this.setState(partialState);
+      GtfsActionsCreator.setGtfsChange(id);
+
     },
     setRoute:function(id){  //on route change
         if(!editCheckConfirm(this))
@@ -272,9 +274,12 @@ var MarketAreaNew = React.createClass({
       partialState.TripObj.isNew = false;
       this.setState(partialState);
     },
+    componentDidMount : function(){
+      GtfsActionsCreator.setGtfsChange(this.props.marketarea.origin_gtfs);
+    },
     componentWillReceiveProps:function(nextProps){
         if(((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features &&
-             nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length)) &&
+             (nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length || nextProps.stopsGeo.id !== this.props.stopsGeo.id))) &&
              nextProps.stopsGeo.features.length >0){
             // console.log('Existing Stops',nextProps.stopsGeo.features)
             var stops = new Stops();
@@ -326,6 +331,9 @@ var MarketAreaNew = React.createClass({
           (Object.keys(nextProps.frequencyData).length > 0) && (this.props.frequencyData !== nextProps.frequencyData)){
           console.log(nextProps.frequencyData);
           this.setState({frequencies:nextProps.frequencyData});
+        }
+        if(!this.props.marketarea && nextProps.marketarea){
+          GtfsActionsCreator.setGtfsChange(nextProps.marketarea);
         }
     },
     componentWillUpdate:function(nextProps, nextState){
@@ -603,6 +611,7 @@ var MarketAreaNew = React.createClass({
         var scheds = this.state.schedules || {};
         var route = this.getTrips();
         var routingGeo = this.state.graph.toFeatureCollection();
+        console.log('routes id', this.props.routesGeo.id, 'stops id', this.props.stopsGeo);
         console.log(routingGeo);
         return (
         	<div className="content container">
