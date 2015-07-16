@@ -24,12 +24,13 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
       acs:{},
       ctpp:{},
       gtfs:{}
-    },  
+    },
+    _refresh = false,
     _loading = false;
 
 
 function _addDatasets(rawData){
-  
+
   rawData.forEach(function(ds){
       if(ds.settings[0]){
         ds.settings = ds.settings[0];
@@ -41,10 +42,11 @@ function _addDatasets(rawData){
   Object.keys(_DataSets).forEach(function(source){
     if(Object.keys(_DataSets[source])[0]){
       var tableName = _DataSets[source][Object.keys(_DataSets[source])[0]].tableName;
-      TripTableStore.setDatasource(source,tableName)
+      TripTableStore.setDatasource(source,tableName);
     }
-  })
-};
+  });
+}
+
 
 
 var DatasourcesStore = assign({}, EventEmitter.prototype, {
@@ -58,7 +60,14 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
+  refresh : function(){
+    if(_refresh){
+      SailsWebApi.read('datasource');
+      _refresh = false;
+    }
+  },
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
@@ -70,7 +79,6 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   getAll: function() {
     return _DataSets;
   }
-  
 
 });
 
@@ -80,12 +88,15 @@ DatasourcesStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   switch(action.type) {
 
-    case ActionTypes.RECEIVE_DATASOURCES:      
+    case ActionTypes.RECEIVE_DATASOURCES:
       _addDatasets(action.data);
       DatasourcesStore.emitChange();
     break;
 
-
+    case ActionTypes.REFRESH_DATASOURCES:
+      _refresh = true;
+      DatasourcesStore.emitChange();
+    break;
     default:
       // do nothing
   }

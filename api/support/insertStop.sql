@@ -187,10 +187,10 @@ RETURNS void as $$
 					USING route_id;
 	RAISE NOTICE 'query value : %', chk;
 	IF NOT chk THEN
-		EXECUTE format('INSERT INTO %I.routes(route_id,route_type) VALUES ($1,$2)',schema)
+		EXECUTE format('INSERT INTO %I.routes(route_id,route_type,route_short_name) VALUES ($1,$2,$1)',schema)
 					USING route_id,type;
 	ELSE
-		EXECUTE format('UPDATE %I.routes SET route_id=$1, route_type=$2 WHERE route_id=$1',schema)
+		EXECUTE format('UPDATE %I.routes SET route_id=$1, route_short_name=$1, route_type=$2 WHERE route_id=$1',schema)
 						USING route_id,type;
 	END IF;
 	END;

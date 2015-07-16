@@ -85,7 +85,9 @@ var MarketAreaIndex = React.createClass({
                         freqMessage={this.props.freqEditResponse}
                         frequencyData={this.props.frequencyData}
                         marketarea = {this.props.marketarea}
-                        datasources={this.props.datasources.gtfs}/>
+                        datasources={this.props.datasources.gtfs}
+                        jobs = {this.props.jobhistory}/>
+
                     )
 
             break;
