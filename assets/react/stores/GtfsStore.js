@@ -32,6 +32,7 @@ var _currentGtfs = null,
     _editGtfs = null,
     _eGtfsStopsGeo={},
     _eGtfsRoutesGeo={},
+    _victimid = '';
     _routingWaypoints = [];
 
 function _addRoutes(id,rawData) {
@@ -137,7 +138,19 @@ function _loadRouteSchedule(gtfsId,routes){
 //-----EditingData---------------------------------------
   function _setUploadGtfs(udata){
     _uploadGtfs = udata;
+    if(udata.gtfsId){
+      _victimid = gtfsId;
+    }
   }
+
+  function _killVictimGtfs(){
+      if(_victimid){
+        delete  _eGtfsStopsGeo[_victimid];
+        delete  _eGtfsRoutesGeo[_victimid];
+        _victimid = undefined;
+      }
+  }
+
   function _putGtfsData(data,gtfsId){
     if(data && gtfsId){
       SailsWebApi.putGtfsData(data,gtfsId);
@@ -450,6 +463,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_EDITOR_RESPONSES:
         _editResponse = action.data;
         //console.log('Receive Upload Response:',action.data);
+        _killVictimGtfs();
         GtfsStore.emitChange();
     break;
 

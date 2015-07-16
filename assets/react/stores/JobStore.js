@@ -22,11 +22,11 @@ var _allJobs = [],
 function _addJobs(rawData){
 
   //console.log('GTFS STORE/_addDatasets',rawData);
-  
+
   rawData.forEach(function(ds){
       _allJobs[ds.id] = ds;
   });
-};
+}
 
 
 var JobStore = assign({}, EventEmitter.prototype, {
@@ -40,7 +40,7 @@ var JobStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
@@ -53,12 +53,18 @@ var JobStore = assign({}, EventEmitter.prototype, {
     return _allJobs;
   },
 
+  getType: function(type) {
+    return _allJobs.filter(function(d){
+        return d.type===type;
+    });
+  },
+
   getActive:function(){
     return _allJobs.filter(function(d){
       return !d.isFinished;
     });
   }
-  
+
 
 });
 

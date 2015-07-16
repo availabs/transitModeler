@@ -17,6 +17,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
     //-----------------------------------------
     TripTableStore = require('./TripTableStore'),
+    JobStore = require('./JobStore'),
     //--Store Globals--------------------
     _currentACS = null,
     _currentCTPP = null,
@@ -26,6 +27,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
       gtfs:{}
     },
     _refresh = false,
+    _lastjob = '',
     _loading = false;
 
 
@@ -62,9 +64,22 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   },
 
   refresh : function(){
-    if(_refresh){
-      SailsWebApi.read('datasource');
+    var jobs = JobStore.getType('clone gtfs');
+    var newestjob = '';
+    if(jobs.length === 0){
       _refresh = false;
+    }
+    else if(jobs.length === 1){
+      _refresh = !_refresh && jobs[0].isFinished;
+      newestjob = jobs[jobs.length-1].id;
+    }
+    else{
+      _refresh = !_refresh && jobs.reduce(function(p,c){return p.isFinished && c.isFinished;});
+      newestjob = jobs[jobs.length-1].id;
+    }
+    if(_refresh && newestjob !== _lastjob){
+      SailsWebApi.read('datasource');
+      _lastjob = newestjob;
     }
   },
 
@@ -77,6 +92,7 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   },
 
   getAll: function() {
+    this.refresh();
     return _DataSets;
   }
 

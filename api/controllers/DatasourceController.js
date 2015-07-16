@@ -204,7 +204,7 @@ module.exports = {
                       'FROM "'+mgtfs.tableName+'".stops  ' +
                       'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num ' +
                       'where a.line IS NULL OR a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
-
+			console.log(sql);
             Datasource.query(sql,{},function(err,data){
                 if (err) {
                     res.send({ status:500, error: err }, 500);

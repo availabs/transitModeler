@@ -1,5 +1,5 @@
 'use strict';
-/*globals confirm, console,module,require*/
+/*globals confirm, console,module,require,$*/
 var React = require('react'),
     //comps
     CreationForm     = require('./CreationForm.react'),
@@ -19,7 +19,7 @@ var MarketAreaNew = React.createClass({
       if(length < 2)
         return (
             <CreationForm
-              values={{Service_Id:idGen('Service'), Trip_Id:idGen('Id'),Shape_Id:idGen('Shape'),Headsign:idGen('HeadSign')}}
+              values={{Service_Id:'Service', Trip_Id:'Trip',Shape_Id:'Shape',Headsign:'HeadSign'}}
               buttonText={"Create New Trip"}
               id={"trips"}
               saveAction={this.props.addTrip} />
@@ -46,7 +46,15 @@ var MarketAreaNew = React.createClass({
             }else{
               classes+=' btn-primary';
             }
-
+            if(scope.props.isCreating){
+              return (
+              <button id={'tooltip'} data-toggle={'tooltip'} data-placement={'left'}
+                data-original-title={'Click Me to Begin'} style={{fontSize:'10px'}} className={classes}
+              onClick={scope.props.onTripSelect.bind(null,i)}>
+                                {i+" "+trip.headsign };
+              </button>
+            );
+            }
             return (
               <button style={{fontSize:'10px'}} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
@@ -68,7 +76,12 @@ var MarketAreaNew = React.createClass({
                 </div>
             </section>
         );
-    }
+    },
+    componentDidUpdate : function(){
+      if(this.props.isCreating){
+        $('#tooltip').tooltip('show');
+      }
+    },
 });
 
 module.exports = MarketAreaNew;

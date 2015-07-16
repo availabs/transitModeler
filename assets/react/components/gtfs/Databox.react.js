@@ -13,8 +13,8 @@ var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
-            selection:[],
-            serviceSelection:[],
+            selection:this.props.currentRoute || [],
+            serviceSelection:this.props.currentService || [],
 
         };
     },
@@ -35,12 +35,14 @@ var MarketAreaNew = React.createClass({
 
     },
     componentWillReceiveProps : function(nextProps){
+      var partialState = {};
       if(nextProps.currentRoute && this.state.selection !== nextProps.currentRoute){
-        this.setState({selection:nextProps.currentRoute});
+        partialState.selection=nextProps.currentRoute;
       }
       if(nextProps.currentService && this.state.serviceSelection !== nextProps.currentService){
-        this.setState({serviceSelection:nextProps.currentService});
+        partialState.serviceSelection=nextProps.currentService;
       }
+      this.setState(partialState);
     },
     addingRouteAction : function(data){
       var err = this.props.addRoute(data);
@@ -56,7 +58,7 @@ var MarketAreaNew = React.createClass({
     },
     updateServices : function(e,selection){
       if(selection){
-        var canChange = this.props.onServiceChange(selection.text);
+        var canChange = this.props.onServiceChange(selection.id);
         if(this.isMounted() && canChange){
           this.setState({serviceSelection:selection.id});
         }else if(!canChange){
@@ -70,17 +72,20 @@ var MarketAreaNew = React.createClass({
         var selectRouteData = Object.keys(this.props.schedules)
                                 .map(function(key){
                                     return {"id":scope.props.schedules[key].id ,"text":key };
-                                });
+                                }).filter(function(d){return d.text !=='id';});
         var serviceData = {};                        //selector has been chose;
-        if(typeof this.state.selection !== 'object'){
-
+        if(this.props.schedules[this.state.selection]){
           this.props.schedules[this.state.selection].trips.map(function(t){
                           serviceData[t.service_id] = t.service_id;
                         });
         }
+
         serviceData = Object.keys(serviceData).map(function(key){
                                   return {'id':serviceData[key],'text':key};
                                 });
+        var testData = [1,2,3,4,5].map(function(d){
+          return {id:d,text:d.toString()};
+        });
         return (
             <section className="widget">
                 <div className="body no-margin" >
@@ -92,7 +97,7 @@ var MarketAreaNew = React.createClass({
                       styleWidth="100%"
                       onSelection={this.updateGtfs}
                       placeholder={'Select a Route'}
-                      val={this.state.selection} />
+                      val={[this.state.selection]} />
                     <Select2Component
                       id="serviceSelector"
                       dataSet={serviceData}
@@ -100,10 +105,10 @@ var MarketAreaNew = React.createClass({
                       styleWidth="100%"
                       onSelection={this.updateServices}
                       placeholder={"Select a Service"}
-                      val={this.state.serviceSelection}/>
+                      val={[this.state.serviceSelection]}/>
                   <div>
                     <CreationForm
-                    values={{"New Route":idGen('route')}}
+                    values={{"New Route":'route'}}
                     buttonText={"Create New Route"}
                     id={"routes"}
                     saveAction={this.addingRouteAction}/>

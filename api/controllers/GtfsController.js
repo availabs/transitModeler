@@ -406,6 +406,7 @@ function save(job,backupName,data){
 			}
 			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success',progress:100})
 			.exec(function(err,updated_job){
+				console.log('Everything is good');
 				sails.sockets.blast('job_updated',updated_job);
 			});
 

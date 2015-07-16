@@ -4,8 +4,6 @@ var React = require('react'),
     //comps
     CreationForm     = require('./CreationForm.react');
     // -- Actions
-
-
     // -- Stores
 var MarketAreaNew = React.createClass({
     getInitialState: function(){
@@ -38,12 +36,12 @@ var MarketAreaNew = React.createClass({
 
                           <div className="modal-header">
                               <button type="button" onClick={this._cancelAction} className="close" data-dismiss="modal" aria-hidden="true">×</button>
-                              <h4 className="modal-title" id={"myModalLabel"+this.props.id}>Modal Heading</h4>
+                              <h4 className="modal-title" id={"myModalLabel"+this.props.id}>{'Clone Data'}</h4>
                           </div>
                           {'The Current Data is Protected, would you like to copy it?'}
                           <div className="modal-footer">
                               <button type="button" onClick={this._cancelAction} className="btn btn-default" data-dismiss="modal">No</button>
-                              <button type="button" onClick={this._saveChange} className="btn btn-primary">Yes</button>
+                              <button type="button" onClick={this._saveChange} className="btn btn-primary" data-dismiss="modal">Yes</button>
                           </div>
 
                       </div>
