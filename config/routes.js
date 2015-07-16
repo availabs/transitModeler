@@ -36,7 +36,11 @@ module.exports.routes = {
   '/datasources/gtfs/routes/:tablename':'DataSourceController.getRoutes',
   '/datasources/gtfs/schedule/:id':'GtfsController.getSimpleSchedule',
   '/datasources/gtfs/schedule/:id/edit':'GtfsController.uploadGtfsEdits',
+  '/datasources/gtfs/frequencies':'GtfsController.getFrequencies',
   '/datasources/gtfs/schedule/:id/:rid':'GtfsController.routes',
+  '/datasources/gtfs/frequencyUpload/:id' : 'GtfsController.uploadFreqEdits',
+  '/datasources/gtfs/clone/:id' : 'GtfsController.backupSource',
+  '/datasources/gtfs/generate' : 'GtfsController.downloadGtfs',
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
   '/triptable/run':'TriptableController.runModel',

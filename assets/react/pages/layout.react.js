@@ -26,8 +26,8 @@ function marketAreasToMenuItems(marketareas){
                 {text:'Overview',type:'Route',action:'MarketAreaIndex',params:{marketareaID:marketareas[key].id}},
                 {text:'Modeling',type:'Route',action:'ModelAnalysis',params:{marketareaID:marketareas[key].id}},
             ]
-        }
-    })
+        };
+    });
 }
 
 
@@ -52,8 +52,12 @@ var App = React.createClass({
                 routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
                 routesGeo : GtfsStore.getRoutesGeo(),
                 stopsGeo : GtfsStore.getStopsGeo(),
+                eRoutesGeo: GtfsStore.getEditRoutesGeo(),
+                eStopsGeo: GtfsStore.getEditStopsGeo(),
                 schedules : GtfsStore.getRouteSchedules(),
                 routingGeo : GtfsStore.getRoutingGeo(),
+                frequencyData:GtfsStore.getFrequencyData(),
+                freqEditResponse:GtfsStore.putFrequencyData(),
                 editResponse : GtfsStore.putGtfsData(),
 
             };
@@ -62,7 +66,6 @@ var App = React.createClass({
     getInitialState: function(){
         return this.getState();
     },
-
     _onChange: function() {
         this.setState(this.getState());
     },
@@ -107,9 +110,13 @@ var App = React.createClass({
                         routes = {this.state.routes}
                         routesGeo = {this.state.routesGeo}
                         stopsGeo = {this.state.stopsGeo}
+                        eRoutesGeo={this.state.eRoutesGeo}
+                        eStopsGeo = {this.state.eStopsGeo}
                         schedules = {this.state.schedules}
                         routingGeo = {this.state.routingGeo}
                         editMessage= {this.state.editResponse}
+                        frequencyData={this.state.frequencyData}
+                        freqEditResponse={this.state.freqEditResponse}
                         loadedModels = {this.state.loadedModels}
                         stateTracts = {this.state.stateTracts}
                         stateCounties = {this.state.stateCounties} />
@@ -121,7 +128,7 @@ var App = React.createClass({
     _populateMenu: function(marketareas){
         var maMenu = marketAreasToMenuItems(marketareas);
         if(!maMenu){
-            maMenu = [{text:'Loading'}]
+            maMenu = [{text:'Loading'}];
         }
         maMenu.push({text:'New Marketarea',icon:'fa fa-plus',action:'MarketAreaNew',type:'Route'});
 
@@ -142,7 +149,7 @@ var App = React.createClass({
                 },
                 {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/docs/NJTransit%20User\'s%20Manual.pdf'}
             ]
-        }
+        };
     }
 
 });

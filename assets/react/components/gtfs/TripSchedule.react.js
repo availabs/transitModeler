@@ -2,6 +2,7 @@
 /*globals confirm, console,module,require*/
 var React = require('react'),
     //comps
+    GroupBox = require('./GroupBox.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -31,61 +32,105 @@ var React = require('react'),
 var TripSchedule = React.createClass({
     getInitialState:function(){
         return {
-            startTime:null,
-            endTime:null,
-            headWay:null,
+            frequencies:this.props.frequencies,
+            timeDeltas:null,
+            lengths:null,
+            units:'mi',
         };
     },
+    _totaltime :function(){
+      if(this.state.timeDeltas){
+        var totalTime = this.state.timeDeltas.reduce(function(p,c){return p+c;});
+        return totalTime/60;
+      }
+    },
+    _totalDistance : function(unit){
+      if(this.state.lengths){
+        var total = this.state.lengths.reduce(function(p,c){return p+c;});
+        switch (unit.toLowerCase()) {
+          case 'mi':
+            return (total/1000)*0.621371;
+          case 'm':
+            return total;
+          case 'km':
+            return (total/1000);
+          default:
+            return 'unknown units';
+        }
+      }
+      else {
+        return 0;
+      }
+    },
     componentWillReceiveProps : function(nextProps){
-      if(!nextProps.trip){
-        this.setState({startTime:null,endTime:null,headWay:null});
+      if(!nextProps.frequencies){
+        this.setState({frequencies:null,timeDeltas:null,lengths:null});
+      }
+      else{
+        this.setState({frequencies:nextProps.frequencies});
+      }
+      if(nextProps.deltas && (this.props.deltas !== nextProps.deltas))
+      {
+        this.setState({timeDeltas:nextProps.deltas});
+      }
+      if(nextProps.lengths && (this.props.lengths !== nextProps.lengths))
+      {
+        this.setState({lengths:nextProps.lengths});
       }
     },
     componentWillUpdate : function(nextProps,nextState){
-      //console.log('Select Check',nextProps,nextState)
-      if(nextProps.trip && (this.props.trip !== nextProps.trip) ){
-        var Trip  = nextProps.trip,
-        startTimes = Trip.getStartTimes(),
-        startTime = Trip.getStartTime(0),
-        stopTime  = Trip.getLastStartTime(),
-        headway=0;
 
-        if(startTimes.length > 1){
-          startTimes.reduce(function(p,c,i,a){
-                    headway += diffSecs(p,c);
-                    return c;
-          });
-          headway = Math.ceil(headway/((startTimes.length -1) * 60));
-        }
-        else{
-          headway = 0;
-        }
-        this.setState({startTime:startTime,endTime:stopTime,headWay:headway});
+      if(nextProps.deltas && (this.props.deltas !== nextProps.deltas))
+      {
+        this.setState({timeDeltas:nextProps.deltas});
+      }
+      if(nextProps.lengths && (this.props.lengths !== nextProps.lengths))
+      {
+        this.setState({lengths:nextProps.lengths});
       }
     },
+    notifyChange : function(change){
+      var isEdited;
+      var editList = this.state.frequencies.map(function(f){
+        return f.edited;
+      });
+
+      if(editList.length === 1)
+        isEdited = editList[0];
+      else
+        isEdited = editList.reduce(function(p,c){
+          return p||c;
+        });
+      this.props.notifyChange(isEdited);
+    },
     render: function() {
-        var scope = this;
-        if(this.state.headWay !== null){
+        if(this.state.frequencies &&  Object.keys(this.state.frequencies).length > 0){
+          var scope = this;
+          var tables = this.state.frequencies.sort(function(d1,d2){return diffSecs(d1.start_time,d2.start_time);}).map(function(d){
+              return (
+                <GroupBox
+                  frequency={d}
+                  deltas={scope.state.timeDeltas}
+                  lengths = {scope.state.lengths}
+                  notifyChange={scope.notifyChange}/>
+              );
+          });
           return (
               <section className="widget">
-                  <div className="body no-margin" >
-                    <table className="table table-bordered ">
-                      <thead>
-                        <tr>
-                          <th>{'First Departure'}</th>
-                          <th>{'Last Departure'}</th>
-                          <th>{'Headway'}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>{this.state.startTime}</td>
-                          <td>{this.state.endTime}</td>
-                          <td>{this.state.headWay + ' min'}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>{'First Departure'}</th>
+                      <th>{'Last Departure'}</th>
+                      <th>{'Headway'}</th>
+                      <th>{'Idle'}</th>
+                      <th>{'RunTime'}</th>
+                      <th>{'Distance'}</th>
+                      <th>{'Buses'}</th>
+                    </tr>
+                  </thead>
+                  {tables.reverse()}
+              </table>
               </section>
           );
         }else{

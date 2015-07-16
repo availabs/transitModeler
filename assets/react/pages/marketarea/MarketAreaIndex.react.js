@@ -48,8 +48,8 @@ var MarketAreaIndex = React.createClass({
     },
 
     _renderActiveComponent : function(){
-       
-        
+
+
 
         switch(this.state.activeComponent) {
 
@@ -77,11 +77,15 @@ var MarketAreaIndex = React.createClass({
                 return (
                         <GtfsEditor
                         tracts = {this.props.tracts}
-                        routesGeo ={this.props.routesGeo}
-                        stopsGeo = {this.props.stopsGeo}
+                        routesGeo ={this.props.eRoutesGeo}
+                        stopsGeo = {this.props.eStopsGeo}
                         schedules = {this.props.schedules}
                         routingGeo= {this.props.routingGeo}
-                        editMessage={this.props.editMessage}/>
+                        editMessage={this.props.editMessage}
+                        freqMessage={this.props.freqEditResponse}
+                        frequencyData={this.props.frequencyData}
+                        marketarea = {this.props.marketarea}
+                        datasources={this.props.datasources.gtfs}/>
                     )
 
             break;
@@ -168,10 +172,10 @@ var MarketAreaIndex = React.createClass({
                             </header>
                             <div className="body tab-content">
                                 <div id="acs" className="tab-pane clearfix">
-                                   ACS 
+                                   ACS
                                 </div>
                                 <div id="ctpp" className="tab-pane clearfix">
-                                 CTPP   
+                                 CTPP
                                 </div>
                                 <div id="survey" className="tab-pane clearfix">
                                    Survey Analysis
@@ -183,7 +187,7 @@ var MarketAreaIndex = React.createClass({
                                 <div id="gtfs" className="tab-pane clearfix">
                                    GTFS
                                 </div>
-                               
+
                             </div>
                         </section>
                     </div>

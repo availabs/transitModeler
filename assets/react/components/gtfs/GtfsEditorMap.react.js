@@ -16,6 +16,7 @@ var React = require('react'),
     prevCountyLength=0,
     prevCreationState=false,
     prevMode,
+    prevRoutes = null,
     prevStops=null;
 
 
@@ -73,12 +74,17 @@ var GtfsEditorMap = React.createClass({
             prevTractLength = tracts.features.length;
             prevCreationState = this.props.isCreating;
         }
-        if(routes.features.length !== prevRouteLength){
+        if( (routes.features.length !== prevRouteLength) ||
+            !prevRoutes || (prevRoutes !== routes.id)){
             routeLayerID++;
             prevRouteLength = routes.features.length;
+            if(routes && routes.id){
+              prevRoutes = routes.id;
+            }
+
         }
-        if( (stops.features.length !== prevStopsLength)
-            || !prevStops || (prevStops !== stops)  ){
+        if( (stops.features.length !== prevStopsLength) ||
+            !prevStops || (prevStops !== stops)  ){
             stopslayerID++;
             prevStopsLength = stops.features.length;
             prevStops = stops;
@@ -92,6 +98,7 @@ var GtfsEditorMap = React.createClass({
             prevCountyLength = counties.features.length;
         }
         routingLayerId++;
+
         return {
 
             routingLayer:{
@@ -113,7 +120,7 @@ var GtfsEditorMap = React.createClass({
                             dashArray:'15, 10, 5, 10, 15',
                             weight:2,
                             color:'#000'
-                        }
+                        };
                     }
                 }
             },
@@ -162,7 +169,7 @@ var GtfsEditorMap = React.createClass({
                         layer.on({
 
                             click: function(e){
-                                //console.log('station_click',e.target.feature.properties);
+                                scope.props.onRouteClick(e.target.feature.properties);
                             },
                             mouseover: function(e){
                                 var classColor = feature.properties.color ? feature.properties.color : '#000'; //d3.select('.route_color_'+feature.properties.short_name).style('background-color');
@@ -178,13 +185,13 @@ var GtfsEditorMap = React.createClass({
                                     .style({
                                         color:classColor
                                     })
-                                    .html('Route '+feature.properties.short_name)
+                                    .html('Route '+feature.properties.short_name);
                             },
                             mouseout: function(e){
                                 //console.log('mouseout1')
                                 //scope._updateTooltip({ x:0,y:0,display:'none'});
                                 d3.select('.ToolTip').style({opacity:0});
-                                e.target.setStyle({opacity :0.3})
+                                e.target.setStyle({opacity :0.3});
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
 

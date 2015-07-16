@@ -67,18 +67,13 @@ SaveObj.prototype.setMovements = function(){
 };
 
 SaveObj.prototype.buildReqObj = function(){
-	debugger;
 	this.setAddDels();
 	this.setMovements();
 };
 
 SaveObj.prototype.getReqObj = function(){
 	this.buildReqObj();
-	var shape = this.graph.toFeatureCollection().features[0].geometry;
-	shape.type = 'LineString';
-	shape.coordinates = shape.coordinates.reduce(function(p,c,i,a){
-		return p.concat(c);
-	});
+	var shape = this.graph.toLineString(this.trip.stops).geometry;
 	return {
 		shape:shape,
 		data:this.stopC.coll,

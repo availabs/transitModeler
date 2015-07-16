@@ -38,7 +38,8 @@ module.exports = {
     //--------GtfsEditor--------------------------------------
     SET_WAYPOINTS:null,
     SET_EDITOR_SAVE:null,
-
+    SET_TRIPS:null,
+    SET_FREQS:null,
     //--------MarketArea--------------------------------------
     RECEIVE_MARKETAREAS: null,
     DELETE_MARKETAREA:null,
@@ -50,12 +51,17 @@ module.exports = {
     RECEIVE_SURVEYS:null,
     RECEIVE_FAREBOXS:null,
 
+    SET_GTFS: null,
+    RECEIVE_GTFS_EDIT_ROUTES:null,
+    RECEIVE_GTFS_EDIT_STOPS: null,
     RECEIVE_GTFS_ROUTES:null,
     RECEIVE_GTFS_GEOS:null,
     RECEIVE_GTFS_STOPS_GEOS:null,
     RECEIVE_GTFS_SCHEDS:null,
     RECEIVE_ROUTING_GEOS:null,
     RECEIVE_EDITOR_RESPONSES:null,
+    RECEIVE_FREQ_EDIT_RESPONSES:null,
+    RECEIVE_TRIP_FREQUENCIES:null,
 
     RECIEVE_DATASOURCES:null,
     RECEIVE_REGRESSIONS:null,

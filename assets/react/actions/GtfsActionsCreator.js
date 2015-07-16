@@ -23,5 +23,22 @@ module.exports = {
       data:uploadData,
     });
   },
-
+  uploadEditFreqs : function(freqdata){
+    AppDispatcher.handleViewAction({
+      type : ActionTypes.SET_FREQS,
+      data : freqdata,
+    });
+  },
+  setTrips : function(tripData){
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_TRIPS,
+      data:tripData
+    });
+  },
+  setGtfsChange : function(id){
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.SET_GTFS,
+      data:id,
+    });
+  },
 };

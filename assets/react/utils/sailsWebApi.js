@@ -56,7 +56,20 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
-
+  getEditRoutesGeo : function(gtfsId,routes,cb){
+    d3.json('datasources/gtfs/routes/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){
+        ServerActionCreators.receiveDataWithId('gtfs_edit_route',gtfsId,data);
+        if(cb){cb(gtfsId,data);}
+      });
+  },
+  getEditStopsGeo : function(gtfsId,routes,cb){
+    d3.json('datasources/gtfs/stops/geo/'+gtfsId)
+      .post(JSON.stringify({route:routes}),function(err,data){
+        ServerActionCreators.receiveDataWithId('gtfs_edit_stop',gtfsId,data);
+        if(cb){cb(gtfsId,data);}
+      });
+  },
   getRoutesGeo: function(ma_id,gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/routes/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
@@ -69,7 +82,7 @@ module.exports = {
     d3.json('/datasources/gtfs/schedule/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
 
-        //console.log('getRoutesSched', ma_id, gtfsId,data)     
+        //console.log('getRoutesSched', ma_id, gtfsId,data)
 
         ServerActionCreators.receiveDataWithId('gtfs_sched',ma_id,data);
         if(cb){ cb(data); }
@@ -85,7 +98,27 @@ module.exports = {
 
     });
   },
-
+  //----------------------------------------
+  // GTFS Trip Frequency Data
+  //----------------------------------------
+  getFrequencyData : function(ids,gtfsid,cb){
+    d3.json('/datasources/gtfs/frequencies')
+      .post(JSON.stringify({trip_ids:ids,id:gtfsid}),function(err,data){
+        ServerActionCreators.receiveData('trip_frequencie',data);
+        if(cb){cb(data);}
+      });
+  },
+  putFrequencyData : function(data,gtfsid,cb){
+    d3.json('/datasources/gtfs/frequencyUpload/'+gtfsid)
+      .post(JSON.stringify(data),function(err,data){
+          if(err){
+            ServerActionCreators.receiveData('FREQ_EDIT_RESPONSE',{status:'error',response:err});
+          }else{
+            ServerActionCreators.receiveData('FREQ_EDIT_RESPONSE',data);
+          }
+          if(cb){cb(data);}
+      });
+  },
         //---------------------------------------------
         // External GeoData
         //---------------------------------------------
@@ -94,7 +127,7 @@ module.exports = {
           dsource.addwaypoints(waypoints);
           dsource.handleRequest(function(err,data){
             ServerActionCreators.receiveData('routing_geo',data);
-            if(cb){cb(data)}
+            if(cb){cb(data);}
           });
         },
   //--------------------------------------------
@@ -109,14 +142,27 @@ module.exports = {
           }else{
               ServerActionCreators.receiveData('EDITOR_RESPONSE',data);
           }
-          if(cb){cb(data)}
+          if(cb){cb(data);}
+      });
+  },
+  putAndCloneGtfsData : function(data,gtfsId,cb){
+    var url = '/datasources/gtfs/clone/'+gtfsId;
+    console.log(url);
+    d3.json(url)
+      .post(JSON.stringify(data),function(err,data){
+        if(err){
+          ServerActionCreators.receiveData('EDITOR_RESPONSE',{status:'error',response:err});
+        }else{
+          ServerActionCreators.receiveData('EDITOR_RESPONSE',data);
+        }
+        if(cb){cb(data);}
       });
   },
 
   //---------------------------------------------
   // DataSources
   //---------------------------------------------
-  
+
   loadSurvey:function(marketareaId){
       d3.json('/datasources/survey/'+marketareaId,function(data){
         ServerActionCreators.receiveDataWithId('survey',marketareaId,data)

@@ -84,19 +84,19 @@ var Map = React.createClass({
                               // saver.attr('disabled',null);
                            });
                         obj.on('dblclick',function(){
-                            if(layers['stopsLayer'].layer.getLayers().length > 2){
+                            if(layers.stopsLayer.layer.getLayers().length > 2){
                                 scope.props.deleteStop(obj.feature);
                             }
-                        })
+                        });
                         return obj;
                     },
                     onEachFeature:function(f,layer){
                             layer.on('click',function(){
                                 scope.props.editStop(f.properties.stop_id);
-                            })
+                            });
 
                     },
-                }
+                };
     },
     _setRoutingOptions : function(map){
         var scope = this;
@@ -236,7 +236,7 @@ var Map = React.createClass({
                 count = 0;
                 map.off('click',onClick);
             }
-        };
+        }
         if(!map.hasEventListeners('click')){
             map.on('click',onClick);
         }
