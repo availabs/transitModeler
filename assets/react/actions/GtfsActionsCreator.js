@@ -41,4 +41,10 @@ module.exports = {
       data:id,
     });
   },
+  refreshDatasources : function(){
+    AppDispatcher.handleViewAction({
+      type: ActionTypes.REFRESH_DATASOURCES,
+      data:null,
+    });
+  },
 };

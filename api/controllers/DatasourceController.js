@@ -72,7 +72,7 @@ module.exports = {
 
 	getSurvey:function(req,res){
 		var maId = req.param('marketareaId')
-		
+
 		if(!maId){
 			 res.send({status: 500, error: 'You must supply marketarea Id.'}, 500);
 	      	return;
@@ -80,11 +80,11 @@ module.exports = {
 
 		MarketArea.findOne(maId).exec(function(err,ma){
 	    	if(err){console.log('find datasource error',err)}
-			
+
 			var zones = JSON.stringify(ma.zones).replace(/\"/g,"'").replace("[","(").replace("]",")")
-			
+
 			var sql = 	'SELECT * ' +
-						'FROM survey_geo_full ' + 
+						'FROM survey_geo_full ' +
 						'join survey_attributes on survey_attributes.id = survey_geo_full.id ' +
 						'where "o_geoid10" in '+zones+' or "d_geoid10" in '+zones ;
 

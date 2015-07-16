@@ -59,7 +59,7 @@ var App = React.createClass({
                 frequencyData:GtfsStore.getFrequencyData(),
                 freqEditResponse:GtfsStore.putFrequencyData(),
                 editResponse : GtfsStore.putGtfsData(),
-
+                jobhistory : JobStore.getAll(),
             };
     },
 
@@ -99,6 +99,8 @@ var App = React.createClass({
     	    	<div className="wrap">
                     <Header />
     	    		 <RouteHandler
+                        activeJobs={this.state.activeJobs}
+                        jobhistory ={this.state.jobhistory}
                         marketarea={this.state.currentMarketarea}
                         marketareas ={this.state.marketareas}
                         tracts={this.state.tracts}

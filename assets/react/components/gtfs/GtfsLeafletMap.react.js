@@ -255,7 +255,7 @@ var Map = React.createClass({
             zoomControl: false,
             attributionControl: false
         });
-
+        map.addControl(L.control.zoom({position:'bottomleft'}));
 
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){

@@ -163,7 +163,7 @@ var Util = {
 		return sql;
 	},
 
-	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,cb){
+	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,maId,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
 			// debugger;
@@ -188,6 +188,12 @@ var Util = {
 			if(freqs && freqs.length > 0){
 				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
 			}
+			var populateRoutesGeo = function(datafile,route_id){
+				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
+						if(err){ console.log(err2);}
+						cb(err,data);
+				});
+			};
 
 			// sql += db.updateRouteGeo(datafile,route_id);
 			sql = 'BEGIN; ' + sql + ' COMMIT;'; //Wait to commit to avoid bad db state
@@ -195,13 +201,22 @@ var Util = {
 				if(err){
 					console.log(err);
 				}
+				if(maId && trip.isNew){
+					MarketArea.findOne({id:maId}).exec(function(err,ma){//get the market area from db
+						if(err)console.log(err);
+						console.log(ma,maId);
+						ma.routes.push(route_id);//update add the new route_id to the list
+						MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
+							if(err)console.log(err);
+							populateRoutesGeo(datafile,route_id);
+						});
+					});
+				}else{
 				// debugger;
 				//if all the inserts and updates went through update the routes table with
 				//the new geometry.
-				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
-						if(err){ console.log(err2);}
-						cb(err,data);
-				});
+				populateRoutesGeo(datafile,route_id);
+				}
 			});
 		});
 	},

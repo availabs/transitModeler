@@ -58,7 +58,7 @@ var editCheckConfirm = function(obj){
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
-            currentGtfs : null,
+            currentGtfs : this.props.marketarea.origin_gtfs,
             currentRoute:null,
             currentService:null,
             currentTrip:null,
@@ -218,6 +218,7 @@ var MarketAreaNew = React.createClass({
         });
         reqObj.frequencies = changedFrequencies;
       }
+      reqObj.maId = this.props.marketarea.id;
       return reqObj;
     },
     _cloneAndSave:function(name,fips,setting){
@@ -272,12 +273,18 @@ var MarketAreaNew = React.createClass({
       partialState.tracker = new EditTracker();
       partialState.TripObj = this.state.TripObj;
       partialState.TripObj.isNew = false;
+      partialState.edited = false;
       this.setState(partialState);
     },
     componentDidMount : function(){
-      GtfsActionsCreator.setGtfsChange(this.props.marketarea.origin_gtfs);
+      if(this.props.marketarea){
+          GtfsActionsCreator.setGtfsChange(this.props.marketarea.origin_gtfs);
+      }
     },
     componentWillReceiveProps:function(nextProps){
+        if(!this.props.marketarea && nextProps.marketarea){
+          GtfsActionsCreator.setGtfsChange(nextProps.marketare.origin_gtfs);
+        }
         if(((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features &&
              (nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length || nextProps.stopsGeo.id !== this.props.stopsGeo.id))) &&
              nextProps.stopsGeo.features.length >0){
@@ -326,7 +333,21 @@ var MarketAreaNew = React.createClass({
             this.setState({edited:true});
           }
         }
-
+        //if something was added are removed from job history check and update
+        if(nextProps.jobs){
+          var jobs, jobsdone = false;
+          jobs = nextProps.jobs.filter(function(d){
+            return d.type==='clone gtfs';
+          });
+          if(jobs.length === 1){
+            jobsdone = jobs[0].isFinished;
+          }else if(jobs.length > 1){ //check if all clone jobs have been completed
+            jobsdone = jobs.reduce(function(p,c){return p.isFinished && c.isFinished;});
+          }
+          if(jobsdone){
+            this._refreshDatasources();
+          }
+        }
         if(nextProps.frequencyData && nextProps.frequencyData !=='loading' &&
           (Object.keys(nextProps.frequencyData).length > 0) && (this.props.frequencyData !== nextProps.frequencyData)){
           console.log(nextProps.frequencyData);
@@ -356,6 +377,9 @@ var MarketAreaNew = React.createClass({
                 this._requestData(stopTraj);
         }
 
+    },
+    _refreshDatasources : function(){
+      GtfsActionsCreator.refreshDatasources();
     },
     delStop : function(stopobj){
         var trip = new Trip(this.state.TripObj),

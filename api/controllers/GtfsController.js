@@ -150,6 +150,7 @@ module.exports = {
 		var errlist=[],datalist=[];
 		var trip = reqobj.trip, route_id = trip.route_id;
 		var shape = reqobj.shape;
+		var maId = reqobj.maId;
 		var freqs = reqobj.frequencies || [];
 		if(typeof agency === 'undefined'){
 			res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500);
@@ -351,15 +352,18 @@ function spawnGtfsClone(job,names,config,savedata){
 	var exec = require('child_process').exec;
 	var current_progress = 0;
 	var backupName = 'gtfs_edit_'+names.clone.toLowerCase();//set the name of the gtfs file
-	var sql = 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
+	//First put the entry in the datasource table;
+	var sql = 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
+	sql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now());';
+	sql += 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
 	sql += 'SELECT clone_schema(\''+names.source+'\',\''+backupName+'\');'; //clone the source schema
 	//Add this entry to the datasources table
-	sql += 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
-	sql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now())';
+
+
 	console.log(sql);
 	Datasource.query(sql,{},function(err,data){//run the queries
 		if(err){ console.log(err); return; }
-		Job.update({id:job.id},{progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done
+		Job.update({id:job.id},{status:'Building Frequencies',progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done
 			if(error){console.log('job update error',error); return;}
 			sails.sockets.blast('job_updated',updated_job); //update the client
 			console.log('Building Frequencies');
@@ -367,13 +371,13 @@ function spawnGtfsClone(job,names,config,savedata){
 				if(err){console.log('ERROR : ',err);return;}
 				if(serr){console.log('STDERR : ',serr);return;}
 				if(sout){console.log('STDOUT : ',sout);}
-				Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success',progress:100})//complete the job
+				Job.update({id:job.id},{status:'saving',progress:90})//complete the job
 					.exec(function(err,updated_job){
 						if(err){console.log('job update error',err);}
 						sails.sockets.blast('job_updated',updated_job);
 						debugger;
 						if(savedata && Object.keys(savedata).length > 0){
-							save(backupName,savedata);
+							save(job,backupName,savedata);
 						}
 					});
 			});
@@ -381,23 +385,30 @@ function spawnGtfsClone(job,names,config,savedata){
 	});
 }
 
-function save(backupName,data){
+function save(job,backupName,data){
 
 	Datasource.find( {tableName:backupName},function(err,result){
 		console.log('save data object : ',data);
-		var agency=result[0].id,deltas=data.deltas,
+		var agency=result[0].id,deltas=data.deltas,maId = data.maId,
 		route_id=data.route_id,shape=data.shape,trips=data.trip_ids,trip=data.trip,freqs=data.freqs;
 		var featList = data.data
 		.map(function(d){
 				return new Stop(d.stop);
 			});
-		db.putData(agency,featList,trips,deltas,trip.route_id,shape,trip,freqs,function(err,data){
+		db.putData(agency,featList,trips,deltas,trip.route_id,shape,trip,freqs,maId,function(err,data){
 			if(err){
 				console.log(err);
-				sails.sockets.blast('Save Status',{status:'Failure'});
+				Job.update({id:job.id},{isFinished:true,finised:Data(),status:'Failure',progress:100})
+					 .exec(function(err,update_job){
+							sails.sockets.blast('Save Status',{status:'Failure'});
+					});
+
 			}
-			sails.sockets.blast('Save Status',{status:'success'});
+			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success',progress:100})
+			.exec(function(err,updated_job){
+				sails.sockets.blast('job_updated',updated_job);
+			});
+
 		});
 	});
-
 }
