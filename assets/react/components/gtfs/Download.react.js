@@ -1,5 +1,5 @@
 'use strict';
-/*globals confirm,d3,$ console,module,require*/
+/*globals confirm,d3,$ console,module,require,location*/
 var React = require('react'),
     //comps
 
@@ -18,7 +18,7 @@ var MarketAreaNew = React.createClass({
     },
     clickAction : function(){
       var token = new Date().getTime();
-      location.href = '/datasources/gtfs/generate?name=gtfs_20141014_13_1_edited';
+      location.href = '/datasources/gtfs/generate?name='+this.props.tableName;
       this.setState({disabled:true});
     },
     render: function() {

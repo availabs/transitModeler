@@ -94,10 +94,10 @@ function _setEditGtfs(gtfsId){
   _editGtfs = gtfsId;
 }
 
-function _loadRouteSchedule(maId,gtfsId,routes){
-  if(!_gtfsSchedules[maId] && _gtfsSchedules[maId]!=='loading'){
-    SailsWebApi.getRoutesSched(maId,gtfsId,routes);
-    _gtfsSchedules[maId] = 'loading';
+function _loadRouteSchedule(gtfsId,routes){
+  if(!_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId]!=='loading'){
+    SailsWebApi.getRoutesSched(gtfsId,routes);
+    _gtfsSchedules[gtfsId] = 'loading';
   }
 
 }
@@ -199,7 +199,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       }
       gtfsId = _editGtfs || ma.origin_gtfs;
       routes = ma.routes;
-      console.log('GTFS Store Stops',gtfsId)
+      console.log('GTFS Store Stops',gtfsId);
       if(_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !=='loading'){
         return _eGtfsStopsGeo[gtfsId];
       }
@@ -251,13 +251,12 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     var ma = MarketAreaStore.getCurrentMarketArea();
 
     if( ma ){
-        var _currentID = ma.id,
-        gtfsId = ma.origin_gtfs;
+        gtfsId = _editGtfs || ma.origin_gtfs;
         routes = ma.routes;
-        if(_gtfsSchedules[_currentID] && _gtfsSchedules[_currentID] !=='loading')
-          return  _gtfsSchedules[_currentID];
-        else if (!_gtfsSchedules[_currentID]){
-          _loadRouteSchedule(_currentID,gtfsId,routes);
+        if(_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId] !=='loading')
+          return  _gtfsSchedules[gtfsId];
+        else if (!_gtfsSchedules[gtfsId]){
+          _loadRouteSchedule(gtfsId,routes);
         }
         return {};
     }
@@ -437,6 +436,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_GTFS_SCHEDS:
           _gtfsSchedules[action.Id] = action.data;
           //console.log('Received Gtfs Scheds',action.id, action.data)
+          _gtfsSchedules[action.Id].id = action.Id;
           GtfsStore.emitChange();
     break;
 

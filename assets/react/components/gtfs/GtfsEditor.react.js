@@ -294,9 +294,9 @@ var MarketAreaNew = React.createClass({
             this.setState({stopColl:stops});
         }
 
-        if( ((!this.props.schedules && nextProps.schedules) || (nextProps.schedules &&
-             Object.keys(nextProps.schedules).length !== Object.keys(this.props.schedules).length)) &&
-             Object.keys(nextProps.schedules).length >0){
+        if( ((!this.props.schedules && nextProps.schedules) || ( this.props.schedules && nextProps.schedules &&
+             (nextProps.schedules.id !== this.props.schedules.id) &&
+             Object.keys(nextProps.schedules).length >0))){
             var routecoll = [];
             Object.keys(nextProps.schedules).forEach(function(rid){
               var route = new RouteObj(),rsn = nextProps.schedules[rid].shortName;
@@ -635,8 +635,8 @@ var MarketAreaNew = React.createClass({
         var scheds = this.state.schedules || {};
         var route = this.getTrips();
         var routingGeo = this.state.graph.toFeatureCollection();
-        console.log('routes id', this.props.routesGeo.id, 'stops id', this.props.stopsGeo);
-        console.log(routingGeo);
+        var gtfsName = this.props.datasources[this.state.currentGtfs].tableName;
+
         return (
         	<div className="content container">
             	<h2 className="page-title">
@@ -696,7 +696,8 @@ var MarketAreaNew = React.createClass({
                         cloneSave={this._cloneAndSave}
                         gtfs = {gtfs}/>
 
-                      <Download/>
+                      <Download
+                        tableName={gtfsName}/>
                     </div>
 
                 </div>

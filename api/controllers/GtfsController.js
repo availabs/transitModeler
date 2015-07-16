@@ -163,7 +163,7 @@ module.exports = {
 			debugger;
 			if(err){ console.log(err); return;}
 			console.log(data);
-			db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,function(err,data){
+			db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,maId,function(err,data){
 				if(err){
 					console.log(err);
 					res.json(err);

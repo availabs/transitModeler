@@ -78,13 +78,10 @@ module.exports = {
 
     });
   },
-  getRoutesSched: function(ma_id,gtfsId,routes,cb) {
+  getRoutesSched: function(gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/schedule/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-
-        //console.log('getRoutesSched', ma_id, gtfsId,data)
-
-        ServerActionCreators.receiveDataWithId('gtfs_sched',ma_id,data);
+        ServerActionCreators.receiveDataWithId('gtfs_sched',gtfsId,data);
         if(cb){ cb(data); }
 
     });
