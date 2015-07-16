@@ -8,14 +8,14 @@ if (process.env.NODE_ENV === 'development') {
     webpackConfig = {
         devtool: 'eval',
         entry: [
-          'webpack-dev-server/client?http://localhost:11235',
+          'webpack-dev-server/client?http://localhost:11236',
           'webpack/hot/only-dev-server',
           './assets/react/indexView.jsx',
         ],
         output: {
           path: path.join(__dirname, '.tmp/public'),
           filename: 'bundle.js',
-          publicPath: 'http://localhost:11235/',
+          publicPath: 'http://localhost:11236/',
         },
         plugins: [
           new webpack.NoErrorsPlugin(),
