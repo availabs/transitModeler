@@ -4,6 +4,7 @@ var React = require('react'),
     
     // -- Components
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
+    FareboxGraph = require('./FareboxGraph.react'),
     
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
@@ -102,7 +103,7 @@ var FareboxAnalysis = React.createClass({
                     
                     </div>
                     <div className="col-lg-5">
-                        
+                        <FareboxGraph farebox={this.state.farebox} />
                         <section className="widget">
                            FareZones
                            {this._renderFareZones()}
