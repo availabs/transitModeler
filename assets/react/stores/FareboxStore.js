@@ -44,6 +44,7 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     console.log('FareboxStore get',maId)
     if(maId){
       if(!_farebox[maId] ){
+        console.log('loading farebox')
         sailsWebApi.loadFarebox(maId);
         _farebox[maId] = 'loading';
       }

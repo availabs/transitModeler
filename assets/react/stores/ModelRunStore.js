@@ -73,8 +73,10 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
       console.log('getActiveModelRuns, new data',runId,_runData[runId],crossTrips.loadedModels.indexOf(runId));
       if(crossTrips.loadedModels.indexOf(runId) === -1 && _runData[runId] !== 'loading'){
         if(!crossTrips.initialized){
+          console.log('init crosstrips',runId)
           crossTrips.init(_runData[runId],runId)
         }else{
+          console.log('add crosstrips',runId)
           crossTrips.addRun(_runData[runId],runId)
         } 
       }
@@ -82,6 +84,7 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
 
     crossTrips.loadedModels.forEach(function(runId){
       if(_activeRuns.indexOf(runId) === -1){
+        console.log('remove crosstrips',runId)
         crossTrips.removeRun(runId);
       }
     })

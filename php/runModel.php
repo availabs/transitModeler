@@ -37,7 +37,7 @@
 function  planTrip($from_lat,$from_lon,$to_lat,$to_lon,$departure_time,$trip){
 	
   //$otp_host = 'http://wim.availabs.org:8080';
-	$otp_host = 'http://localhost:8080';
+	$otp_host = 'http://lor.availabs.org:8080';
   $otp_url = $otp_host."/opentripplanner-api-webapp/ws/plan?";
 	$otp_url .= "fromPlace=$from_lat,$from_lon";
 	$otp_url .= "&toPlace=$to_lat,$to_lon";

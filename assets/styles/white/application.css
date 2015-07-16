@@ -3,37 +3,37 @@
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 300;
-  src: local("Open Sans Light"), local("OpenSans-Light"), url(fonts/google/open-sans-light.woff) format("woff");
+  src: local("Open Sans Light"), local("OpenSans-Light"), url(/styles/white/fonts/google/open-sans-light.woff) format("woff");
 }
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 400;
-  src: local("Open Sans"), local("OpenSans"), url(fonts/google/open-sans.woff) format("woff");
+  src: local("Open Sans"), local("OpenSans"), url(/styles/white/fonts/google/open-sans.woff) format("woff");
 }
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 600;
-  src: local("Open Sans Semibold"), local("OpenSans-Semibold"), url(fonts/google/open-sans-semibold.woff) format("woff");
+  src: local("Open Sans Semibold"), local("OpenSans-Semibold"), url(/styles/white/fonts/google/open-sans-semibold.woff) format("woff");
 }
 @font-face {
   font-family: 'Open Sans';
   font-style: normal;
   font-weight: 700;
-  src: local("Open Sans Bold"), local("OpenSans-Bold"), url(fonts/google/open-sans-bold.woff) format("woff");
+  src: local("Open Sans Bold"), local("OpenSans-Bold"), url(/styles/white/fonts/google/open-sans-bold.woff) format("woff");
 }
 @font-face {
   font-family: 'Open Sans';
   font-style: italic;
   font-weight: 400;
-  src: local("Open Sans Italic"), local("OpenSans-Italic"), url(fonts/google/open-sans-italic.woff) format("woff");
+  src: local("Open Sans Italic"), local("OpenSans-Italic"), url(/styles/white/fonts/google/open-sans-italic.woff) format("woff");
 }
 @font-face {
   font-family: 'Open Sans';
   font-style: italic;
   font-weight: 300;
-  src: local("Open Sans Light Italic"), local("OpenSansLight-Italic"), url(fonts/google/open-sans-italic-light.woff) format("woff");
+  src: local("Open Sans Light Italic"), local("OpenSansLight-Italic"), url(/styles/white/fonts/google/open-sans-italic-light.woff) format("woff");
 }
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 /* line 9, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_normalize.scss */
@@ -155,7 +155,9 @@ img {
 }
 
 /* line 192, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_normalize.scss */
-
+svg:not(:root) {
+  overflow: hidden;
+}
 
 /* line 203, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_normalize.scss */
 figure {
@@ -404,8 +406,8 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url("fonts/bootstrap/glyphicons-halflings-regular.eot");
-  src: url("fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("fonts/bootstrap/glyphicons-halflings-regular.woff") format("woff"), url("fonts/bootstrap/glyphicons-halflings-regular.ttf") format("truetype"), url("fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
+  src: url("/styles/white/fonts/bootstrap/glyphicons-halflings-regular.eot");
+  src: url("/styles/white/fonts/bootstrap/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("/styles/white/fonts/bootstrap/glyphicons-halflings-regular.woff") format("woff"), url("/styles/white/fonts/bootstrap/glyphicons-halflings-regular.ttf") format("truetype"), url("/styles/white/fonts/bootstrap/glyphicons-halflings-regular.svg#glyphicons_halflingsregular") format("svg");
 }
 /* line 21, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_glyphicons.scss */
 .glyphicon {
@@ -8192,8 +8194,8 @@ button.close {
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url("./fonts/font-awesome/fontawesome-webfont.eot?v=4.2.0");
-  src: url("./fonts/font-awesome/fontawesome-webfont.eot?#iefix&v=4.2.0") format("embedded-opentype"), url("./fonts/font-awesome/fontawesome-webfont.woff?v=4.2.0") format("woff"), url("./fonts/font-awesome/fontawesome-webfont.ttf?v=4.2.0") format("truetype"), url("./fonts/font-awesome/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular") format("svg");
+  src: url("/styles/white/fonts/font-awesome/fontawesome-webfont.eot?v=4.2.0");
+  src: url("/styles/white/fonts/font-awesome/fontawesome-webfont.eot?#iefix&v=4.2.0") format("embedded-opentype"), url("/styles/white/fonts/font-awesome/fontawesome-webfont.woff?v=4.2.0") format("woff"), url("/styles/white/fonts/font-awesome/fontawesome-webfont.ttf?v=4.2.0") format("truetype"), url("/styles/white/fonts/font-awesome/fontawesome-webfont.svg?v=4.2.0#fontawesomeregular") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -15907,7 +15909,6 @@ textarea + .help-block,
  */
 /* line 146, ../../../bower_components/nvd3/nv.d3.css */
 
-
 /* line 168, ../../../bower_components/nvd3/nv.d3.css */
 .nvd3 .nv-background {
   fill: white;
@@ -22079,7 +22080,11 @@ img.mfp-img {
   padding: 0;
 }
 
-
+/* line 22, ../../src/sass/_override-custom-libs.scss */
+svg text {
+  font: 400 12px "Open Sans", sans-serif;
+  fill: #f8f8f8;
+}
 /* line 26, ../../src/sass/_override-custom-libs.scss */
 .widget svg text {
   fill: #666666;
@@ -22731,19 +22736,11 @@ html {
 /* line 38, ../../src/sass/_general.scss */
 body {
   font-weight: 400;
-  padding-bottom: 100px;
-  background-color: rgba(74, 121, 147, 0.89);
-  background-image: radial-gradient(farthest-side ellipse at 10% 0, rgba(74, 121, 147, 0.89), rgba(204, 204, 204, 0.85) 80%, rgba(185, 135, 131, 0.87) 120%);
-  background-image: -webkit-radial-gradient(10% 0, farthest-side ellipse, rgba(74, 121, 147, 0.89), rgba(204, 204, 204, 0.85) 80%, rgba(185, 135, 131, 0.87) 120%);
-  background-image: -moz-radial-gradient(10% 0, farthest-side ellipse, rgba(74, 121, 147, 0.89), rgba(204, 204, 204, 0.85) 80%, rgba(185, 135, 131, 0.87) 120%);
-  background-attachment: fixed, fixed;
+  
 }
 /* line 46, ../../src/sass/_general.scss */
 body.background-dark {
-  background-color: rgba(102, 105, 104, 0.9);
-  background-image: radial-gradient(farthest-side ellipse at 10% 0, rgba(102, 105, 104, 0.9), rgba(93, 112, 119, 0.89), rgba(160, 174, 150, 0.9));
-  background-image: -webkit-radial-gradient(10% 0, farthest-side ellipse, rgba(102, 105, 104, 0.9), rgba(93, 112, 119, 0.89), rgba(160, 174, 150, 0.9));
-  background-image: -moz-radial-gradient(10% 0, farthest-side ellipse, rgba(102, 105, 104, 0.9), rgba(93, 112, 119, 0.89), rgba(160, 174, 150, 0.9));
+ 
 }
 
 /* line 57, ../../src/sass/_general.scss */
@@ -22760,13 +22757,13 @@ h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
 input[type=search], input.search {
   padding-left: 26px;
   background-color: white;
-  background: url(../img/search.png) 5px 6px no-repeat white;
+  
 }
 /* line 71, ../../src/sass/_general.scss */
 input[type=search].input-transparent, input.search.input-transparent {
   border: none;
   color: #666666;
-  background: url(../img/search-white.png) 5px 5px no-repeat white;
+ 
 }
 /* line 103, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/mixins/_vendor-prefixes.scss */
 input[type=search].input-transparent::-moz-placeholder, input.search.input-transparent::-moz-placeholder {
@@ -24209,6 +24206,16 @@ a.text-gray-lighter:hover {
   opacity: .4;
   text-align: right;
 }
+
+.side-nav li i[class*=glyphicon] {
+  width: 16px;
+  margin-right: 8px;
+  float: left;
+  line-height: 20px;
+  font-size: 14px;
+  opacity: .4;
+  text-align: right;
+}
 /* line 116, ../../src/sass/_base.scss */
 .side-nav li a:hover, .side-nav li a:focus {
   background: rgba(0, 0, 0, 0.07);
@@ -24690,7 +24697,6 @@ a.text-gray-lighter:hover {
 .page-header .search-query {
   color: #666666;
   border: none;
-  background: url(../img/search.png) 5px 5px no-repeat rgba(255, 255, 255, 0.5);
   padding-left: 26px;
   -webkit-transition: width 0.2s;
   -o-transition: width 0.2s;
@@ -26655,7 +26661,7 @@ table.table thead .sorting_desc_disabled {
 /***********************************/
 /* line 531, ../../src/sass/_widgets.scss */
 .landing {
-  padding-bottom: 40px;
+  
 }
 /* line 533, ../../src/sass/_widgets.scss */
 .landing .page-header {
