@@ -31,7 +31,7 @@ var RegressionRow = React.createClass({
             <tr>
                 <td>{this.props.regression.name}</td>
                 <td>{ma}</td>
-                <td></td>
+                <td>{this.props.regression.constant}</td>
                 <td>{vars}</td>
                 <td>
                     <a data-toggle="modal" data-target="#deleteModal" data-backdrop="false" className="btn btn-sm btn-danger">
