@@ -35,7 +35,7 @@ var MarketAreaNew = React.createClass({
         var fields = Object.keys(this.props.values).map(function(key){
             return ( <div className="modal-body">
                                         <h4>{key}</h4>
-                                        <input type="text" id={key} value={scope.state[key]} onChange={scope._handleChange}/>
+                                        <input type="text" id={key} className='form-control' value={scope.state[key]} onChange={scope._handleChange}/>
                                     </div>
                   );
         });

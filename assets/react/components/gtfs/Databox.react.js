@@ -13,8 +13,8 @@ var idGen = require('./randomId');
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
-            selection:this.props.currentRoute || [],
-            serviceSelection:this.props.currentService || [],
+            selection:(this.props.currentRoute)? [this.props.currentRoute] : [],
+            serviceSelection:(this.props.currentService)?[this.props.currentService] : [],
 
         };
     },
@@ -23,7 +23,7 @@ var MarketAreaNew = React.createClass({
       if(selection){
         var canChange = this.props.onRouteChange(selection.id);
         if (this.isMounted() && canChange) {
-          scope.setState({selection:selection.id,serviceSelection:[]});
+          scope.setState({selection:[selection.id],serviceSelection:[]});
           console.log(selection.id);
         }else if(!canChange){
           scope.setState({selection:this.state.selection});//set the state to itself to force rerender
@@ -36,12 +36,14 @@ var MarketAreaNew = React.createClass({
     },
     componentWillReceiveProps : function(nextProps){
       var partialState = {};
-      if(nextProps.currentRoute && this.state.selection !== nextProps.currentRoute){
-        partialState.selection=nextProps.currentRoute;
+      if(nextProps.currentRoute && this.state.selection[0] !== nextProps.currentRoute){
+        partialState.selection=[nextProps.currentRoute];
+        partialState.serviceSelection = [];
       }
-      if(nextProps.currentService && this.state.serviceSelection !== nextProps.currentService){
-        partialState.serviceSelection=nextProps.currentService;
+      if(nextProps.currentService && this.state.serviceSelection[0] !== nextProps.currentService){
+        partialState.serviceSelection=[nextProps.currentService];
       }
+
       this.setState(partialState);
     },
     addingRouteAction : function(data){
@@ -50,17 +52,17 @@ var MarketAreaNew = React.createClass({
         this.setState({selection:this.state.selection});
         return err;
       }else{
-        this.setState({selection:data['New Route']});
+        this.setState({selection:[data['New Route']]});
       }
     },
     onEditSelect : function(){
-      this.props.EditRoute(this.state.selection);
+      this.props.EditRoute(this.state.selection[0]);
     },
     updateServices : function(e,selection){
       if(selection){
         var canChange = this.props.onServiceChange(selection.id);
         if(this.isMounted() && canChange){
-          this.setState({serviceSelection:selection.id});
+          this.setState({serviceSelection:[selection.id]});
         }else if(!canChange){
           this.setState({serviceSelection:this.state.selection});
         }
@@ -97,7 +99,7 @@ var MarketAreaNew = React.createClass({
                       styleWidth="100%"
                       onSelection={this.updateGtfs}
                       placeholder={'Select a Route'}
-                      val={[this.state.selection]} />
+                      val={this.state.selection} />
                     <Select2Component
                       id="serviceSelector"
                       dataSet={serviceData}
@@ -105,7 +107,7 @@ var MarketAreaNew = React.createClass({
                       styleWidth="100%"
                       onSelection={this.updateServices}
                       placeholder={"Select a Service"}
-                      val={[this.state.serviceSelection]}/>
+                      val={this.state.serviceSelection}/>
                   <div>
                     <CreationForm
                     values={{"New Route":'route'}}

@@ -99,22 +99,22 @@ var MarketAreaNew = React.createClass({
       return (
             <div>
                 <label>ID: </label>
-                <input type="text" onChange={idchange} value={this.state.stopId}/>
+                <input type="text" className='form-control' onChange={idchange} value={this.state.stopId}/>
                 <br/>
                 <label>Stop Code:</label>
-                <input type="text" onChange={codeChange} value={this.state.stopCode}/>
+                <input type="text" className='form-control' onChange={codeChange} value={this.state.stopCode}/>
                 <br/>
                 <label>Stop Name: </label>
-                <input type="text" onChange={nameChange} value={this.state.stopName}/>
+                <input type="text" className='form-control' onChange={nameChange} value={this.state.stopName}/>
                 <br/>
                 <label>Stop Description:</label>
-                  <input type="text" onChange={descChange} value={this.state.stopDesc}/>
+                  <input type="text" className='form-control' onChange={descChange} value={this.state.stopDesc}/>
                   <br/>
                 <label>Stop Zone Id:</label>
-                  <input type="text" onChange={zoneChange} value={this.state.stopZoneId}/>
+                  <input type="text" className='form-control' onChange={zoneChange} value={this.state.stopZoneId}/>
                   <br/>
                 <label>Stop URL:</label>
-                  <input type="text" onChange={urlChange} value={this.state.stopUrl}/>
+                  <input type="text" className='form-control' onChange={urlChange} value={this.state.stopUrl}/>
                   <br/>
 
                 <button className={classes} onClick={this._setAction}>{'set'}</button>

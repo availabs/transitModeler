@@ -11,7 +11,7 @@ var React = require('react'),
 var buildStateObj = function(route){
   return {
     routeId:route.getId(),
-    agencyId:route.getAgencyId(),
+    // agencyId:route.getAgencyId(),
     route_short_name:route.getRouteShortName(),
     route_long_name:route.getRouteLongName(),
     route_desc: route.getRouteDesc(),
@@ -51,6 +51,8 @@ var MarketAreaNew = React.createClass({
         saveObj[d] = scope.state[d];
       });
       //add the old Id for a check;
+      saveObj.oldId = this.props.route.getId();
+      saveObj.oldName = this.props.route.getRouteShortName();
       var error = this.props.saveInfo(saveObj);
       if(!error)
         this.setState({editing:false});
@@ -87,29 +89,28 @@ var MarketAreaNew = React.createClass({
       return (
             <div>
                 <label>ID: </label>
-                <input type="text" onChange={idchange} value={this.state.routeId}/>
-                <br/>
-                <label>Agency_id: </label>
-                <input type="text" onChange={agencyChange} value={this.state.agencyId}/>
+                <input type="text" className='form-control' onChange={idchange} value={this.state.routeId}/>
                 <br/>
                 <label>Route Short Name: </label>
-                <input type="text" onChange={RSNChange} value={this.state.route_short_name}/>
+                <input type="text" className='form-control' onChange={RSNChange} value={this.state.route_short_name}/>
                 <br/>
                 <label>Route Long Name: </label>
-                <input type="text" onChange={RLNChange} value={this.state.route_long_name}/>
+                <input type="text" className='form-control' onChange={RLNChange} value={this.state.route_long_name}/>
                 <br/>
                 <label>Route Desc: </label>
-                <input type="text" onChange={descChange} value={this.state.route_desc}/>
+                <input type="text" className='form-control' onChange={descChange} value={this.state.route_desc}/>
                 <br/>
                 <label>URL: </label>
-                <input type="text" onChange={urlChange} value={this.state.route_url}/>
+                <input type="text" className='form-control' onChange={urlChange} value={this.state.route_url}/>
                 <br/>
 
                 <button className={classes} onClick={this._setAction}>{'set'}</button>
                 <button className={classes} onClick={this._cancel}>{'cancel'}</button>
             </div>
         );
-
+        // <label>Agency_id: </label>
+        // <input type="text" className='form-control' onChange={agencyChange} value={this.state.agencyId}/>
+        // <br/>
     },
 
     render: function() {

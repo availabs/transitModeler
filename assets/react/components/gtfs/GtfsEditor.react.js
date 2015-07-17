@@ -44,6 +44,26 @@ var initStops = function(stops){
     return stopColl;
 };
 
+var initRoutes = function(scheds){
+  var routecoll = [];
+  Object.keys(scheds).forEach(function(rid){
+    var route = new RouteObj(),rsn = scheds[rid].shortName;
+    route.setId(rid);
+    route.setRouteShortName(rsn);
+    routecoll.push(route);
+  });
+  return routecoll;
+};
+
+var arrayFind = function(arr,criterion,type){
+  for(var i = 0; i < arr.length; i++){
+    if(criterion(arr[i])){
+      if(type==='index')
+        return i;
+      return arr[i];
+    }
+  }
+};
 
 
 var MarketAreaNew = React.createClass({
@@ -69,7 +89,7 @@ var MarketAreaNew = React.createClass({
             routingGeo:emptyGeojson,
             deltas:[],
             lengths:[],
-            routeColl:[],
+            routeColl:initRoutes(this.props.schedules),
             frequencies:null,
         };
     },
@@ -556,7 +576,35 @@ var MarketAreaNew = React.createClass({
       this.setState({editInfo:info,needEdit:true,tripChange:false});
     },
 
-    changeRoute : function(sInfo){
+    changeRoute : function(rInfo){
+      var criterion = function(val){return function(d){return d.getId()===val;};};
+      var route, exists = this.state.routeColl.filter(criterion(rInfo.routeId))[0];
+      if(rInfo.routeId !== rInfo.oldId && exists ){
+        return 'ERROR Route EXISTS';
+      }
+      if(rInfo.routeId !== rInfo.oldId){
+        var ix = arrayFind(this.state.routeColl,criterion(rInfo.oldId),'index');
+        route = new RouteObj();
+        this.state.routeColl.splice(ix,1);
+        this.state.routeColl.push(route);
+        this.state.schedules[rInfo.routeId] = this.state.schedules[rInfo.oldId];
+        this.state.schedules[rInfo.routeId].id=rInfo.routeId;
+        delete this.state.schedules[rInfo.oldId];
+      }else{
+        route = exists;
+      }
+      if(rInfo.route_short_name !== rInfo.oldName){
+        this.state.schedules[rInfo.routeId].shortName=rInfo.route_short_name;
+      }
+      route.setId(rInfo.routeId);
+      route.setRouteShortName(rInfo.route_short_name);
+      route.setRouteLongName(rInfo.route_long_name);
+      route.setRouteDesc(rInfo.route_desc);
+      route.setRouteType(rInfo.route_type);
+      route.setRouteUrl(rInfo.route_url);
+      route.setRouteColor(rInfo.route_color);
+      route.setRouteTextColor(rInfo.route_text_color);
+      this.setState({currentRoute:rInfo.routeId,schedules:this.state.schedules,routeColl:this.state.routeColl});
     },
     routeClick : function(data){
       console.log('route_click',data);
@@ -689,6 +737,7 @@ var MarketAreaNew = React.createClass({
                             stopSearch={this._getStop}
                             data={this.state.editInfo}
                             saveStop={this.changeStop}
+                            saveRoute={this.changeRoute}
                             active={this.state.needEdit}/>
                        <SaveBox
                         Edited={this.state.edited}
