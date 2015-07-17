@@ -3,6 +3,18 @@ var React = require('react'),
     $ = require('jquery'),
     select2 = require('../../utils/select2');
 
+
+var equalityCheck = function(L1,L2){
+  if(L1.length !== L2.length)
+    return false;
+  //if we've made it this far they must be equal in length
+  //so we iterate jointly
+  var bool = true;
+  for(var i =0; i< L1.length; i++){
+    bool = bool && ((L1[i].id === L2[i].id) && (L1[i].text === L2[i].text));
+  }
+  return bool;
+}
 var Select2Component = React.createClass({
   propTypes: {
     // Id to apply to hidden input element
@@ -175,11 +187,8 @@ var Select2Component = React.createClass({
   _isDataUpdated: function (oldData) {
     // TODO: More robust dataSet checker.  Need to recurse and
     // check all elements of data set.
-    if (oldData.length != this.props.dataSet.length) {
-      return true;
-    }
 
-    return false;
+    return !equalityCheck(oldData,this.props.dataSet);
   },
 
   render: function () {
