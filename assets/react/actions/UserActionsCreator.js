@@ -40,6 +40,9 @@ module.exports = {
   },
   deleteMarketArea:function(id){
     sailsWebApi.delete('marketarea',id)
+  },
+  deleteRegression:function(id){
+    sailsWebApi.delete('regression',id)
   }
 
 };

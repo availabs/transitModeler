@@ -1,17 +1,14 @@
 'use strict';
-var React = require('react');
+var React = require('react'),
     
     // -- Components 
     
-    // -- Action Creators
-    
+    // -- actions
+    UserActionsCreator = require('../../actions/UserActionsCreator');
 
 var RegressionRow = React.createClass({
     
-    //  _onClick: function(id){
-    //     UserActionsCreator.selectUser(this.props.user.id);
-    //     //console.log('clicked');
-    // },
+    
 
     render: function(){
         
@@ -21,11 +18,13 @@ var RegressionRow = React.createClass({
                 <span> {v.coef} * {v.name}</span><br/>
                 </div>
             )
-        })
+        });
+
         var ma = '';
         if(this.props.regression.marketarea){
             ma =  this.props.marketareas[this.props.regression.marketarea].name;
         }
+        
         return (
         
             <tr>
@@ -34,7 +33,7 @@ var RegressionRow = React.createClass({
                 <td>{this.props.regression.constant}</td>
                 <td>{vars}</td>
                 <td>
-                    <a data-toggle="modal" data-target="#deleteModal" data-backdrop="false" className="btn btn-sm btn-danger">
+                    <a onClick={this.props.setRegression.bind(null,this.props.regression.id) } data-toggle="modal" data-target="#deleteModal" data-backdrop="false" className="btn btn-sm btn-danger">
                         Delete
                     </a>
                 </td>
@@ -43,11 +42,20 @@ var RegressionRow = React.createClass({
         
     }
     
-})
+});
 
 
 var RegressionTable = React.createClass({
-    
+    getInitialState:function (){
+        return {
+            currentRegression:null
+        }
+    },
+
+    setRegression:function(id){
+        this.setState({currentRegression:id})
+    },
+
     render: function(){
         
     
@@ -58,7 +66,7 @@ var RegressionTable = React.createClass({
         var rows = Object.keys(regressions).map(function(key){
             
             return (
-                <RegressionRow key={key} regression={regressions[key]} marketareas={scope.props.marketareas}  />
+                <RegressionRow key={key} regression={regressions[key]} marketareas={scope.props.marketareas} setRegression={scope.setRegression} />
             )
         });
 
@@ -84,8 +92,9 @@ var RegressionTable = React.createClass({
         )
     },
 
-    _deleteReg:function(e){
-        
+    _deleteReg:function(id){
+       //console.log(e)
+       UserActionsCreator.deleteRegression(id)
     },
 
     deleteModal:function(){
@@ -99,13 +108,13 @@ var RegressionTable = React.createClass({
                             <h4 className="modal-title" id="myModalLabel2">Delete Model</h4>
                         </div>
                         <div className="modal-body">
-                            <h4>Are you sure you want to delete this regression?</h4>     
+                            <h4>Are you sure you want to delete regression {this.props.regressions[this.state.currentRegression] ? this.props.regressions[this.state.currentRegression].name : 'none' }?</h4>     
                         </div>
                         
                         <div className="modal-footer">
                            <br />
                             <button type="button" className="btn btn-danger" data-dismiss="modal">Cancel</button>
-                            <button type="button" className="btn btn-info" onClick={this._deleteReg} data-dismiss="modal">Delete</button>
+                            <button type="button" className="btn btn-info" onClick={this._deleteReg.bind(null,this.props.regressions[this.state.currentRegression] ? this.props.regressions[this.state.currentRegression].id : null)} data-dismiss="modal">Delete</button>
                         </div>
 
                     </div>
