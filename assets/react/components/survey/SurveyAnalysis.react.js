@@ -94,9 +94,10 @@ var SurveyAnalysis = React.createClass({
 
         return discreteCats.map(function(cat){
             return (
-                <div>
+                <div className='col-md-4'>
                 <h4>{cat}</h4>
                 <SurveyGraph 
+                    height="250"
                     surveyData={scope.state.surveyData}
                     groupName={cat}
                     filters = {scope.state.filters}
@@ -114,7 +115,7 @@ var SurveyAnalysis = React.createClass({
             	
                 
                 <div className="row">
-                	<div className="col-lg-7" >
+                	<div className="col-lg-5" >
                         <div data-spy="affix" data-offset-top="240">
                             <MarketAreaMap 
                                 stops={this.props.stopsGeo}
@@ -124,13 +125,16 @@ var SurveyAnalysis = React.createClass({
                         </div>
                     
                     </div>
-                    <div className="col-lg-5">
-                        
-                        <section className="widget">
+                    <div className="col-lg-7">
+                        <div className='row'>
+                            <section className="widget" style={{overflow:'auto'}}>
                            Survey
-                           {this.state.filters}
-                           {this._renderSurveys()}
-                        </section>
+                           {JSON.stringify(this.state.filters)}
+                           
+                            {this._renderSurveys()}
+                            
+                            </section>
+                        </div>
                     
                     </div>
                 </div>

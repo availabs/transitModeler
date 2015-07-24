@@ -122,7 +122,9 @@ var ModelCreate = React.createClass({
                             mode = {this.state.currentMode}
                             currentTripTable={this.state.currentTripTable} 
                             tracts={this.props.tracts} 
-                            routes={ routes } />
+                            routes={ routes }
+                            currentSettings = {this.state.currentSettings}
+                            censusData = {this.props.censusData} />
                     
                     </div>
                     <div className="col-lg-5">
@@ -140,7 +142,9 @@ var ModelCreate = React.createClass({
                                 datasources={this.props.datasources}
                                 currentSettings={this.state.currentSettings} />
                         </section>
-                    
+                        <span style={{color:'black'}}>
+                        {JSON.stringify(this.state.currentSettings)}
+                        </span>
                     </div>
                 </div>
         	</div>

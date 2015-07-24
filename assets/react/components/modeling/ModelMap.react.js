@@ -1,4 +1,4 @@
- 'use strict';
+'use strict';
 
 var React = require('react'),
     d3 = require('d3'),
@@ -10,11 +10,14 @@ var React = require('react'),
     LeafletMap = require('../utils/LeafletMap.react'),
     
     //  --Component Globals
+    currentType = null,
+    currentForecast = null,
+    forecastData = {},
     tractlayerID = 0,
     prevTractLength,
     routeLayerID = 0,
     prevRouteLength,
-    odScale = d3.scale.quantile().range(colorbrewer.PuBu[9]);    
+    odScale = d3.scale.quantile().range(colorbrewer.PuBu[6]);    
 
 
 
@@ -55,21 +58,40 @@ var ModelMap = React.createClass({
         var flatTrips = Object.keys(tractCounts).map(function(key){
             return scope.props.mode === 'Origin' ? tractCounts[key].o : tractCounts[key].d
         }).sort(function(a, b) { return a - b; });
+        odScale.range(colorbrewer.PuBu[5])
+        
+        if(scope.props.mode === 'pop' ||  scope.props.mode === 'emp' ){
+            //flatTrips 
+            flatTrips = this.props.tracts.features.map(function(d){
+                forecastData[d.properties.geoid] = d.properties;
+                return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
+            })
+
+
+            odScale.range(colorbrewer.OrRd[5])
+        }
 
         
         if( !deepEqual(odScale.domain(),flatTrips) ){
+            
             
             odScale.domain(flatTrips);
             d3.selectAll('.tract')
                 .attr('fill',function(feature){
                     
-                   
                     var geoid = d3.select(this).attr('class').split('_')[1];
                     var scaleValue = 0; 
 
                     if(tractCounts[geoid]){
                         scaleValue = scope.props.mode === 'Origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
+
                     }
+                    console.log('fdata',forecastData)
+                    if((scope.props.mode === 'pop'  || scope.props.mode === 'emo') &&  forecastData[geoid]){
+                        //console.log('pop',geoid,forecastData[geoid].pop2020_growth)
+                        scaleValue = scope.props.mode === 'pop' ? forecastData[geoid].pop2020_growth : forecastData[geoid].emp2020_growth;forecastData[geoid].pop2020_growth;
+                    }
+
                     return odScale(scaleValue);
                 })
 
@@ -88,7 +110,8 @@ var ModelMap = React.createClass({
                         return {
                             className: 'tract geo_'+feature.properties.geoid+'_',
                             stroke:false,
-                            weight:2
+                            weight:2,
+                            fillOpacity:0.8
                         };
                     },
                     onEachFeature: function (feature, layer) {
@@ -99,7 +122,7 @@ var ModelMap = React.createClass({
                             mouseover: function(e){
                                 //console.log(feature.properties)
                                 this.setStyle({weight:2,stroke:true,fillColor:this._path.attributes[3].nodeValue});
-                                var table='<table class="table"><tr><td>Origin Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr><tr><td>Destination Trips</td><td>'+tractCounts[feature.properties.geoid]+'</td></tr></table>';
+                                var table=scope.renderToolTip(feature,tractCounts);
                                 var tt = d3.select('.ToolTip').style({
                                     left:e.originalEvent.clientX+'px',
                                     top:e.originalEvent.clientY+'px',
@@ -172,7 +195,35 @@ var ModelMap = React.createClass({
             }
         }
     },
-    
+    renderToolTip:function(feature,tractCounts){
+        //,this.props.mode === 'Origin' ?  : tractCounts[feature.properties.geoid].d )
+        //console.log('rtt',tractCounts,tractCounts[feature.properties.geoid],feature.properties.geoid)
+        var scope = this,
+            origin = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0',
+            dest = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0',
+            busData = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid]['bus_to_work']) : 0,
+            table = ''+
+            '<table class="table">'+
+            '<tr><td>Origin Trips</td><td>'+origin+'</td></tr>'+
+            '<tr><td>Destination Trips</td><td>'+dest +'</td></tr>'+
+            '<tr><td>Bus To Work</td><td>'+busData +'</td></tr>';
+            if(currentType === 'regression'){
+                table += '<tr><td colspan=2 style="textAlign:center;"><strong> Regression Variables</strong></td></tr>';
+                var censusRows = this.props.currentSettings.regressionId.censusVariables.map(function(cenvar){
+                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0
+                    return '<tr><td>'+cenvar.name+'</td><td>'+data+'</td></tr>'
+                })
+                table+=censusRows.join(' ')
+            }
+            if(scope.props.currentSettings.forecast === 'future'){
+                table   += '<tr><td colspan=2 style="textAlign:center;"><strong> 2020 Forceast</strong></td></tr>'
+                        + '<tr><td>Population Growth</td><td>'+feature.properties.pop2020_growth +'%</td></tr>'
+                        + '<tr><td>Employment Growth</td><td>'+feature.properties.emp2020_growth +'%</td></tr>';
+            }
+
+            table +='</table>';
+            return table;
+    },
     _updateTooltip:function(tt){
         var scope = this;
         if (scope.isMounted()) {
@@ -181,8 +232,20 @@ var ModelMap = React.createClass({
             });
         }
     },
+    componentWillReceiveProps:function(nextProps){  
+       
+        if(currentType !== nextProps.currentSettings.type){
+            //console.log('new type',nextProps.currentSettings.type)
+            currentType = nextProps.currentSettings.type
+        }
+
+       
+    },
 
     render: function() {
+
+        //console.log('censusData',this.props.censusData.getTractData())
+        
         var legendLayers = {
             od:{
                 type:'buttonGroup',
@@ -197,6 +260,10 @@ var ModelMap = React.createClass({
                 scale:odScale
             }
             
+        }
+        if(this.props.currentSettings.forecast === 'future'){
+            legendLayers.od.buttons.push({text:'Pop Change',value:'pop',click:ModelingActionsCreator.setMode});
+            legendLayers.od.buttons.push({text:'Emp Change',value:'emp',click:ModelingActionsCreator.setMode});
         }
 
         return (

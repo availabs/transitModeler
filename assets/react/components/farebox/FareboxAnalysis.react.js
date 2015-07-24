@@ -5,6 +5,8 @@ var React = require('react'),
     // -- Components
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
     FareboxGraph = require('./FareboxGraph.react'),
+    DataTable = require('../utils/DataTable.react'),
+    CalendarGraph = require('../utils/CalendarGraph.react'),
     
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
@@ -43,6 +45,41 @@ var FareboxAnalysis = React.createClass({
     _onChange:function(){
         this.setState(this._getStateFromStore())
     },
+    _processData:function(peak) {
+        
+        var scope = this;  
+        
+        if(this.state.farebox.initialized){
+            console.log('FareboxGraph',scope.state.farebox)
+
+            var data = scope.state.farebox.groups['line'].top(Infinity).map(function(line){
+                
+                if(peak){
+                    var lower = peak === 'am' ? 6 : 16,
+                        upper = peak === 'am' ? 10 : 20;
+
+                    scope.state.farebox.dimensions['run_time'].filter(function(d,i){
+                       
+                        return d.getHours() > lower && d.getHours() < upper
+                    });
+                }else{
+                   scope.state.farebox.dimensions['run_time'].filter(null) 
+                }
+                scope.state.farebox.dimensions['line'].filter(line.key);
+                
+                var daySum = scope.state.farebox.groups['run_date'].top(Infinity).reduce(function(a,b){
+                    return {value:(a.value + b.value)}
+                
+                })
+                //console.log('daysum',scope.state.farebox.groups['run_date'].top(Infinity))
+                return {key:line.key,value:(daySum.value/scope.state.farebox.groups['run_date'].top(Infinity).length)}
+
+            })
+            return [{key:'Time Peak',values:data}]
+        }
+        return [{key:'none',values:[]}]
+        
+    },
         
     componentWillReceiveProps:function(nextProps){
         //console.log(nextProps.marketarea.id,this.props.marketarea.id)
@@ -53,7 +90,48 @@ var FareboxAnalysis = React.createClass({
             })
         }
     },
-    
+    _renderCalendars:function(){
+        var scope = this;
+        var rows= <span />;
+        if(this.state.farebox.initialized){
+             var yearsArray = {};
+        
+            //console.log('Day data',this.props.agencyOverviewDay[type])
+             this.state.farebox.groups['run_year'].top(Infinity).forEach(function(year){
+                console.log()
+                var currYear = year.key.getFullYear(),
+                    yearData = {},
+                    yearDays = scope.state.farebox.groups['run_date'].top(Infinity).filter(function(d){
+                        return d.key.getFullYear() === currYear;
+                    });
+
+                    yearDays.forEach(function(day){
+                        var month = day.key.getMonth().length === 1 ? '0'+day.key.getMonth() : day.key.getMonth();
+                        //console.log(day.key.getFullYear()+'-0'+month+'-'+day.key.getDate())
+                        yearData[day.key.getFullYear()+'-0'+month+'-'+day.key.getDate()] = parseInt(day.value);
+                    });
+
+                yearsArray[currYear] = yearData;
+
+                
+            })
+            console.log('yearData',yearsArray)
+            rows = Object.keys(yearsArray).map(function(key){
+                //console.log('year',key)
+                var graphId = 'cg_'+key;
+                var year = key;
+                return (
+                   
+                    <CalendarGraph year={parseInt(year)} data={ yearsArray[key] }/>
+                            
+                )
+                
+            })
+            
+        }
+        return rows;
+
+    },
     _renderFareZones:function(){
         var FareZones = {};
         this.props.stopsGeo.features.forEach(function(d){
@@ -86,30 +164,70 @@ var FareboxAnalysis = React.createClass({
 
     render: function() {
        
-        console.log(this.state.farebox,this.state.farebox.all)
+        //console.log(this.state.farebox,this.state.farebox.all)
+        var scope = this,
+            amPeak = this._processData('am'),
+            pmPeak = this._processData('pm'),
+            fullDay = this._processData();
+
+        var TableData = amPeak[0].values.map(function(d,i){
+            return {
+                line:d.key,am:Math.round(d.value),pm:Math.round(pmPeak[0].values[i].value),fullDay:Math.round(fullDay[0].values[i].value)
+            }
+        }),
+        cols = [
+            {name:'Bus Line',key:'line'},
+            {name:'AM Peak',key:'am',summed:true},
+            {name:'PM Peak',key:'pm',summed:true},
+            {name:'Full Day',key:'fullDay',summed:true}
+        ];
+
+        var calendars = this._renderCalendars();
+
         return (
     	   <div>
             	
                 
                 <div className="row">
-                	<div className="col-lg-7">
+                	<div className="col-lg-5">
                     
                         <MarketAreaMap 
                             stops={this.props.stopsGeo} 
                             routes={this.props.routesGeo} 
                             tracts ={this.props.tracts}
                             stopFareZones={true}/>
-                            
-                    
-                    </div>
-                    <div className="col-lg-5">
-                        <FareboxGraph farebox={this.state.farebox} />
-                        <section className="widget">
+                         <section className="widget">
                            FareZones
                            {this._renderFareZones()}
 
                         </section>
                     
+                    </div>
+                    <div className="col-lg-7">
+                        <div className='row'>
+                           
+                            <section className="widget" style={{overflow:'auto'}}>
+                                <div className="col-lg-4">
+                                    <h4>AM Peak (6am - 10am)</h4>
+                                    <FareboxGraph data={amPeak} groupName='am' peak='am' height='250' />
+                                </div>
+                                 <div className="col-lg-4">
+                                  <h4>PM Peak (4pm - 8pm)</h4>
+                                    <FareboxGraph data={pmPeak} groupName='pm' peak='pm' height='250' />
+                                </div>
+                                 <div className="col-lg-4">
+                                  <h4>Full Day</h4>
+                                    <FareboxGraph data={fullDay} height='250' />
+                                </div>
+                                <div className='col-lg-12'>
+                                    <DataTable data={TableData} columns={cols} />
+                                </div>
+                                <div className='col-lg-12'>
+                                    <h4>Available Data</h4>
+                                    {calendars}
+                                </div>
+                            </section>
+                        </div> 
                     </div>
                 </div>
         	</div>
