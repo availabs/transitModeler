@@ -135,16 +135,16 @@ var Util = {
 		if(updates.length > 0){
 			sql += this.updateStops(datafile,updates,trips,deltas);
 		}
-		updateNonRequiredStopInfo(datafile,updates,inserts);
+//		updateNonRequiredStopInfo(datafile,updates,inserts);
 		return sql;
 	},
-	updateNonRequiredStopInfo : function(datafile,updates,inserts){
-		var sql = '';
-		template = 'UPDATE'
-		updates.concat(inserts).forEach(function(d){
-
-		});
-	},
+	// updateNonRequiredStopInfo : function(datafile,updates,inserts){
+	// 	var sql = '';
+	// 	template = 'UPDATE ""?.stops'
+	// 	updates.concat(inserts).forEach(function(d){
+	//
+	// 	});
+	// },
 	putTrip: function(datafile,trip){
 		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\')',
 		map =['trip_id','route_id','service_id','shape_id','file'],sql ='';

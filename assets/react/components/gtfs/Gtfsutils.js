@@ -123,7 +123,7 @@ var StopsPair = function(){
 	StopsPair.prototype.addMain = function(d){
 		this.main.addStop(d);
 	};
-	Stopspair.prototype.addStops = function(stops){
+	StopsPair.prototype.addStops = function(stops){
 		this.main.addStops(stops);
 	};
 	StopsPair.prototype.addTemp = function(d,ref){
@@ -624,5 +624,5 @@ module.exports = {
 	Route:Route,
 	Routes:Routes,
 	RouteObj:RouteObj,
-	EditableStops:StopsPair,
+	StopsColl:StopsPair,
 };
