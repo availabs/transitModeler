@@ -157,11 +157,12 @@ var StopsPair = function(){
 		}
 	};
 	StopsPair.prototype.merge = function(){
-		Object.keys(this.map).forEach(function(id){ //take all edits
-			var replacment = this.temp.getStop(this.map[id]); //get the changed stop
-			this.main.deleteStop(id); //delete original stop from main list
-			this.main.addStop(replacement); //add the edited stop to the main list
-			this.temp.deleteStop(this.map[id]);//remove the changed element from temp list
+		var scope = this;
+		Object.keys(scope.map).forEach(function(id){ //take all edits
+			var replacement = scope.temp.getStop(scope.map[id]); //get the changed stop
+			scope.main.deleteStop(id); //delete original stop from main list
+			scope.main.addStop(replacement); //add the edited stop to the main list
+			scope.temp.deleteStop(scope.map[id]);//remove the changed element from temp list
 		});
 		this.main.takeNew(this.temp); //then add all the new stops to the list;
 	};
@@ -183,6 +184,23 @@ var Stop = function(stop){
 	else
 		this.stop = {type:'Feature',properties:{},geometry:{type:'Point',coordinates:[]}};
 };
+	Stop.prototype.toRaw = function(){
+		return {stop_id:this.getId(),
+            stop_code:this.getStopCode(),
+            stop_name:this.getName(),
+            stop_desc:this.getStopDesc(),
+            stop_lat:this.getLat(),
+            stop_lon:this.getLon(),
+            zone_id:this.getZoneId(),
+            stop_url:this.getStopUrl(),
+            location_type:this.getLocationType(),
+            parent_station:this.getParentStation(),
+            stop_timezone:this.getStopTimeZone(),
+            wheelchair_boarding:this.getWheelchairBoarding(),
+            platform_code:this.getPlatformCode(),
+            geometry:this.stop.geometry,
+					};
+	};
 	Stop.prototype.cloneCopy = function(){
 		return new Stop(JSON.parse(JSON.stringify(this.stop)));
 	};
@@ -275,6 +293,12 @@ var Stop = function(stop){
 	};
 	Stop.prototype.setStopTimeZone = function(stz){
 		this.stop.properties.stop_timezone = stz;
+	};
+	Stop.prototype.getPlatformCode = function(){
+		return this.stop.properties.platform_code;
+	};
+	Stop.prototype.setPlatformCode = function(pc){
+		this.stop.properties.platform_code = pc;
 	};
 	Stop.prototype.getWheelchairBoarding = function(){
 		return this.stop.properties.wheelchair_boarding;

@@ -1,6 +1,7 @@
 /*globals confirm, console,module,require*/
 /*jshint -W097*/
 var dbhelper = require('./batchmod.js');
+var gtfshelper = require('./gtfsorm.js');
 var Feature = require('./feature.js');
 
 function updateStopTimes(datafile,trips,deltas){
@@ -89,9 +90,8 @@ var Util = {
 
 			debugger;
 			var sql = '';
-			var template1 = 'INSERT INTO "?".stops(geom,stop_lon,stop_lat,stop_id,stop_name)'
-						  + 'VALUES (ST_SetSRID(ST_GeomFromGeoJSON(\'?\'),4326), ?, ?, \'?\',\'?\')',
-				template2 = 'SELECT add_stop_to_stop_times(\'?\',?,?,\'?\')',
+
+			var	template2 = 'SELECT add_stop_to_stop_times(\'?\',?,?,\'?\')',
 
 				template3 = 'SELECT del_stop_from_stop_times(?,?,\'?\')',
 				template4 = 'DELETE FROM "?".stops WHERE stop_id=\'?\'';
@@ -108,7 +108,7 @@ var Util = {
 				feat.trips = trips;
 				var f = new Feature(feat);
 				if(feat.isNew()){ //if it is a new feature add it to the database
-					sql += buildFeatureQuery(template1,map1,f);
+					sql += gtfshelper.insert('stop',feat.toRaw(),datafile);
 					sql += buildFeatureQuery(template2,map2,f);
 				}
 				else if(feat.isDeleted()){ //if it was marked for deletion from a tgroup
@@ -242,16 +242,13 @@ var Util = {
 				feat.file=datafile;
 				feat.trips=trips;
 				var f = new Feature(feat);
-				sql += buildFeatureQuery(template,map,f);
+				sql += gtfshelper.update('stop',feat.toRaw(),datafile);
 			});
+			console.log(sql);
 			sql += updateStopTimes(datafile,trips,deltas); //update the arrivals & departures of the necessary trips
 															//based on the time deltas.
 			// console.log(sql);
 			return sql;
-	},
-
-	createTrip: function(datafile,featlist,trip,deltas,cb){
-
 	},
 	putFrequencies : function(datafile,frequencies,cb){
 		if(frequencies.length === 0){
@@ -268,7 +265,7 @@ var Util = {
 																						file:datafile
 																						};
 																});
-		debugger;
+
 		var dbhelp = new dbhelper(template,data);
 		dbhelp.setMapping(map);
 		var sql = dbhelp.getQuery();
