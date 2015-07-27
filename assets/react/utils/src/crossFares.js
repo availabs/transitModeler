@@ -18,7 +18,10 @@ crossFares = {
 		crossFares.groups['line'] = crossFares.dimensions['line'].group().reduceSum(function(d){return +d['total_transactions']}),
 		
 		crossFares.dimensions['run_date'] = crossFares.trips.dimension(function(d){ return new Date(d['run_date']) }),
-		crossFares.groups['run_date'] = crossFares.dimensions['run_date'].group(d3.time.day);
+		crossFares.dimensions['run_time'] = crossFares.trips.dimension(function(d){ return new Date(d['run_date']) }),
+		
+		crossFares.groups['run_date'] = crossFares.dimensions['run_date'].group(d3.time.day).reduceSum(function(d){return +d['total_transactions']}),
+		crossFares.groups['run_year'] = crossFares.dimensions['run_date'].group(d3.time.year).reduceSum(function(d){return +d['total_transactions']});;
 
 		
 		crossFares.initialized = true;

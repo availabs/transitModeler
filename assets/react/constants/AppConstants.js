@@ -67,6 +67,7 @@ module.exports = {
 
     RECIEVE_DATASOURCES:null,
     RECEIVE_REGRESSIONS:null,
+    DELETE_REGRESSION:null,
 
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,

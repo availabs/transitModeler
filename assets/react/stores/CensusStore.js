@@ -68,10 +68,10 @@ var CensusStore = assign({}, EventEmitter.prototype, {
 
   getCurrentDataSet: function() {
     var marketAreaId = MarketareaStore.getCurrentMarketAreaId();
-    //console.log('getCurrentCensusData',marketAreaId,_rawDataSets[marketAreaId],_loading)
     if(marketAreaId && _rawDataSets[marketAreaId] && _rawDataSets[marketAreaId][_currentYear]){
 
         currentData.update_data(_rawDataSets[marketAreaId][_currentYear]);
+        //console.log('getCurrentCensusData',marketAreaId,_rawDataSets[marketAreaId],currentData,_loading)   
         return currentData;
     
     }else if(marketAreaId && !_loading){
@@ -79,6 +79,7 @@ var CensusStore = assign({}, EventEmitter.prototype, {
       _loading = true;
     }
     currentData.update_data([])
+    //console.log('getCurrentCensusData',marketAreaId,_rawDataSets[marketAreaId],currentData,_loading)   
     return currentData;
   },
   

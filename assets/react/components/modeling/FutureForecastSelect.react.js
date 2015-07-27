@@ -10,7 +10,7 @@ var FutureForecast = React.createClass({
     _setOption:function(e){
         
         var data = e.target.getAttribute('value').split(',');
-        console.log('_setOption',e.target.getAttribute('value'),data)
+        //console.log('_setOption',e.target.getAttribute('value'),data)
         ModelingActionsCreator.setOption(data[0],data[1]);
     },
 

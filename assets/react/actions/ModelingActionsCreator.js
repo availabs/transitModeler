@@ -48,7 +48,7 @@ module.exports = {
   },
 
   setMode:function(mode){
-    console.log('setMode',mode)
+    //console.log('setMode',mode)
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_TRIPTABLE_MODE,
       value: mode

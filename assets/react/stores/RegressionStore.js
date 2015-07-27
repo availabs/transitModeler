@@ -1,3 +1,4 @@
+
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -87,6 +88,8 @@ RegressionStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.DELETE_REGRESSION:
+
+      console.log('DELETE_REGRESSION',action.Id)
       _deleteRegression(action.Id);
       RegressionStore.emitChange();
     break;
