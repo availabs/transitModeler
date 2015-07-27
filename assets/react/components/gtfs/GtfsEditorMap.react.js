@@ -83,12 +83,12 @@ var GtfsEditorMap = React.createClass({
             }
 
         }
-        if( (stops.features.length !== prevStopsLength) ||
-            !prevStops || (prevStops !== stops)  ){
-            stopslayerID++;
-            prevStopsLength = stops.features.length;
-            prevStops = stops;
-        }
+        // if( (stops.features.length !== prevStopsLength) ||
+        //     !prevStops || (prevStops !== stops)  ){
+        //     stopslayerID++;
+        //     prevStopsLength = stops.features.length;
+        //     prevStops = stops;
+        // }
         if(this.props.mode && this.props.mode !== prevMode){
             stopslayerID++;
             prevMode = this.props.mode;
@@ -98,7 +98,7 @@ var GtfsEditorMap = React.createClass({
             prevCountyLength = counties.features.length;
         }
         routingLayerId++;
-
+        stopslayerID++;
         return {
 
             routingLayer:{

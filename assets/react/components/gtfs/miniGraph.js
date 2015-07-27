@@ -18,7 +18,7 @@ var pastPoint = function(p1,p2,q){
 
 var miniGraph = function(){
     //node object that will be verticies of a graph
-    var node = function(v){
+  var node = function(v){
 		this.val = v.toString();
 		this.adjs = [];
 		this.addadj = function(v){
@@ -167,24 +167,38 @@ var miniGraph = function(){
             return true;
         }
         return false;
-
+    };
+    //Function to rename node an propogate
+    this.changeNode = function(v1,nv1){
+      var n1 = this.getNode(v1), graph=this;
+      n1.getNeighbors().forEach(function(v2){
+        var node = graph.getNode(v2);
+        node.adjs[node.adjs.indexOf(v1)] = nv1;
+        var edge = graph.getEdge(v1,v2),oldId = edge.id;
+        edge.id = nv1.toString()+'&'+v2; //set new id
+        graph.edges[edge.id] = graph.edges[oldId];
+        delete graph.edges[oldId];
+      });
+      this.nodes[nv1] = this.nodes[v1];
+      delete this.nodes[v1];
+      n1.val = nv1;
     };
 
     //Function to add an edge to the graph
     //Edge is determined by its 2 ending
     this.addEdge = function(v1,v2,data){
-		if(!this.testEdge(v1,v2)){
-		    var n1 = this.insertNode(v1);
-		    var n2 = this.insertNode(v2);
-		    n1.addadj(v2);
-		    n2.addadj(v1);
-		    var e = new edge(n1,n2,data);
-		    this.edges[e.id] = e;
-		    this.numedges++;
-		    return true;
-		}else{
-		    return false;
-		}
+  		if(!this.testEdge(v1,v2)){
+  		    var n1 = this.insertNode(v1);
+  		    var n2 = this.insertNode(v2);
+  		    n1.addadj(v2);
+  		    n2.addadj(v1);
+  		    var e = new edge(n1,n2,data);
+  		    this.edges[e.id] = e;
+  		    this.numedges++;
+  		    return true;
+  		}else{
+  		    return false;
+  		}
     };
    this.updateEdge = function(v1,v2,data){
     	var edge = this.getEdge(v1,v2);

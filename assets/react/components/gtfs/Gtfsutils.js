@@ -17,6 +17,12 @@ var Stops = function(){
 		this.ids.push(stop.getId());
 		this.list.push(stop);
 	};
+	Stops.prototype.overwrite = function(stop){
+		var ix = this.ids.indexOf(stop.getId());
+		if(ix >=0){
+			this.list[ix] = stop;
+		}
+	};
 	Stops.prototype.addStops = function(stps){
 		var stopc = this;
 		stps.forEach(function(d){
@@ -127,14 +133,18 @@ var StopsPair = function(){
 		this.main.addStops(stops);
 	};
 	StopsPair.prototype.addTemp = function(d,ref){
-		this.temp.addStop(d);
-		this.map[ref] = d.getId();
+		if(this.temp.getStop(ref)) //if the referenced stop is in the buffer overwrite it
+			this.temp.overwrite(d);
+		else{
+			this.temp.addStop(d);
+			this.map[ref] = d.getId();
+		}
 	};
 	StopsPair.prototype.addNew = function(d){
 		this.temp.addStop(d);
 	};
 	StopsPair.prototype.getStop = function(id){
-		if(this.main.temp.hasStop(id)){
+		if(this.main.hasStop(id)){
 			return this.main.getStop(id);
 		}
 		else if(this.temp.hasStop(id)){
@@ -163,6 +173,9 @@ var StopsPair = function(){
 	};
 	StopsPair.prototype.getLength = function(){
 		return this.main.getLength();
+	};
+	StopsPair.prototype.getEdited = function(){
+		return this.temp.getEdited();
 	};
 var Stop = function(stop){
 	if(stop)
