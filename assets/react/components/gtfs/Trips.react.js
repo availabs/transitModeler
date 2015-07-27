@@ -56,10 +56,15 @@ var MarketAreaNew = React.createClass({
             );
             }
             return (
-              <button style={{fontSize:'10px'}} className={classes}
+              <div>
+              <div className='input-group-btn'>
+              <button type="button" width={'25%'} className="btn btn-danger"><i className="fa fa-pencil"></i></button>
+              <button style={{fontSize:'10px'}} width={'75%'} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
-                                {i+" "+trip.headsign };
+                          {i+" "+trip.headsign };
               </button>
+              </div>
+            </div>
             );
           });
         }

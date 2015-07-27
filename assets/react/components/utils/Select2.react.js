@@ -14,7 +14,7 @@ var equalityCheck = function(L1,L2){
     bool = bool && ((L1[i].id === L2[i].id) && (L1[i].text === L2[i].text));
   }
   return bool;
-}
+};
 var Select2Component = React.createClass({
   propTypes: {
     // Id to apply to hidden input element
