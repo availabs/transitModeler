@@ -54,8 +54,9 @@ var MarketAreaNew = React.createClass({
     _setAction : function(){
       var saveObj = {};
       //clone the object;
-      Object.keys(this.state).forEach(function(d){
-        saveObj[d] = this.state[d];
+      var scope = this;
+      Object.keys(scope.state).forEach(function(d){
+        saveObj[d] = scope.state[d];
       });
       //add the old Id for a check;
       saveObj.oldId= this.props.stop.getId();
@@ -67,11 +68,7 @@ var MarketAreaNew = React.createClass({
       }
     },
     _cancel : function(){
-        this.setState({
-            stopId:this.props.stop.getId(),
-            stopName:this.props.stop.getName(),
-            editing:false,
-          });
+        this.setState(this.getInitialState());
     },
     form : function(){
       var classes = 'btn btn-lg btn-warning',

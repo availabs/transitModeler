@@ -115,12 +115,64 @@ var Stops = function(){
 		});
 	};
 
+var StopsPair = function(){
+	this.main = new Stops();
+	this.temp = new Stops();
+	this.map = {};
+};
+	StopsPair.prototype.addMain = function(d){
+		this.main.addStop(d);
+	};
+	Stopspair.prototype.addStops = function(stops){
+		this.main.addStops(stops);
+	};
+	StopsPair.prototype.addTemp = function(d,ref){
+		this.temp.addStop(d);
+		this.map[ref] = d.getId();
+	};
+	StopsPair.prototype.addNew = function(d){
+		this.temp.addStop(d);
+	};
+	StopsPair.prototype.getStop = function(id){
+		if(this.main.temp.hasStop(id)){
+			return this.main.getStop(id);
+		}
+		else if(this.temp.hasStop(id)){
+			return this.temp.getStop(id);
+		}
+	};
+	StopsPair.prototype.cloneStop = function(id){
+		if(this.main.hasStop(id)){
+			return this.main.getStop(id).cloneCopy();
+		}
+	};
+	StopsPair.prototype.merge = function(){
+		Object.keys(this.map).forEach(function(id){ //take all edits
+			var replacment = this.temp.getStop(this.map[id]); //get the changed stop
+			this.main.deleteStop(id); //delete original stop from main list
+			this.main.addStop(replacement); //add the edited stop to the main list
+			this.temp.deleteStop(this.map[id]);//remove the changed element from temp list
+		});
+		this.main.takeNew(this.temp); //then add all the new stops to the list;
+	};
+	StopsPair.prototype.clean = function(){
+		this.main.clean();
+	};
+	StopsPair.prototype.scrap = function(){
+		this.temp = new Stops();
+	};
+	StopsPair.prototype.getLength = function(){
+		return this.main.getLength();
+	};
 var Stop = function(stop){
 	if(stop)
 		this.stop = stop;
 	else
 		this.stop = {type:'Feature',properties:{},geometry:{type:'Point',coordinates:[]}};
 };
+	Stop.prototype.cloneCopy = function(){
+		return new Stop(JSON.parse(JSON.stringify(this.stop)));
+	};
 	Stop.prototype.getProperty = function(pname){
 		return this.stop.properties[pname];
 	};
@@ -280,6 +332,34 @@ var Stop = function(stop){
 	};
 	Stop.prototype.getSequence = function(){
 		return this.stop.sequence;
+	};
+
+var CTrip = function(T){
+	this.route_id = '';
+	this.service_id = '';
+	this.trip_id = '';
+	this.trip_headsign = '';
+	this.trip_short_name = '';
+	this.direction_id = -1;
+	this.block_id = '';
+	this.shape_id = '';
+	this.trip_type = '';
+	this.bikes_allowed = -1;
+	this.wheelchair_accessible = -1;
+
+	if(T){
+		var scope = this;
+		Object.keys(T).forEach(function(d){
+			scope[d] = T[d];
+		});
+	}
+};
+
+	CTrip.prototype.getAtt = function(attribute){
+		return this[attribute.toLowerCase()];
+	};
+	CTrip.prototype.setAtt = function(attribute,val){
+		this[attribute.toLowerCase()] = val;
 	};
 
 var Trip = function(T){
@@ -544,4 +624,5 @@ module.exports = {
 	Route:Route,
 	Routes:Routes,
 	RouteObj:RouteObj,
-}
+	EditableStops:StopsPair,
+};

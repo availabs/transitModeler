@@ -9,41 +9,52 @@ var React = require('react'),
 var MarketAreaNew = React.createClass({
     getInitialState:function(){
         return {
-            tripId:this.props.trip.getId(),
-            routeId:this.props.trip.getRouteId(),
+            id:this.props.trip.getId(),
             headsign:this.props.trip.getHeadSign(),
             editing:false,
-        }
+        };
     },
     componentWillReceiveProps : function(nextProps,nextState){
-      if(nextProps.stop && this.props.stop && (nextProps.stop.getId() !== this.props.stop.getId()) ){
-        this.setState({
-                      stopId:nextProps.stop.getId(),
-                      stopName:nextProps.stop.getName(),
-                      editing:false,
-                    });
-      }
+
     },
     _onChange : function(field){
         var scope = this;
         return function(e){
-            var partialState = {}
+            var partialState = {};
             partialState[field] = e.target.value;
             scope.setState(partialState);
-        }
+        };
     },
     _editAction : function(){
       this.setState({editing:true});
     },
+    _cancel : function(){
+      this.setState(this.getInitialState());
+    },
+    _setAction : function(){
+      var saveObj = {};
+      //clone the object;
+      var scope = this;
+      Object.keys(scope.state).forEach(function(d){
+        saveObj[d] = scope.state[d];
+      });
+      var error = this.props.saveInfo(saveObj);
+      if(!error)
+        this.setState({editing:false});
+      else{
+        console.log(error);
+      }
+    },
     form : function(){
+      var classes = 'btn btn-lg btn-warning';
       if(!this.state.editing){
-        var classes = 'btn btn-lg btn-warning'
         return (
+
             <div>
-                <h4>ID: {this.state.stopId}
+                <h4>ID: {this.state.id}
                 </h4>
 
-                <h4>Stop Name: {this.state.stopName}
+                <h4>HeadSign: {this.state.headsign}
                 </h4>
                 <button className={classes} onClick={this._editAction}>
                     {'edit'}
@@ -51,13 +62,18 @@ var MarketAreaNew = React.createClass({
             </div>
         );
       }
+      // <label>ID: </label>
+      // <input type="text" onChange={this._onChange('id')} value={this.state.stopId}/>
+        // <br/>
       return (
             <div>
-                <label>ID: </label>
-                <input type="text" onChange={this._onChange('stopId')} value={this.state.stopId}/>
+
+
+                <label>HeadSign: </label>
+                <input type="text" onChange={this._onChange('headsign')} value={this.state.headsign}/>
                 <br/>
-                <label>Stop Name: </label>
-                <input type="text" onChange={this._onChange('stopName')} value={this.state.stopName}/>
+                <button className={classes} onClick={this._setAction}>{'set'}</button>
+                <button className={classes} onClick={this._cancel}>{'cancel'}</button>
             </div>
         );
 
@@ -65,8 +81,8 @@ var MarketAreaNew = React.createClass({
 
     render: function() {
 
-      if(!this.props.stop)
-        return (<div></div>)
+      if(!this.props.trip)
+        return (<div></div>);
       else
         return this.form();
     }

@@ -20,19 +20,19 @@ var MarketAreaNew = React.createClass({
         };
     },
     componentWillReceiveProps : function(nextProps,nextState){
-      if(nextProps.data && nextProps.data.stop && (this.state.stop !== nextProps.data.stop)){
+      if(nextProps.data && nextProps.data.stop ){
         this.setState({stop:nextProps.data.stop,route:null,trip:null});
       }
       else {
         this.setState({stop:null});
       }
-      if(nextProps.data && nextProps.data.route && (this.state.route !== nextProps.data.route)){
+      if(nextProps.data && nextProps.data.route){
           this.setState({route:nextProps.data.route,stop:null,trip:null});
       }
       else{
         this.setState({route:null});
       }
-      if(nextProps.data && nextProps.data.trip && (this.state.trip !== nextProps.data.trip)){
+      if(nextProps.data && nextProps.data.trip ){
         this.setState({trip:nextProps.data.trip,route:null,stop:null});
       }
       else{

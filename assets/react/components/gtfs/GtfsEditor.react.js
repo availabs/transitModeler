@@ -141,6 +141,16 @@ var MarketAreaNew = React.createClass({
                     });
         return true;
     },
+    setTripEdit : function(){
+      if(this.state.currentTrip !== null){
+        var partialState = {};
+        partialState.editInfo = {};
+        partialState.editInfo.trip = this.state.TripObj;
+        partialState.needEdit=true;
+        partialState.tripChange=false;
+        this.setState(partialState);
+      }
+    },
     setTrip:function(ix){
         if(!this.editCheckConfirm(this))
             return false;
@@ -190,13 +200,14 @@ var MarketAreaNew = React.createClass({
         return true;
     },
     _getStop : function(id,newstops){
-        if(this.state.stopColl && this.state.stopColl.hasStop(id))
+        if(this.state.buffStopColl && this.state.buffStopColl.hasStop(id))//check buffer first
+            return this.state.buffStopColl.getStop(id);
+        else if(this.state.stopColl && this.state.stopColl.hasStop(id))//then check normal
             return this.state.stopColl.getStop(id);
-        else if(newstops){
+        else if(newstops){ //then check the added list if there is one
             return newstops.getStop(id);
         }
-        else if(this.state.buffStopColl && this.state.buffStopColl.hasStop(id))
-            return this.state.buffStopColl.getStop(id);
+
     },
     _getActiveIds:function(){
         if(this.state.TripObj)
@@ -565,10 +576,22 @@ var MarketAreaNew = React.createClass({
             stop = new Stop();
             buffStops.addStop(stop);
           }
+          else{
+            stop = new Stop(JSON.parse(JSON.stringify(stop.stop))); //clone the object
+            buffStops.addStop(stop);
+          }
         }
         stop.setId(sInfo.stopId);//then set the stops info
         stop.setName(sInfo.stopName);
-        this.setState({edited:true,buffStopColl:buffStops});
+        this.setState({editInfo:{stop:stop},edited:true,buffStopColl:buffStops});
+    },
+    changeTrip : function(tInfo){
+      var trip = this.state.TripObj;
+      if(trip.getHeadSign !== tInfo.headsign){
+          trip.setHeadSign(tInfo.headsign);
+          this.setState({edited:true,TripObj:trip});
+      }
+
     },
     setRouteEdit : function(id){
       var info = {},route = this.state.routeColl.filter(function(d){return d.getId()===id;})[0];
@@ -731,6 +754,7 @@ var MarketAreaNew = React.createClass({
                             onTripSelect={this.setTrip}
                             currentTrip={this.state.currentTrip}
                             addTrip = {this._addTrip}
+                            editTrip={this.setTripEdit}
                             isCreating={this.state.isCreating}/>
                         <EditBox
                             schedules={this.state.schedules}
@@ -738,6 +762,7 @@ var MarketAreaNew = React.createClass({
                             data={this.state.editInfo}
                             saveStop={this.changeStop}
                             saveRoute={this.changeRoute}
+                            saveTrip={this.changeTrip}
                             active={this.state.needEdit}/>
                        <SaveBox
                         Edited={this.state.edited}

@@ -28,6 +28,19 @@ var MarketAreaNew = React.createClass({
         return (<div></div>);
       }
     },
+    editTripClick : function() {
+      this.props.editTrip();
+    },
+    editButton : function(ix){
+      if(this.props.currentTrip !== null){
+        return (<button onClick={this.editTripClick} type="button" width={'75%'} className="btn btn-danger">
+          <i className="fa fa-pencil"></i> {' Edit Trip'}
+        </button>);
+      }
+      else{
+        return (<div></div>);
+      }
+    },
     componentWillReceiveProps : function(nextProps){
       if(nextProps.route.trips && (nextProps.route.trips !== this.props.route.trips) ){
           this.setState({trips:nextProps.route.trips});
@@ -58,7 +71,6 @@ var MarketAreaNew = React.createClass({
             return (
               <div>
               <div className='input-group-btn'>
-              <button type="button" width={'25%'} className="btn btn-danger"><i className="fa fa-pencil"></i></button>
               <button style={{fontSize:'10px'}} width={'75%'} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
                           {i+" "+trip.headsign };
@@ -78,6 +90,9 @@ var MarketAreaNew = React.createClass({
                 <div className="body no-margin" style={divstyle}>
                     {buttons}
                     {scope._crtTripButton(buttons.length)}
+                </div>
+                <div>
+                  {scope.editButton()}
                 </div>
             </section>
         );
