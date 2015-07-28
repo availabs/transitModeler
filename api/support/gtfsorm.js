@@ -131,11 +131,11 @@ var gtfsObjects = {
         throw "unrecognized Type";
     }
   },
-  nonNullAtts : function(gtfs,obj){
+  nonNullAtts : function(gtfs,obj,isInsert){
     var fields = Object.keys(gtfs.fields).filter(function(field){
       return obj[field];
     });
-    if(gtfs.nonnull){ //for required non null values
+    if(gtfs.nonnull && isInsert){ //for required non null values
       gtfs.nonnull.forEach(function(d){
         if(fields.indexOf(d) === -1){ //if they are not listed add them
           fields.push(d);
@@ -160,7 +160,7 @@ var gtfsObjects = {
   },
   insert : function(gtfsType,obj,file){
     var gtfs = this[gtfsType];
-    var atts = this.nonNullAtts(gtfs,obj);
+    var atts = this.nonNullAtts(gtfs,obj,true);
     var values = this.nonNullValues(gtfs,obj,atts);
     var sql = 'Insert Into "' + file +'".' + gtfs.table +' ' +
               '('+atts+') VALUES (' + values + ');';
@@ -168,18 +168,20 @@ var gtfsObjects = {
   },
   update : function(gtfsType,obj,file,where){
     debugger;
+    var wheres;
     var gtfs = this[gtfsType];
     var atts = this.nonNullAtts(gtfs,obj);
     var values = this.nonNullValues(gtfs,obj,atts);
     var sets = stringZip(atts,values,',' , '=');
     var pkeyVals = this.pkeyValues(gtfs,atts,values);
-    var wheres = stringZip(gtfs.pkey,pkeyVals,' AND ','=');
     if(where){
       var flist = Object.keys(where);
       var fvals = flist.map(function(d){
         return where[d];
       });
       wheres = stringZip(flist,fvals,' AND ','=');
+    }else{
+      wheres = stringZip(gtfs.pkey,pkeyVals,' AND ','=');
     }
     var sql = 'Update "' + file +'".'+gtfs.table+' '+
               'Set ' + sets + ' WHERE ' + wheres + ';';

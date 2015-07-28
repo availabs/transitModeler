@@ -1,27 +1,27 @@
 var Collection = function(){
 	this.coll = [];
-}
+};
 Collection.prototype.contains = function(el){
 	return this.coll.filter(function(d){return d.getId()===el.getId();}).length !==0;
-}
+};
 Collection.prototype.push = function(el){
 	this.coll.push(el);
-}
+};
 Collection.prototype.concat = function(list){
 	var coll = this.coll;
 	list.forEach(function(d){
 		coll.push(d);
-	})
-}
+	});
+};
 Collection.prototype.forEach = function(cb){
 	this.coll.forEach(function(e,i,a){
 		cb(e,i,a);
-	})
-}
+	});
+};
 Collection.prototype.filter  = function(cb){
 	return this.coll.filter(function(e,i,a){
 		return cb(e,i,a);
-	})
+	});
 };
 Collection.prototype.union = function(list){
 	var coll = this;
@@ -46,7 +46,7 @@ var SaveObj = function(graph,stops,saveList,deltas,trip,route){
 	this.deltas = deltas;
 	this.stopC = new Collection();
 	this.trip= trip;
-	this.route=route;
+	this.route = route;
 };
 
 SaveObj.prototype.setAddDels = function(){

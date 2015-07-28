@@ -10,7 +10,7 @@ var React = require('react'),
 
 var buildStateObj = function(route){
   return {
-    routeId:route.getId(),
+    route_id:route.getId(),
     // agencyId:route.getAgencyId(),
     route_short_name:route.getRouteShortName(),
     route_long_name:route.getRouteLongName(),
@@ -65,7 +65,7 @@ var MarketAreaNew = React.createClass({
     },
     form : function(){
       var classes = 'btn btn-lg btn-warning',
-      idchange = this._onChange('routeId'),
+      idchange = this._onChange('route_id'),
       agencyChange = this._onChange('agencyId'),
       RSNChange    = this._onChange('route_short_name'),
       RLNChange    = this._onChange('route_long_name'),
@@ -75,7 +75,7 @@ var MarketAreaNew = React.createClass({
       if(!this.state.editing){
         return (
             <div>
-                <h4>Route ID: {this.state.routeId}
+                <h4>Route ID: {this.state.route_id}
                 </h4>
 
                 <h4>Route Short Name: {this.state.route_short_name}
@@ -86,22 +86,23 @@ var MarketAreaNew = React.createClass({
             </div>
         );
       }
+
+      // <label>ID: </label>
+      // <input type="text" className='form-control' onChange={idchange} value={this.state.route_id}/>
+      // <br/>
+      // <label>Route Long Name: </label>
+      // <input type="text" className='form-control' onChange={RLNChange} value={this.state.route_long_name}/>
+      // <br/>
+      // <label>Route Desc: </label>
+      // <input type="text" className='form-control' onChange={descChange} value={this.state.route_desc}/>
+      // <br/>
+      // <label>URL: </label>
+      // <input type="text" className='form-control' onChange={urlChange} value={this.state.route_url}/>
+      // <br/>
       return (
             <div>
-                <label>ID: </label>
-                <input type="text" className='form-control' onChange={idchange} value={this.state.routeId}/>
-                <br/>
                 <label>Route Short Name: </label>
                 <input type="text" className='form-control' onChange={RSNChange} value={this.state.route_short_name}/>
-                <br/>
-                <label>Route Long Name: </label>
-                <input type="text" className='form-control' onChange={RLNChange} value={this.state.route_long_name}/>
-                <br/>
-                <label>Route Desc: </label>
-                <input type="text" className='form-control' onChange={descChange} value={this.state.route_desc}/>
-                <br/>
-                <label>URL: </label>
-                <input type="text" className='form-control' onChange={urlChange} value={this.state.route_url}/>
                 <br/>
 
                 <button className={classes} onClick={this._setAction}>{'set'}</button>

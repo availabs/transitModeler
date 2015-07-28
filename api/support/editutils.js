@@ -174,8 +174,16 @@ var Util = {
 		var sql = 'Select create_or_update_route(\''+route_id+'\',3,\''+datafile+'\');';
 		return sql;
 	},
+	editRoute: function(datafile,route){
+		var id = (route.getOldId())? route.getOldId():route.getId();
+		var sql = '',where={route_id:"'"+id+"'"};
+		sql += gtfshelper.update('route',route.toRaw(),datafile,where);
+		sql += gtfshelper.update('trip',{route_id:route.getId()},datafile,where);
+		console.log(sql);
+		return sql;
+	},
 
-	putData:function(agencyId,featlist,trips,deltas,route_id,shape,trip,freqs,maId,cb){
+	putData:function(agencyId,featlist,trips,deltas,route_id,route,shape,trip,freqs,maId,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
 			// debugger;
@@ -188,6 +196,11 @@ var Util = {
 				console.log('Everything is Good');
 			}
 			var sql = '', datafile=agency.tableName ;
+		
+			if(route && route.isEdited()){
+				sql += db.editRoute(datafile,route);
+				console.log('Edited Route');
+			}
 			if(trip.isNew){ //if we are adding a new trip
 				sql += db.putService(datafile,trip.service_id); //add its associated service
 				sql += db.putRoute(datafile,route_id);	//add the associated route
@@ -203,6 +216,7 @@ var Util = {
 			if(freqs && freqs.length > 0){
 				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
 			}
+
 			var populateRoutesGeo = function(datafile,route_id){
 				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
 						if(err){ console.log(err2);}

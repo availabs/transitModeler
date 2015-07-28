@@ -584,6 +584,12 @@ var RouteObj = function(route){
 	RouteObj.prototype.setGeoType = function(t){
 		this.route.geometry.type = t;
 	};
+	RouteObj.prototype.getOldId = function(){
+		return this.route.properties.oldId;
+	};
+	RouteObj.prototype.setOldId = function(oid){
+		this.route.properties.oldId = oid;
+	};
 	RouteObj.prototype.getId = function(){
 		return this.route.properties.id;
 	};
@@ -641,8 +647,33 @@ var RouteObj = function(route){
 	RouteObj.prototype.getFeature = function(){
 		return this.route;
 	};
-
-
+	RouteObj.prototype.setEdited = function(){
+		this.route.properties.isEdited = true;
+	};
+	RouteObj.prototype.isEdited = function(){
+		return this.route.properties.isEdited;
+	};
+	RouteObj.prototype.clean = function(){
+		delete this.route.properties.isEdited;
+	};
+	RouteObj.prototype.getGeometry = function(){
+		if(this.route.geometry.type)
+			return this.route.geometry;
+	};
+	RouteObj.prototype.toRaw= function(){
+		return {
+			route_id:this.getId(),
+      agency_id:this.getAgencyId(),
+      route_short_name:this.getRouteShortName(),
+      route_long_name:this.getRouteLongName(),
+      route_desc:this.getRouteDesc(),
+      route_type:this.getRouteType(),
+      route_url:this.getRouteUrl(),
+      route_color:this.getRouteColor(),
+      route_text_color:this.getRouteTextColor(),
+      geom:this.getGeometry(),
+					};
+	};
 var Routes = function(){
 	this.routes = [];
 	this.ids 	= [];

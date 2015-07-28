@@ -116,7 +116,7 @@ var MarketAreaNew = React.createClass({
                     saveAction={this.addingRouteAction}/>
                   </div>
                   <div>
-                    {(this.state.selection.length > 0) ? <button style={{fontSize:'20px'}} className={classes}  onClick={this.onEditSelect}>{'Edit Route Details'}</button>: null}
+                    {(this.state.selection.length > 0) ? <button className={'btn btn-danger'}  onClick={this.onEditSelect}><i className="fa fa-pencil"></i> {' Edit Route'}</button>: null}
                   </div>
                 </div>
 

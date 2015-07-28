@@ -9,6 +9,7 @@
 var topojson = require('topojson');
 var db = require('../support/editutils');
 var Stop = require('../../assets/react/components/gtfs/Gtfsutils').Stop;
+var RouteObj = require('../../assets/react/components/gtfs/Gtfsutils').RouteObj;
 var exec = require('child_process').exec;
 var BasicRoute = function(id){
 	this.id = id;
@@ -143,7 +144,7 @@ module.exports = {
 		.map(function(d){
 				return new Stop(d.stop);
 			});
-		var newRoute = reqobj.newRoute;
+		var route = new RouteObj(reqobj.route);
 		console.log(featList);
 		var trips = reqobj.trip_ids;
 		var deltas = reqobj.deltas;
@@ -163,7 +164,7 @@ module.exports = {
 			debugger;
 			if(err){ console.log(err); return;}
 			console.log(data);
-			db.putData(agency,featList,trips,deltas,route_id,shape,trip,freqs,maId,function(err,data){
+			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,maId,function(err,data){
 				if(err){
 					console.log(err);
 					res.json(err);
@@ -389,13 +390,13 @@ function save(job,backupName,data){
 
 	Datasource.find( {tableName:backupName},function(err,result){
 		console.log('save data object : ',data);
-		var agency=result[0].id,deltas=data.deltas,maId = data.maId,
-		route_id=data.route_id,shape=data.shape,trips=data.trip_ids,trip=data.trip,freqs=data.freqs;
+		var agency=result[0].id,deltas=data.deltas,maId = data.maId,route = data.route,
+		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.freqs;
 		var featList = data.data
 		.map(function(d){
 				return new Stop(d.stop);
 			});
-		db.putData(agency,featList,trips,deltas,trip.route_id,shape,trip,freqs,maId,function(err,data){
+		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,maId,function(err,data){
 			if(err){
 				console.log(err);
 				Job.update({id:job.id},{isFinished:true,finised:Data(),status:'Failure',progress:100})

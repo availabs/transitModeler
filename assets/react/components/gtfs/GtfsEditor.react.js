@@ -232,16 +232,16 @@ var MarketAreaNew = React.createClass({
     _buildSave:function(){
       console.log('attempted save');
       var route = this.state.routeColl.filter(function(d){
-        return d.isNew;
+        return d.isNew || d.isEdited();
       })[0];
-      if(route)
+      if(route){
         route = route.getFeature();
+      }
       var saveObj = new SaveObj(this.state.graph,
                                 this.state.stopColl,
                                 this.state.tracker.getEventList(),
                                 this.state.deltas,
                                 this.state.TripObj,
-                                this.state.schedules[this.state.currentRoute].id,
                                 route);
       var reqObj = saveObj.getReqObj();
       console.log('Request Object', reqObj);
@@ -604,25 +604,26 @@ var MarketAreaNew = React.createClass({
 
     changeRoute : function(rInfo){
       var criterion = function(val){return function(d){return d.getId()===val;};};
-      var route, exists = this.state.routeColl.filter(criterion(rInfo.routeId))[0];
-      if(rInfo.routeId !== rInfo.oldId && exists ){
+      var route, exists = this.state.routeColl.filter(criterion(rInfo.route_id))[0];
+      if(rInfo.route_id !== rInfo.oldId && exists ){
         return 'ERROR Route EXISTS';
       }
-      if(rInfo.routeId !== rInfo.oldId){
+      if(rInfo.route_id !== rInfo.oldId){
         var ix = arrayFind(this.state.routeColl,criterion(rInfo.oldId),'index');
         route = new RouteObj();
-        this.state.routeColl.splice(ix,1);
-        this.state.routeColl.push(route);
-        this.state.schedules[rInfo.routeId] = this.state.schedules[rInfo.oldId];
-        this.state.schedules[rInfo.routeId].id=rInfo.routeId;
-        delete this.state.schedules[rInfo.oldId];
+        route.setOldId(rInfo.oldId);
+        this.state.routeColl.splice(ix,1);//remove old route
+        this.state.routeColl.push(route); //add the changed one
+        this.state.schedules[rInfo.route_id] = this.state.schedules[rInfo.oldId]; //get its schedule
+        this.state.schedules[rInfo.route_id].id=rInfo.route_id; //set the schedules new route id
+        delete this.state.schedules[rInfo.oldId];             //delete the association with old id
       }else{
         route = exists;
       }
       if(rInfo.route_short_name !== rInfo.oldName){
-        this.state.schedules[rInfo.routeId].shortName=rInfo.route_short_name;
+        this.state.schedules[rInfo.route_id].shortName=rInfo.route_short_name;
       }
-      route.setId(rInfo.routeId);
+      route.setId(rInfo.route_id);
       route.setRouteShortName(rInfo.route_short_name);
       route.setRouteLongName(rInfo.route_long_name);
       route.setRouteDesc(rInfo.route_desc);
@@ -630,7 +631,8 @@ var MarketAreaNew = React.createClass({
       route.setRouteUrl(rInfo.route_url);
       route.setRouteColor(rInfo.route_color);
       route.setRouteTextColor(rInfo.route_text_color);
-      this.setState({currentRoute:rInfo.routeId,schedules:this.state.schedules,routeColl:this.state.routeColl});
+      route.setEdited();
+      this.setState({edited:true,currentRoute:rInfo.route_id,schedules:this.state.schedules,routeColl:this.state.routeColl});
     },
     routeClick : function(data){
       console.log('route_click',data);
