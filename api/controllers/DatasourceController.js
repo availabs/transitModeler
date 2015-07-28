@@ -200,7 +200,7 @@ module.exports = {
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err)}
 
-			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code ' +
+			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,stops.zone_id,stops.stop_url ' +
                       'FROM "'+mgtfs.tableName+'".stops  ' +
                       'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num ' +
                       'where a.line IS NULL OR a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
@@ -225,7 +225,10 @@ module.exports = {
                     Feature.properties.fare_zone = stop.fare_zone;
                     Feature.properties.line = stop.line;
                     Feature.properties.stop_id = stop.stop_id;
-
+										Feature.properties.stop_desc = stop.stop_desc;
+										Feature.properties.stop_url = stop.stop_url;
+										Feature.properties.stop_name = stop.stop_name;
+										Feature.properties.zone_id = stop.zone_id;
                     stopsCollection.features.push(Feature);
                   }
 

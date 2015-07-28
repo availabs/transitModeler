@@ -156,9 +156,7 @@ var MarketAreaNew = React.createClass({
             return false;
         var T = new Trip(this.state.TripObj),
         temp = this.state.schedules[this.state.currentRoute].trips[ix],
-        editInfo = this.state.editInfo;
-        if(editInfo.stop)
-          editInfo.stop = undefined;
+        editInfo = {};
         T.setId(temp.id);
         T.setStops(JSON.parse(JSON.stringify(temp.stops)));
         T.setRouteId(temp.route_id);
@@ -549,7 +547,7 @@ var MarketAreaNew = React.createClass({
         this.setState({editInfo:info,needEdit:true,tripChagne:true});
     },
     editStopAction : function(id){//
-        var info = this.state.editInfo;
+        var info = {};
         info.stop = this._getStop(id);
         this.setState({editInfo:info,needEdit:true,tripChange:false});
     },
@@ -575,6 +573,10 @@ var MarketAreaNew = React.createClass({
         }
         stop.setId(sInfo.stopId);//then set the stops info
         stop.setName(sInfo.stopName);
+        stop.setStopCode(sInfo.stopCode);
+        stop.setStopDesc(sInfo.stopDesc);
+        stop.setZoneId(sInfo.stopZoneId);
+        stop.setStopUrl(sInfo.stopUrl);
         stop.setEdited();
         buffStops.addTemp(stop,sInfo.oldId);
         this.setState({editInfo:{stop:stop},edited:true,stopColl:buffStops,graph:graph});
