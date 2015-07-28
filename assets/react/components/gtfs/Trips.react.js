@@ -19,7 +19,7 @@ var MarketAreaNew = React.createClass({
       if(length < 2)
         return (
             <CreationForm
-              values={{Service_Id:'Service', Trip_Id:'Trip',Shape_Id:'Shape',Headsign:'HeadSign'}}
+              values={{Trip_Id:'Trip',Shape_Id:'Shape',Headsign:'HeadSign'}}
               buttonText={"Create New Trip"}
               id={"trips"}
               saveAction={this.props.addTrip} />

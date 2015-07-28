@@ -149,8 +149,8 @@ var Util = {
 	// 	});
 	// },
 	putTrip: function(datafile,trip){
-		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\')',
-		map =['trip_id','route_id','service_id','shape_id','file'],sql ='';
+		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\',\'?\')',
+		map =['trip_id','headsign','route_id','service_id','shape_id','file'],sql ='';
 
 		var data = [];
 		trip.trip_ids.forEach(function(d){ //every trip associated with this Group
@@ -160,6 +160,7 @@ var Util = {
 					service_id:trip.service_id,
 					route_id:trip.route_id,
 					shape_id:trip.id,
+					headsign:trip.headsign,
 				});
 		});
 		dbhelp = new dbhelper(template,data);
@@ -192,6 +193,9 @@ var Util = {
 				sql += db.putRoute(datafile,route_id);	//add the associated route
 				sql += db.putTrip(datafile,trip);	// add the trip itself
 			}
+			else if(trip.isEdited){//the trip meta was changed;
+				sql += db.putTrip(datafile,trip);
+			}
 			if(featlist && featlist.length > 0){ //if any stops were moved,added or edited
 				sql += db.putStops(datafile,featlist,trips,deltas); //store the stops
 				sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper); //and store the new shape of the trip
@@ -202,7 +206,7 @@ var Util = {
 			var populateRoutesGeo = function(datafile,route_id){
 				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
 						if(err){ console.log(err2);}
-						cb(err,data);
+						cb(err,data2);
 				});
 			};
 

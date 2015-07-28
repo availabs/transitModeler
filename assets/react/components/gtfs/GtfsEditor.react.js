@@ -478,7 +478,7 @@ var MarketAreaNew = React.createClass({
         trip.setIds(this.state.TripObj.getIds());
         $('#tooltip2').tooltip('destroy');
         // this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
-        this.setState({stopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
+        this.setState({isNewTrip:false,stopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
     },
     _addRoute : function(formObj){
         var id = formObj['New Route'],
@@ -516,7 +516,7 @@ var MarketAreaNew = React.createClass({
         console.log(id);
     },
     _addTrip : function(formObj){
-        var service_id = formObj.Service_Id,
+        var service_id = this.state.currentService,
         trip_id        = formObj.Trip_Id,
         headsign       = formObj.Headsign,
         shape_id       = formObj.Shape_Id;
@@ -540,13 +540,13 @@ var MarketAreaNew = React.createClass({
             };
             schedules[this.state.currentRoute].trips.push(trip);
             freq = this.createNewFreq(trip.tripids[0]);
-            this.setState({schedules:schedules,frequencies:[freq]});
+            this.setState({isCreating:true,schedules:schedules,frequencies:[freq]});
         }
     },
     editTripAction : function(trip){
         var info = this.state.editInfo;
         info.trip = trip;
-        this.setState({editInfo:info,needEdit:true,tripChagne:true});
+        this.setState({editInfo:info,needEdit:true,tripChange:true});
     },
     editStopAction : function(id){//
         var info = {};
@@ -591,6 +591,7 @@ var MarketAreaNew = React.createClass({
       var trip = this.state.TripObj;
       if(trip.getHeadSign !== tInfo.headsign){
           trip.setHeadSign(tInfo.headsign);
+          trip.isEdited = true;
           this.setState({edited:true,TripObj:trip});
       }
 
