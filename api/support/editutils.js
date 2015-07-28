@@ -12,7 +12,9 @@ function updateStopTimes(datafile,trips,deltas){
 												file:datafile
 											});
 	sqlTimeUpdate.setMapping(map);
-	return sqlTimeUpdate.getQuery();
+	var sql = sqlTimeUpdate.getQuery();
+	console.log(sql);
+	return sql;
 }
 function getField(field,feat){
 	if(field === 'trips'){
@@ -231,23 +233,24 @@ var Util = {
 
 	updateStops:function(datafile,featlist,trips,deltas,cb){
 		if(featlist.length <= 0) cb(undefined,{});
-			var template = 'UPDATE "?".stops '  //!!!!Dangerous code if failures but for now if one fails, the rest persist
-												//and no one knows the difference!!!
-						+ 'SET geom = ST_SetSRID(ST_GeomFromGeoJSON(\'?\'),4326), '
-						+ 'stop_lon=?, stop_lat=?,stop_name=\'?\' WHERE stop_id=\'?\''
+			var sql='';
 
-			var data={}, data2={}, sql='';
-			var map  = ['file','geo','lon','lat','stop_name','stop_id'];
 			featlist.forEach(function(feat){
-				feat.file=datafile;
-				feat.trips=trips;
-				var f = new Feature(feat);
-				sql += gtfshelper.update('stop',feat.toRaw(),datafile);
+				var oldId = feat.getOldId();
+				if(!oldId)
+					//if it has the same stop ID then just update the rest of the data
+					sql += gtfshelper.update('stop',feat.toRaw(),datafile);
+				else{
+					var where = {stop_id:"'"+oldId+"'"};
+					//otherwise specify the old stop id in the where clause to update correctly
+					sql += gtfshelper.update('stop',feat.toRaw(),datafile,where);
+					//change all stops in the stop_times table to this new id;
+					sql += gtfshelper.update('stop_time',{stop_id:feat.getId()},datafile,where);
+				}
 			});
 			console.log(sql);
 			sql += updateStopTimes(datafile,trips,deltas); //update the arrivals & departures of the necessary trips
 															//based on the time deltas.
-			// console.log(sql);
 			return sql;
 	},
 	putFrequencies : function(datafile,frequencies,cb){

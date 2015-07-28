@@ -136,8 +136,9 @@ var StopsPair = function(){
 		if(this.temp.getStop(ref)) //if the referenced stop is in the buffer overwrite it
 			this.temp.overwrite(d);
 		else{
-			this.temp.addStop(d);
-			this.map[ref] = d.getId();
+			d.setOldId(ref);//set the old id of the stop
+			this.temp.addStop(d);//add the stop to the collection
+			this.map[ref] = d.getId();//set the mapping
 		}
 	};
 	StopsPair.prototype.addNew = function(d){
@@ -176,7 +177,8 @@ var StopsPair = function(){
 		return this.main.getLength();
 	};
 	StopsPair.prototype.getEdited = function(){
-		return this.temp.getEdited();
+		var slist = this.temp.getEdited();
+		return slist;
 	};
 var Stop = function(stop){
 	if(stop)
@@ -200,6 +202,12 @@ var Stop = function(stop){
             platform_code:this.getPlatformCode(),
             geometry:this.stop.geometry,
 					};
+	};
+	Stop.prototype.getOldId = function(){
+		return this.stop.properties.oldId;
+	};
+	Stop.prototype.setOldId = function(id){
+		this.stop.properties.oldId = id;
 	};
 	Stop.prototype.cloneCopy = function(){
 		return new Stop(JSON.parse(JSON.stringify(this.stop)));

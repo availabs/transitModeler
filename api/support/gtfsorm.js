@@ -144,14 +144,20 @@ var gtfsObjects = {
               '('+atts+') VALUES (' + values + ');';
     return sql;
   },
-  update : function(gtfsType,obj,file){
-    debugger;
+  update : function(gtfsType,obj,file,where){
     var gtfs = this[gtfsType];
     var atts = this.nonNullAtts(gtfs,obj);
     var values = this.nonNullValues(gtfs,obj,atts);
     var sets = stringZip(atts,values,',' , '=');
     var pkeyVals = this.pkeyValues(gtfs,atts,values);
     var wheres = stringZip(gtfs.pkey,pkeyVals,' AND ','=');
+    if(where){
+      var flist = Object.keys(where);
+      var fvals = flist.map(function(d){
+        return where[d];
+      });
+      wheres = stringZip(flist,fvals,' AND ','=');
+    }
     var sql = 'Update "' + file +'".'+gtfs.table+' '+
               'Set ' + sets + ' WHERE ' + wheres + ';';
     return sql;
