@@ -83,6 +83,7 @@ var MarketAreaNew = React.createClass({
             TripObj:undefined,
             schedules:this.props.schedules || null,
             isCreating:false,
+            isNewTrip:false,
             needEdit:false,
             editInfo:{},
             tripChange:true,
@@ -178,6 +179,7 @@ var MarketAreaNew = React.createClass({
               graph:new Graph(),
               edited:false,
               isCreating:true,
+              isNewTrip:true,
               tracker:new EditTracker(),
               tripChange:true,
               editInfo:editInfo,
@@ -432,7 +434,7 @@ var MarketAreaNew = React.createClass({
         stops = this.state.TripObj.getStops(),
         qObj,i1,i2,i,graph,
         trip = new Trip(this.state.TripObj),
-        id=idGen('NewStop');
+        id=nStop.getId();
         trip.setStops(stops);
 
         //id set in layer add
@@ -579,6 +581,10 @@ var MarketAreaNew = React.createClass({
         stop.setStopUrl(sInfo.stopUrl);
         stop.setEdited();
         buffStops.addTemp(stop,sInfo.oldId);
+        if(stop.isNew()){
+          var tracker = this.state.tracker;
+          tracker.editEvent(sInfo.oldId,sInfo.stopId,stop);
+        }
         this.setState({editInfo:{stop:stop},edited:true,stopColl:buffStops,graph:graph});
     },
     changeTrip : function(tInfo){
@@ -721,7 +727,7 @@ var MarketAreaNew = React.createClass({
                             deleteStop={this.delStop}
                             addStop={this.insStop}
                             createTrip={this._crtTrip}
-                            isCreating={this.state.isCreating}
+                            isCreating={this.state.isNewTrip}
                             tripChange={this.state.tripChange}
                             editStop = {this.editStopAction}
                             onRouteClick={this.routeClick}/>

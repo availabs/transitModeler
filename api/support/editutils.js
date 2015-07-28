@@ -111,6 +111,7 @@ var Util = {
 				var f = new Feature(feat);
 				if(feat.isNew()){ //if it is a new feature add it to the database
 					sql += gtfshelper.insert('stop',feat.toRaw(),datafile);
+					debugger;
 					sql += buildFeatureQuery(template2,map2,f);
 				}
 				else if(feat.isDeleted()){ //if it was marked for deletion from a tgroup

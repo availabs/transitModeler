@@ -12,13 +12,21 @@ var savetracker = function(){
 			}//if they are the same type ignore the update
 		}
 	};
+	this.editEvent = function(id,nid,data){
+		var events = this.tracklist.filter(function(d){
+			return d.obj.id === id;
+		});
+		var evenT = events[0];
+		evenT.obj.id = nid;
+		evenT.obj.data=data;
+	};
 	this.getEventList = function(){
 		return this.tracklist;
 	};
 	this.getLastEvent = function(){
 		return this.tracklist[this.tracklist.length-1];
-	}
-}
+	};
+};
 
 module.exports= savetracker;
 

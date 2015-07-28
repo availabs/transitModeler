@@ -17,10 +17,14 @@ var Stops = function(){
 		this.ids.push(stop.getId());
 		this.list.push(stop);
 	};
-	Stops.prototype.overwrite = function(stop){
+	Stops.prototype.overwrite = function(stop,old){
 		var ix = this.ids.indexOf(stop.getId());
 		if(ix >=0){
 			this.list[ix] = stop;
+		}else{//rewriting with new id
+			ix = this.ids.indexOf(old);
+			this.list[ix] = stop;
+			this.ids[ix] = stop.getId();
 		}
 	};
 	Stops.prototype.addStops = function(stps){
@@ -134,9 +138,10 @@ var StopsPair = function(){
 	};
 	StopsPair.prototype.addTemp = function(d,ref){
 		if(this.temp.getStop(ref)) //if the referenced stop is in the buffer overwrite it
-			this.temp.overwrite(d);
+			this.temp.overwrite(d,ref);
 		else{
-			d.setOldId(ref);//set the old id of the stop
+			if(d.getId() !== ref)
+				d.setOldId(ref);//set the old id of the stop
 			this.temp.addStop(d);//add the stop to the collection
 			this.map[ref] = d.getId();//set the mapping
 		}
@@ -200,7 +205,7 @@ var Stop = function(stop){
             stop_timezone:this.getStopTimeZone(),
             wheelchair_boarding:this.getWheelchairBoarding(),
             platform_code:this.getPlatformCode(),
-            geometry:this.stop.geometry,
+            geom:this.stop.geometry,
 					};
 	};
 	Stop.prototype.getOldId = function(){

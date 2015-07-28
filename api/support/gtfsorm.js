@@ -31,7 +31,8 @@ var gtfsObjects = {
             wheelchair_boarding:'int',
             platform_code:'string',
             geom:'point'
-            }
+          },
+    nonnull:['stop_id','stop_name'],
   },
   stop_time:{
     table:'stop_times',
@@ -69,7 +70,7 @@ var gtfsObjects = {
             shape_pt_lon:'numeric',
             shape_pt_sequence:'int',
             shape_dist_traveled:'numeric',
-            geom:'Point',
+            geom:'point',
     }
   },
   frequency:{
@@ -96,6 +97,20 @@ var gtfsObjects = {
             }
   },
   typemap : function(val,type){
+    if(!val){
+      switch(type.toLowerCase()){
+        case 'int':
+          return 0;
+        case 'numeric':
+          return 0.0;
+        case 'string':
+          return "''";
+        case 'boolean':
+          return false;
+        default:
+          throw 'unknown default';
+      }
+    }
     switch(type.toLowerCase()){
       case 'int':
         return val;
@@ -120,6 +135,13 @@ var gtfsObjects = {
     var fields = Object.keys(gtfs.fields).filter(function(field){
       return obj[field];
     });
+    if(gtfs.nonnull){ //for required non null values
+      gtfs.nonnull.forEach(function(d){
+        if(fields.indexOf(d) === -1){ //if they are not listed add them
+          fields.push(d);
+        }
+      });
+    }
     return fields;
   },
   nonNullValues : function(gtfs,obj,atts){
@@ -145,6 +167,7 @@ var gtfsObjects = {
     return sql;
   },
   update : function(gtfsType,obj,file,where){
+    debugger;
     var gtfs = this[gtfsType];
     var atts = this.nonNullAtts(gtfs,obj);
     var values = this.nonNullValues(gtfs,obj,atts);
