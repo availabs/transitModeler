@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === 'development') {
     webpackConfig = {
 
         entry: './assets/react/indexView.jsx',
-        
+
         output: {
           path: path.join(__dirname, '.tmp/public'),
           filename: 'bundle.js',

@@ -3,7 +3,7 @@
 var React = require('react'),
     Navigation = require('react-router').Navigation,
     // -- Utils
-    SailsWebApi = require('../../utils/sailsWebApi'), 
+    SailsWebApi = require('../../utils/sailsWebApi'),
     Geoprocessing = require('../../utils/geoprocessing'),
 
     // -- Components
@@ -11,12 +11,12 @@ var React = require('react'),
     RouteListTable = require('../../components/marketarea/RouteListTable.react'),
     RoutesSelector = require('../../components/marketarea/RoutesSelector.react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
-    
+
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
-    
+
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 
@@ -26,7 +26,7 @@ var MarketAreaNew = React.createClass({
     mixins: [Navigation],
 
     getInitialState: function(){
-        
+
         return {
             marketarea:{
                 name:'',
@@ -46,31 +46,36 @@ var MarketAreaNew = React.createClass({
             message:null
         };
     },
-
+    //function to set the set of routes for the gtfs dataSet
+    //does so by setting the state of this component.
     setRouteList:function(id,data){
         this.setState({routeList:data});
     },
-
+    //function to set the set of stops for the gtfs dataSet
     setStopsGeo:function(data){
-        if(data && data.features.length > 0){
+        if(data && data.features.length > 0){//make sure the data is non empty
+          console.log('random change',data);
+            //Get the list of state counties that contain stops for the current routes
             var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
+            // get the fips codes for the counties that contain stops
             var countyFips = this.props.stateCounties.features.filter(function(d,i){
-                return countyFilter.indexOf(d.properties.geoid) > -1
-            }).map(function(d){
+                return countyFilter.indexOf(d.properties.geoid) > -1;
+            }).map(function(d){ //and generate a list with their geoIds
                 return d.properties.geoid;
-            })
+            });
+            //Get the state tracts whose geoIds match the geoIds of the state FIPS
             var filterTracts = this.props.stateTracts.features.filter(function(d){
                 //console.log(parseInt(d.properties.geoid.substr(0,5)));
                 return countyFips.indexOf(parseInt(d.properties.geoid.substr(0,5))) > -1;
-            })
+            });
             //console.log('stateTracts',filterTracts,'fips',countyFips)
-            
+            //Get the list of tracts whose geometries contain the stops
             var tractsFilter = Geoprocessing.point2polyIntersect(data,{type:'FeatureCollection',features:filterTracts});
             //console.log(tractsFilter,countyFilter)
             this.setState({stopsGeo:data,countyFilter:countyFilter,tractsFilter:tractsFilter.keys});
-        }else if(data.features.length === 0){
+        }else if(data.features.length === 0){ //if there are no stops simply set to empty lists
             //console.log('remove last layer')
-            this.setState({stopsGeo:data,countyFilter:[],tractsFilter:[]})
+            this.setState({stopsGeo:data,countyFilter:[],tractsFilter:[]});
         }
     },
 
@@ -80,12 +85,12 @@ var MarketAreaNew = React.createClass({
             if(!d.properties.color){
                 d.properties.color = d3.scale.category20().range()[i];
             }
-            return d
+            return d;
         });
-        
+
         this.setState({routesGeo:data});
-    },  
-    
+    },
+
     removeRoute:function(route){
         //console.log('removeRoute',route)
         var newState = this.state;
@@ -94,7 +99,7 @@ var MarketAreaNew = React.createClass({
         })
         if(newState.marketarea.routes.length === 0){
                this.setRoutesGeo(emptyGeojson);
-               this.setStopsGeo(emptyGeojson) 
+               this.setStopsGeo(emptyGeojson)
         }else{
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
@@ -106,10 +111,10 @@ var MarketAreaNew = React.createClass({
         var newState = this.state;
         if(newState.marketarea.routes.indexOf(route) === -1){
             newState.marketarea.routes.push(route);
-            
+
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
-           
+
             this.setState(newState);
         }
     },
@@ -123,7 +128,7 @@ var MarketAreaNew = React.createClass({
             this.setState(newState);
         }
     },
-    
+
     renderSelectors : function(){
         if(this.state.gtfs_source){
             return (
@@ -147,9 +152,9 @@ var MarketAreaNew = React.createClass({
         if(this.state.message){
             var messageClass = 'alert alert-danger';
             if(this.state.message === 'Loading Data...'){
-                
+
                 messageClass = 'alert alert-success';
-            
+
             }
             return (
                 <div className={messageClass}>
@@ -160,7 +165,7 @@ var MarketAreaNew = React.createClass({
         }
         return (<span />)
     },
-    
+
     editName: function(event) {
         var el = event.target,
             newState = this.state;
@@ -220,23 +225,23 @@ var MarketAreaNew = React.createClass({
                         </tr>
                     </table>
                 </div>
-            </section> 
+            </section>
         )
     },
     render: function() {
-        
+
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
-        
+
         counties.features = this.props.stateCounties.features;
-        
+
         if(this.state.countyFilter.length > 0){
             counties.features = this.props.stateCounties.features.filter(function(d,i){
                 return scope.state.countyFilter.indexOf(d.properties.geoid) > -1;
             })
         }
-        
+
         var tracts = {type:'FeatureCollection',features:[]}
         if(this.state.tractsFilter.length > 0){
             tracts.features = this.props.stateTracts.features.filter(function(d,i){
@@ -249,29 +254,29 @@ var MarketAreaNew = React.createClass({
             	<h2 className="page-title">
                     Create Market Area
                     <br />
-                    <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" /> 
-                    
-                   
+                    <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
+
+
                 </h2>
-                
+
                 <div className="row">
                 	<div className="col-lg-9">
-                       
-                        <MarketAreaMap 
-                            stops={this.state.stopsGeo} 
-                            routes={this.state.routesGeo} 
+
+                        <MarketAreaMap
+                            stops={this.state.stopsGeo}
+                            routes={this.state.routesGeo}
                             tracts ={tracts}
                             counties={counties} />
                         {this.renderMessage()}
 
-                      
+
                     </div>
                     <div className="col-lg-3">
                         <section className="widget">
                             <div className="body no-margin">
                                {this.renderSelectors()}
                             </div>
-                        </section> 
+                        </section>
                         {this.renderStats()}
                         <section className="widget">
                             <div className="body no-margin">

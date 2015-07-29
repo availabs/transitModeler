@@ -90,7 +90,17 @@ module.exports = {
   getStopsGeo: function(ma_id,gtfsId,routes,cb) {
     d3.json('/datasources/gtfs/stops/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-      ServerActionCreators.receiveDataWithId('gtfs_stops_geo',ma_id,data);
+        if(data && data.features){//if data is proper
+          data.features = data.features.filter(function(d){//filter the stops
+            var matches = routes.filter(function(line){//filter the routes by the stops lines
+              return line === d.properties.line;
+            });
+            return matches.length > 0; // if any lines matched the stops line return the stop;
+          });
+        }else{
+          console.log('malformed stops geo data');
+        }
+        ServerActionCreators.receiveDataWithId('gtfs_stops_geo',ma_id,data);
       if(cb){ cb(data); }
 
     });
