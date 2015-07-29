@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react'),
-    
+
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
     //--Utils
@@ -15,12 +15,12 @@ var React = require('react'),
     prevCountyLength,
     surveyLayerID = 0,
     prevSurveyLength,
-    prevMode;    
+    prevMode;
 
 
 
 var MarketAreaMap = React.createClass({
-    
+
     getDefaultProps:function(){
         return {
             mapId:'map',
@@ -36,7 +36,7 @@ var MarketAreaMap = React.createClass({
                 y:0,
                 display:'none'
             },
-            
+
         };
     },
 
@@ -48,7 +48,7 @@ var MarketAreaMap = React.createClass({
             routes = emptyGeojson,
             counties = emptyGeojson,
             survey = emptyGeojson;
-        
+
         //console.log('processLayers, diplay tracts',this.props.survey);
         if(this.props.stops){
             stops = this.props.stops
@@ -99,7 +99,7 @@ var MarketAreaMap = React.createClass({
                     pointToLayer: function (d, latlng) {
                         //console.log('s',d)
                         var options = {
-                           
+
 
                             color: "#000" ,
                             weight: 3,
@@ -113,7 +113,7 @@ var MarketAreaMap = React.createClass({
                         return L.circleMarker(latlng, options);
                     },
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -121,14 +121,14 @@ var MarketAreaMap = React.createClass({
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6,fillColor:'#a00',fillOpacity:0.8,stroke:true});
-                                
+
                             },
                             mouseout: function(e){
                                  e.target.setStyle({weight:3,fillColor:'#00a',fillOpacity:0.3,stroke:false});
-                                
+
                             }
                         });
-                        
+
                     }
                 }
             },
@@ -163,7 +163,7 @@ var MarketAreaMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -171,14 +171,14 @@ var MarketAreaMap = React.createClass({
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6});
-                                
+
                             },
                             mouseout: function(e){
                                  e.target.setStyle({weight:1});
-                                
+
                             }
                         });
-                        
+
                     }
                 }
             },
@@ -186,7 +186,7 @@ var MarketAreaMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
-
+                    bringToFront:true,
                     style:function (feature,i) {
                         return {
                             className: 'route_'+feature.properties.short_name,
@@ -197,7 +197,7 @@ var MarketAreaMap = React.createClass({
                     },
 
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -226,10 +226,10 @@ var MarketAreaMap = React.createClass({
                                 e.target.setStyle({opacity :0.3})
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
-                            
-                            
+
+
                         });
-                        
+
                     }
                 }
             },
@@ -244,7 +244,7 @@ var MarketAreaMap = React.createClass({
                             r = 2;
                         }
                         var options = {
-                           
+
 
                             color: "#00a" ,
                             weight: 3,
@@ -261,7 +261,7 @@ var MarketAreaMap = React.createClass({
             }
         }
     },
-    
+
     _updateTooltip:function(tt){
         var scope = this;
         if (scope.isMounted()) {
@@ -274,19 +274,19 @@ var MarketAreaMap = React.createClass({
     render: function() {
 
         return (
-              
+
             <div>
-                <LeafletMap 
-                    layers={this.processLayers()}  
-                    ToolTip={this.state.tooltip} 
+                <LeafletMap
+                    layers={this.processLayers()}
+                    ToolTip={this.state.tooltip}
                     mapId={this.props.mapId}
                     legendLayers={this.props.legendLayers}
                     height="500px" />
             </div>
-                            
+
         );
     },
-    
+
 
 });
 

@@ -1,24 +1,24 @@
 'use strict';
 
 var React = require('react'),
-    
+
     //--Components
     ToolTip = require('./ToolTip.react'),
     MapLegend = require('./MapLegend.react'),
-    
+
     //--Utils
     L = require('leaflet'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
     topojson = require('topojson');
-    
+
 
 var map = null,
     layers = {};
 
 
 var Map = React.createClass({
-    
+
     getDefaultProps:function(){
         return {
             height : '500px',
@@ -32,17 +32,17 @@ var Map = React.createClass({
     componentDidMount: function() {
         this.renderMap();
     },
-    
+
     componentWillReceiveProps: function(nextProps) {
         var scope = this;
         if(nextProps.layers){
-            
+
             Object.keys(nextProps.layers).forEach(function(key){
                 var currLayer = nextProps.layers[key];
                 if(layers[key]){
                     //if layer existed previously check version ids
                     if(currLayer.id !== layers[key].id && currLayer.geo.features.length > 0){
-                        scope._updateLayer(key,currLayer)        
+                        scope._updateLayer(key,currLayer)
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
@@ -51,9 +51,9 @@ var Map = React.createClass({
                     console.log('MAP/recieve props/ DEAD END')
                 }
             });
-        }    
+        }
     },
-    
+
     _updateLayer : function(key,layer){
         if(map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer)
@@ -64,6 +64,14 @@ var Map = React.createClass({
         }
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         map.addLayer(layers[key].layer);
+        //priority check force front layers back to front
+        var toplayers = Object.keys(layers).filter(function(d){
+          return layers[d].layer.options.bringToFront;
+          });
+        toplayers.forEach(function(d){
+          layers[d].layer.bringToFront();
+        });
+        //end priority check;
         if(layer.options.zoomOnLoad){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
@@ -71,10 +79,10 @@ var Map = React.createClass({
     },
 
     _renderLegend: function(){
-        
-        
+
+
         if( Object.keys(this.props.legendLayers).length === 0 ){
-            
+
             return (
                 <span />
             )
@@ -101,7 +109,7 @@ var Map = React.createClass({
         var mapDiv = document.getElementById(this.props.mapId);
         mapDiv.setAttribute("style","height:"+this.props.height);
 
-        
+
         var key = 'erickrans.4f9126ad',//am3081.kml65fk1,
             mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/"+key+"/{z}/{x}/{y}.png");
         map = L.map(this.props.mapId, {
@@ -113,18 +121,21 @@ var Map = React.createClass({
         });
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){
-                
+
                 var currLayer = scope.props.layers[key]
                 layers[key] =  {
                     id:currLayer.id,
                     layer: L.geoJson(currLayer.geo,currLayer.options)
-                };  
+                };
                 map.addLayer(layers[key].layer);
+                if(currLayer.options.bringToFront){
+                  layers[key].layer.bringToFront();
+                }
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);
                     map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
                 }
-            
+
             });
         }
     }
