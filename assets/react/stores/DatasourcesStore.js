@@ -90,7 +90,9 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   get: function(type,id) {
     return _DataSets[type][id];
   },
-
+  getType : function(type){
+    return _DataSets[type];
+  },
   getAll: function() {
     this.refresh();
     return _DataSets;

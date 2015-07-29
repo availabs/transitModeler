@@ -12,12 +12,13 @@ var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 
 var MarketAreaStore = require('./MarketAreaStore');
+var DataSourceStore = require('./DatasourcesStore');
 var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi');
 
 var _currentGtfs = null,
-    _gftsDataSets = {}, //by gtfs ID
+    _gtfsDataSets = {}, //by gtfs ID
     _gtfsRoutesGeo={},  //by MA ID
     _gtfsStopsGeo={},   //"  "  "
     _gtfsSchedules={},
@@ -39,7 +40,7 @@ function _addRoutes(id,rawData) {
 
   //console.log('stores/GtfsStore/_addRoutes',rawData);
 
-  _gftsDataSets[id].routes = rawData;
+  _gtfsDataSets[id].routes = rawData;
 
 }
 
@@ -49,7 +50,7 @@ function _addDatasets(rawData){
 
   rawData.forEach(function(ds){
     if(ds.type === 'gtfs'){
-      _gftsDataSets[ds.id] = ds;
+      _gtfsDataSets[ds.id] = ds;
     }
   });
 }
@@ -57,7 +58,7 @@ function _addDatasets(rawData){
 
 function _loadRoutes(gtfsId){
   //console.log('loading Routes')
-  SailsWebApi.getGtfsRoutes(_gftsDataSets[gtfsId].tableName,gtfsId);
+  SailsWebApi.getGtfsRoutes(_gtfsDataSets[gtfsId].tableName,gtfsId);
 
 }
 
@@ -335,14 +336,18 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         routes =  getCurrentMarketArea.routes,
         maId = getCurrentMarketArea.id;
 
-    if(_gftsDataSets[gtfsId]){
+    if(Object.keys(_gtfsDataSets) === 0){
+      _gtfsDataSets = DataSourceStore.getType('gtfs');
+    }
 
-      if(_gftsDataSets[gtfsId].routes){
-        return _gftsDataSets[gtfsId].routes;
+    if(_gtfsDataSets[gtfsId]){
+
+      if(_gtfsDataSets[gtfsId].routes){
+        return _gtfsDataSets[gtfsId].routes;
       }
       else if(!_loading){
-        //console.log('load stops', maId);
-        // _loadRoutes(gtfsId);
+        console.log('load stops', maId);
+        _loadRoutes(gtfsId);
         // _loadRoutesGeo(maId,gtfsId,routes);
 
         // _loadRouteSchedule(maId,gtfsId,routes);
@@ -375,7 +380,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     return undefined;
   },
   getAll: function() {
-    return _gftsDataSets;
+    return _gtfsDataSets;
   }
 
 
