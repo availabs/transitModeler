@@ -54,7 +54,6 @@ var MarketAreaNew = React.createClass({
     //function to set the set of stops for the gtfs dataSet
     setStopsGeo:function(data){
         if(data && data.features.length > 0){//make sure the data is non empty
-          console.log('random change',data);
             //Get the list of state counties that contain stops for the current routes
             var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
             // get the fips codes for the counties that contain stops
@@ -96,10 +95,10 @@ var MarketAreaNew = React.createClass({
         var newState = this.state;
         newState.marketarea.routes =  newState.marketarea.routes.filter(function(d){
             return d !== route;
-        })
+        });
         if(newState.marketarea.routes.length === 0){
                this.setRoutesGeo(emptyGeojson);
-               this.setStopsGeo(emptyGeojson)
+               this.setStopsGeo(emptyGeojson);
         }else{
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
@@ -124,7 +123,7 @@ var MarketAreaNew = React.createClass({
             var newState = this.state;
             newState.marketarea.origin_gtfs = gtfsData.id;
             newState.gtfs_source = gtfsData;
-            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList)
+            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList);
             this.setState(newState);
         }
     },
@@ -137,15 +136,15 @@ var MarketAreaNew = React.createClass({
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
                     <RouteListTable marketarea={this.state.marketarea} removeRoute={this.removeRoute} />
                 </div>
-            )
+            );
         }
         return (
             <GtfsSelector gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
-        )
+        );
     },
 
     clearMessage:function(){
-        this.setState({message:null})
+        this.setState({message:null});
     },
 
     renderMessage:function(){
@@ -161,15 +160,15 @@ var MarketAreaNew = React.createClass({
                     <button type="button" className="close" onClick={this.clearMessage}>×</button>
                     <strong><i class="fa fa-bell-o"></i></strong>{this.state.message}
                 </div>
-            )
+            );
         }
-        return (<span />)
+        return (<span />);
     },
 
     editName: function(event) {
         var el = event.target,
             newState = this.state;
-            newState.marketarea.name = event.target.value
+            newState.marketarea.name = event.target.value;
             this.setState(newState);
 
     },
@@ -177,9 +176,9 @@ var MarketAreaNew = React.createClass({
     createdMa:function(data){
         //console.log('marketarea create callback',data)
         if(data.id){
-            this.transitionTo('MarketAreaIndex', {marketareaID: data.id})
+            this.transitionTo('MarketAreaIndex', {marketareaID: data.id});
         }else{
-            this.setState({message:'Create Failed:'+data})
+            this.setState({message:'Create Failed:'+data});
         }
     },
 
@@ -189,18 +188,18 @@ var MarketAreaNew = React.createClass({
         marketarea.zones = this.state.tractsFilter;
         marketarea.counties = this.state.countyFilter;
         if(marketarea.routes.length ===  0){
-            this.setState({message:'Market area has no routes, add route.'})
+            this.setState({message:'Market area has no routes, add route.'});
         }
         else if(marketarea.name.length ===  0){
-            this.setState({message:'Must add market area name.'})
+            this.setState({message:'Must add market area name.'});
         }else{
-            SailsWebApi.create('marketarea',marketarea,this.createdMa)
+            SailsWebApi.create('marketarea',marketarea,this.createdMa);
         }
     },
 
     renderStats:function(){
         if(this.state.marketarea.routes.length === 0){
-            return <span />
+            return <span />;
         }
         return (
             <section className="widget">
@@ -226,7 +225,7 @@ var MarketAreaNew = React.createClass({
                     </table>
                 </div>
             </section>
-        )
+        );
     },
     render: function() {
 
@@ -239,14 +238,14 @@ var MarketAreaNew = React.createClass({
         if(this.state.countyFilter.length > 0){
             counties.features = this.props.stateCounties.features.filter(function(d,i){
                 return scope.state.countyFilter.indexOf(d.properties.geoid) > -1;
-            })
+            });
         }
 
-        var tracts = {type:'FeatureCollection',features:[]}
+        var tracts = {type:'FeatureCollection',features:[]};
         if(this.state.tractsFilter.length > 0){
             tracts.features = this.props.stateTracts.features.filter(function(d,i){
                 return scope.state.tractsFilter.indexOf(d.properties.geoid) > -1;
-            })
+            });
         }
 
         return (
