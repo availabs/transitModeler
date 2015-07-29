@@ -5,7 +5,7 @@ var turf = require('turf');
 module.exports = {
 
 	point2polyIntersect:function(points,polys){
-		var buffered = turf.buffer(points, 0.5, 'miles'), //calculates buffer around points <-- is this necessary??
+		var //buffered = turf.buffer(points, 0.5, 'miles'), //calculates buffer around points <-- is this necessary??
 			polyFeature = polys.features,										//set features of polygons
 			pointFeature = points.features;									//set features of points
 

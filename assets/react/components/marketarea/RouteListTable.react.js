@@ -1,30 +1,30 @@
 'use strict';
 
-var React = require('react');    
+var React = require('react');
     // -- Store
-    
+
     // -- Utils
-    
+
 
 
 
 var RouteListTable= React.createClass({
 
-  
+
     getDefaultProps:function(){
         return{
           marketArea : {routes:[]}
-        }
+        };
     },
-    
+
     render:function(){
       var scope = this,
           routes = this.props.marketarea ? this.props.marketarea.routes : [],
           rows = routes.map(function(route,i){
             var divStyle = {
                 "width":'10px',
-                "backgroundColor" : d3.scale.category20().range()[i] 
-            }
+                "backgroundColor" : d3.scale.category20().range()[i%20]
+            };
             var colorClass='route_color_'+route;
             return (
               <tr key={i}>
@@ -32,7 +32,7 @@ var RouteListTable= React.createClass({
                 <td>{route}</td>
                 <td><i className='fa fa-minus' style={{cursor:'pointer'}} onClick={scope.props.removeRoute.bind(null,route)}/></td>
               </tr>
-            )
+            );
           });
 
       return(
@@ -45,17 +45,17 @@ var RouteListTable= React.createClass({
                 <th></th>
                 <th>Route Short Name</th>
                 <th></th>
-                
+
               </tr>
             </thead>
             <tbody>
               {rows}
-              
+
             </tbody>
           </table>
-        </div>  
+        </div>
       );
     }
 });
 
-module.exports = RouteListTable;  
+module.exports = RouteListTable;
