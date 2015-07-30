@@ -179,7 +179,7 @@ var MarketAreaMap = React.createClass({
                             click: function(e){
                                 console.log('station_click',e.target.feature.properties);
                                 if(scope.props.toggleTracts){
-                                  var tractdomel = d3.select('.tract_'+e.target.feature.properties.geoid)
+                                  var tractdomel = d3.select('.tract_'+e.target.feature.properties.geoid);
                                   if(tractdomel.style('fill') === 'rgb(69, 237, 139)')
                                     tractdomel.style('fill','rgb(186, 18, 116)');
                                   else {
