@@ -53,8 +53,9 @@ var MarketAreaNew = React.createClass({
             stopsGeo:emptyGeojson,
             routeList:(this.props.routes)?this.props.routes:[],
             countyFilter:(pma.counties)? pma.counties.slice(0):[],
-            tractsFilter:(pma.routes)? pma.routes.slice(0):[],
+            tractsFilter:(pma.routes)? pma.zones.slice(0):[],
             outerTractsFilter:[],
+            stateTracts:(this.props.stateTracts) ? JSON.parse(JSON.stringify(this.props.stateTracts)):[],
             message:null,
             bMessage:'Update Market Area'
         };
@@ -63,8 +64,14 @@ var MarketAreaNew = React.createClass({
       if(this.props.routesGeo.features.length > 0){
         this.setRoutesGeo(this.props.routesGeo);
       }
-      if(this.props.stopsGeo.features.length > 0   ){
-        this.setStopsGeo(this.props.stopsGeo);
+      if(this.props.stopsGeo.features.length > 0 ){
+        if(this.state.tractsFilter && this.state.countyFilter){
+          this.initTracts();
+          this.setState({stopsGeo:this.props.stopsGeo});
+        }else{
+            this.setStopsGeo(this.props.stopsGeo);
+        }
+
       }
     },
     setRouteList : function(id,data){
@@ -80,10 +87,23 @@ var MarketAreaNew = React.createClass({
       if(nextProps.routesGeo && (nextProps.routesGeo !== this.props.routesGeo) ){
         this.setRoutesGeo(nextProps.routesGeo);
       }
+      if(nextProps.stateTracts && nextProps.stateTracts !== this.state.stateTracts){
+        this.setState({stateTracts:nextProps.stateTracts});
+      }
+    },
+    initTracts : function(){
+      if(this.state.countyFilter){
+        var fips = this.getCountyFips(this.state.countyFilter);
+        var ftracts = this.getFilterTracts(fips);
+        if(this.state.tractsFilter){
+          var nonZoneTracts = this.getNonZone(ftracts,this.state.tractsFilter);
+          this.setState({outerTractsFilter:nonZoneTracts});
+        }
+      }
     },
     getNonZone : function(filterTracts,tractsFilter){
       var nonSelectTracts = filterTracts.filter(function(d){ //filter the tracts within our fips regions
-          var matches = tractsFilter.keys.filter(function(geoId){//check each track id
+          var matches = tractsFilter.filter(function(geoId){//check each track id
             return d.properties.geoid === geoId;                //against the stop associated ones
           });
           return matches.length === 0;                          //if no matches return it;
@@ -99,7 +119,7 @@ var MarketAreaNew = React.createClass({
       return countyFips;
     },
     getFilterTracts : function(countyFips){
-      var filterTracts = this.props.stateTracts.features.filter(function(d){
+      var filterTracts = this.state.stateTracts.features.filter(function(d){
           //console.log(parseInt(d.properties.geoid.substr(0,5)));
           return countyFips.indexOf(parseInt(d.properties.geoid.substr(0,5))) > -1;
       });
@@ -118,7 +138,7 @@ var MarketAreaNew = React.createClass({
             var tractsFilter = Geoprocessing.point2polyIntersect(data,{type:'FeatureCollection',features:filterTracts});
             console.log('Finished Processing tracts',new Date());
             console.log(tractsFilter,countyFilter);
-            var nonSelectTracts = this.getNonZone(filterTracts,tractsFilter);
+            var nonSelectTracts = this.getNonZone(filterTracts,tractsFilter.keys);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
@@ -312,7 +332,7 @@ var MarketAreaNew = React.createClass({
 
         var tracts = {type:'FeatureCollection',features:[]};
         if(this.state.tractsFilter.length > 0){
-            tracts.features = this.props.stateTracts.features.filter(function(d,i){
+            tracts.features = this.state.stateTracts.features.filter(function(d,i){
                 var isInner = scope.state.tractsFilter.indexOf(d.properties.geoid) > -1;
                 if(isInner){
                   d.properties.type = 0;
@@ -321,7 +341,7 @@ var MarketAreaNew = React.createClass({
             });
         }
         if(this.state.outerTractsFilter.length > 0){
-          this.props.stateTracts.features.forEach(function(d,i){
+          this.state.stateTracts.features.forEach(function(d,i){
               var isOuter = scope.state.outerTractsFilter.indexOf(d.properties.geoid) > -1;
               if(isOuter){
                 d.properties.type = 1;
