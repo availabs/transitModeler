@@ -150,7 +150,7 @@ var MarketAreaNew = React.createClass({
 
     gtfsSelect:function(gtfsData){
         if(gtfsData){
-            var newState = this.state;
+            var newState = this.getInitialState();
             newState.marketarea.origin_gtfs = gtfsData.id;
             newState.gtfs_source = gtfsData;
             this.setState(newState);
