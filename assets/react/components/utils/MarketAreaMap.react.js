@@ -8,6 +8,7 @@ var React = require('react'),
     stopslayerID = 0,
     prevStopsLength,
     tractlayerID = 0,
+    outerTractsLength,
     prevTractLength,
     routeLayerID = 0,
     prevRouteLength,
@@ -18,6 +19,16 @@ var React = require('react'),
     prevMode;
 
 
+var tractChange = function(tracts){//check the number of tracts with outer type
+  var outers = tracts.features.filter(function(d){// get a list of the outers
+    return d.properties.type === 1;
+  });
+  if(outers.length !== outerTractsLength ){ //check if the length is the same as last time
+    outerTractsLength = outers.length;
+    return true;                          //if not return true for an update
+  }
+  return false;
+};
 
 var MarketAreaMap = React.createClass({
 
@@ -51,19 +62,19 @@ var MarketAreaMap = React.createClass({
 
         //console.log('processLayers, diplay tracts',this.props.survey);
         if(this.props.stops){
-            stops = this.props.stops
+            stops = this.props.stops;
         }
         if(this.props.tracts){
-            tracts = this.props.tracts
+            tracts = this.props.tracts;
         }
         if(this.props.routes){
-            routes = this.props.routes
+            routes = this.props.routes;
         }
         if(this.props.counties){
-            counties = this.props.counties
+            counties = this.props.counties;
         }
         if(this.props.survey){
-            survey = this.props.survey
+            survey = this.props.survey;
         }
 
         if(survey.features.length !== prevSurveyLength){
@@ -71,7 +82,7 @@ var MarketAreaMap = React.createClass({
             prevSurveyLength = survey.features.length;
         }
 
-        if(tracts.features.length !== prevTractLength){
+        if(tracts.features.length !== prevTractLength || tractChange(tracts)){
             tractlayerID++;
             prevTractLength = tracts.features.length;
         }
@@ -143,9 +154,9 @@ var MarketAreaMap = React.createClass({
                             stroke:true,
                             dashArray:'15, 10, 5, 10, 15',
                             weight:2,
-                            color:'#000'
-                        }
-                    }
+                        };
+                    },
+
                 }
             },
             tractsLayer:{
@@ -156,7 +167,7 @@ var MarketAreaMap = React.createClass({
                     style:function (feature) {
                         return {
                             //className: 'ma-tract',
-                            fillColor:'#fff',
+                            fillColor:(!feature.properties.type)?'#45ED8B':'#BA1274',
                             weight:1,
                             opacity: scope.props.displayTracts ? 0.5 : 0,
                             fillOpacity: scope.props.displayTracts ? 0.2 : 0
@@ -165,20 +176,18 @@ var MarketAreaMap = React.createClass({
                     onEachFeature: function (feature, layer) {
 
                         layer.on({
-
                             click: function(e){
                                 console.log('station_click',e.target.feature.properties);
+                                if(scope.props.toggleTracts)
+                                  scope.props.toggleTracts(feature);
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6});
-
                             },
                             mouseout: function(e){
                                  e.target.setStyle({weight:1});
-
                             }
                         });
-
                     }
                 }
             },
@@ -186,6 +195,8 @@ var MarketAreaMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
+                    zoomOnLoad:true,
+                    zoomOnUpdate:true,
                     bringToFront:true,
                     style:function (feature,i) {
                         return {
@@ -223,7 +234,7 @@ var MarketAreaMap = React.createClass({
                                 //console.log('mouseout1')
                                 //scope._updateTooltip({ x:0,y:0,display:'none'});
                                 d3.select('.ToolTip').style({opacity:0});
-                                e.target.setStyle({opacity :0.3})
+                                e.target.setStyle({opacity :0.3});
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
 

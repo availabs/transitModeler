@@ -1,3 +1,5 @@
+/*globals confirm, console,module,require,$*/
+/*jshint -W097*/
 'use strict';
 
 var React = require('react'),
@@ -26,7 +28,7 @@ var Map = React.createClass({
             legendLayers : {},
             legendOptions: {location:'bottomRight'},
             mapId:'map_'+Math.floor((Math.random() * 100) + 1)
-        }
+        };
     },
 
     componentDidMount: function() {
@@ -41,14 +43,14 @@ var Map = React.createClass({
                 var currLayer = nextProps.layers[key];
                 if(layers[key]){
                     //if layer existed previously check version ids
-                    if(currLayer.id !== layers[key].id && currLayer.geo.features.length > 0){
-                        scope._updateLayer(key,currLayer)
+                    if(currLayer.id !== layers[key].id){
+                        scope._updateLayer(key,currLayer);
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
-                    scope._updateLayer(key,currLayer)
+                    scope._updateLayer(key,currLayer);
                 }else{
-                    console.log('MAP/recieve props/ DEAD END')
+                    console.log('MAP/recieve props/ DEAD END');
                 }
             });
         }
@@ -56,12 +58,12 @@ var Map = React.createClass({
 
     _updateLayer : function(key,layer){
         if(map.hasLayer(layers[key].layer)){
-            map.removeLayer(layers[key].layer)
+            map.removeLayer(layers[key].layer);
         }
         layers[key] = {
             id:layer.id,
             layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
-        }
+        };
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         map.addLayer(layers[key].layer);
         //priority check force front layers back to front
@@ -72,7 +74,7 @@ var Map = React.createClass({
           layers[d].layer.bringToFront();
         });
         //end priority check;
-        if(layer.options.zoomOnLoad){
+        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
@@ -85,12 +87,12 @@ var Map = React.createClass({
 
             return (
                 <span />
-            )
+            );
         }
 
         return (
             <MapLegend layers={this.props.legendLayers} options={this.props.legendOptions} />
-        )
+        );
 
     },
 
@@ -122,7 +124,7 @@ var Map = React.createClass({
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){
 
-                var currLayer = scope.props.layers[key]
+                var currLayer = scope.props.layers[key];
                 layers[key] =  {
                     id:currLayer.id,
                     layer: L.geoJson(currLayer.geo,currLayer.options)

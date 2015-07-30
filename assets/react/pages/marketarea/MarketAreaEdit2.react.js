@@ -15,10 +15,10 @@ var React = require('react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
 
     // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
     // -- Stores
-
+    MarketAreaStore = require('../../stores/MarketAreaStore');
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 
@@ -282,7 +282,7 @@ var MarketAreaNew = React.createClass({
                         <MarketAreaMap
                             stops={this.state.stopsGeo}
                             routes={this.state.routesGeo}
-                            tracts ={this.props.tracts} />
+                            tracts ={tracts} />
                         {this.renderMessage()}
 
 
