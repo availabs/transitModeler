@@ -317,7 +317,8 @@ var MarketAreaNew = React.createClass({
         });
     },
     render: function() {
-
+      if(!this.props.marketarea.id)
+        this.transitionTo('dashboard');
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
