@@ -82,7 +82,7 @@ var MarketAreaMap = React.createClass({
             prevSurveyLength = survey.features.length;
         }
 
-        if(tracts.features.length !== prevTractLength || tractChange(tracts)){
+        if(tracts.features.length !== prevTractLength ){
             tractlayerID++;
             prevTractLength = tracts.features.length;
         }
@@ -166,8 +166,8 @@ var MarketAreaMap = React.createClass({
                     zoomOnLoad:true,
                     style:function (feature) {
                         return {
-                            //className: 'ma-tract',
-                            fillColor:(!feature.properties.type)?'#45ED8B':'#BA1274',
+                            className: 'tract_' + feature.properties.geoid,
+                            fillColor:(!feature.properties.type)?'rgb(69, 237, 139)':'rgb(186, 18, 116)',
                             weight:1,
                             opacity: scope.props.displayTracts ? 0.5 : 0,
                             fillOpacity: scope.props.displayTracts ? 0.2 : 0
@@ -178,8 +178,15 @@ var MarketAreaMap = React.createClass({
                         layer.on({
                             click: function(e){
                                 console.log('station_click',e.target.feature.properties);
-                                if(scope.props.toggleTracts)
+                                if(scope.props.toggleTracts){
+                                  var tractdomel = d3.select('.tract_'+e.target.feature.properties.geoid)
+                                  if(tractdomel.style('fill') === 'rgb(69, 237, 139)')
+                                    tractdomel.style('fill','rgb(186, 18, 116)');
+                                  else {
+                                    tractdomel.style('fill','rgb(69, 237, 139)');
+                                  }
                                   scope.props.toggleTracts(feature);
+                                }
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6});
