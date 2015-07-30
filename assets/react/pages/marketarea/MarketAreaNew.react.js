@@ -153,8 +153,9 @@ var MarketAreaNew = React.createClass({
             var newState = this.state;
             newState.marketarea.origin_gtfs = gtfsData.id;
             newState.gtfs_source = gtfsData;
-            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList);
             this.setState(newState);
+            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList);
+
         }
     },
 
@@ -163,7 +164,7 @@ var MarketAreaNew = React.createClass({
 
             return (
                 <div>
-                    <GtfsSelector gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
+                    <GtfsSelector currentSelection={this.state.marketarea.origin_gtfs} gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
                     <RouteListTable marketarea={this.state.marketarea} removeRoute={this.removeRoute} />
                 </div>
