@@ -258,24 +258,25 @@ module.exports = {
       console.log('create',type,resData);
       //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
-      if(cb) {cb(resData)}
+      if(cb) {cb(resData);}
     });
   },
 
   read: function(type) {
 
-    var where = {}
+    var where = {};
     d3.json('/'+type,function(err,data){
       //console.log('utils/sailsWebApi/getUsers',data);
       ServerActionCreators.receiveData(type,data);
     });
   },
 
-  update: function(type,data){
+  update: function(type,data,cb){
     io.socket.put('/'+type+'/'+data.id,data,function(resData){
 
       //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
+      if(cb){cb(resData);}
     });
   },
 

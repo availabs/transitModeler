@@ -4,27 +4,27 @@
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
     EventEmitter = require('events').EventEmitter,
-    assign = require('object-assign'),   
+    assign = require('object-assign'),
     ActionTypes = Constants.ActionTypes,
     CHANGE_EVENT = 'change',
-    
+
     //utils
     SailsWebApi = require('../utils/sailsWebApi'),
     CrossCtpp = require('../utils/src/crossCtpp'),
-    
+
     _currentID = null,
     _marketAreas = {},
     _ctppData = {},
     _nullMarketArea = {name:''};
 
-    
+
 
 function _addMarketAreas(rawData) {
   //console.log('stores/marketareaStore/_addMarketAreas',rawData);
   rawData.forEach(function(marketarea) {
-    if (!_marketAreas[marketarea.id]) {
+    //if (!_marketAreas[marketarea.id]) {
       _marketAreas[marketarea.id] = marketarea;
-    }
+    //}
   });
   if(_currentID){
     _loadCurrentRouteGeo();
@@ -53,7 +53,7 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
@@ -74,7 +74,7 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
     return GeodataStore.getMarketAreaTracts();
 
   },
-  
+
   getCurrentMarketAreaId : function(){
 
     return _currentID;
@@ -83,31 +83,31 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
 
   getCurrentCtpp : function(){
     if(_currentID && _currentID > 0){
-        
+
         if(_ctppData[_currentID] && _ctppData[_currentID] !== 'loading'){
-         
+
           CrossCtpp.init(_ctppData[_currentID])
           return CrossCtpp;
-        
+
         }else if(_ctppData[_currentID] !== 'loading'){
             SailsWebApi.getCtpp(_currentID);
             _ctppData[_currentID] = 'loading'
             return {initialized:false};
-          
+
         }else{
-            //still loading  
+            //still loading
             return {initialized:false};
         }
     }
     else{ return {initialized:false}; }
-      
+
   },
 
   getAll: function() {
     return _marketAreas;
   }
 
-  
+
 
 });
 
@@ -131,7 +131,7 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
       delete _marketAreas[action.Id]
       MarketAreaStore.emitChange();
     break;
-    
+
 
     case ActionTypes.RECEIVE_GTFS_GEOS:
       if(_marketAreas[action.Id]){ //ignore routes from new marketarea
@@ -143,11 +143,11 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_CTPP_DATA:
         //console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
         _ctppData[action.marketareaId] = action.rawData;
-        
+
         MarketAreaStore.emitChange();
     break;
 
-      
+
 
     default:
       // do nothing

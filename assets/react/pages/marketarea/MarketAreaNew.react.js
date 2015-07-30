@@ -61,7 +61,7 @@ var MarketAreaNew = React.createClass({
     },
     //function to set the set of stops for the gtfs dataSet
     setStopsGeo:function(data){
-        var marketarea = this.state.marketarea;
+
         if(data && data.features.length > 0){//make sure the data is non empty
             //Get the list of state counties that contain stops for the current routes
             var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
@@ -86,23 +86,21 @@ var MarketAreaNew = React.createClass({
                 });
                 return matches.length === 0;                          //if no matches return it;
             }).map(function(d){return d.properties.geoid;});
-            marketarea.zones = tractsFilter.keys;
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
               tractsFilter:tractsFilter.keys,
               outerTractsFilter:nonSelectTracts,
-              marketarea:marketarea
               });
         }else if(data.features.length === 0){ //if there are no stops simply set to empty lists
             //console.log('remove last layer')
-            marketarea.zones = [];
+
             this.setState({
               stopsGeo:data,
               countyFilter:[],
               tractsFilter:[],
               outerTractsFilter:[],
-              marketarea:marketarea,
+
               });
         }
     },
@@ -235,13 +233,10 @@ var MarketAreaNew = React.createClass({
       }else{
         transfer(tf,otf,feature.properties.geoid);
       }
-      ma.zones = tf;
       this.setState({
         tractsFilter:tf,
         outerTractsFilter:otf,
-        marketarea:ma,
         });
-
     },
     renderStats:function(){
         if(this.state.marketarea.routes.length === 0){

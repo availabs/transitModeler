@@ -31,7 +31,7 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit(CHANGE_EVENT);
   },
-  
+
   /**
    * @param {function} callback
    */
@@ -39,30 +39,38 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
   getAllTracts:function(){
     return _stateTracts;
   },
-  
+
   getAllCounties:function(){
     return _stateCounties;
+  },
+
+  purgeMarketTracts : function(id){
+    var maId = id;
+    if(!id){
+      maId = MarketareaStore.getCurrentMarketAreaId();
+    }
+    delete _maTracts[maId];
   },
 
   getMarketAreaTracts: function() {
 
     var maId = MarketareaStore.getCurrentMarketAreaId(),
         zones = MarketareaStore.getCurrentMarketArea();
-    
+
     //if no marketarea send blank
     if(!zones){
       return {type:'FeatureCollection',features:[]};
     }
     //if cached get from cache
     if( _maTracts[maId] ){
-      return _maTracts[maId]
+      return _maTracts[maId];
     }
     //if not loaded send empty geojson
     if(!_stateTracts.features || _stateTracts.features.length === 0){
@@ -70,16 +78,16 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
     }
     //otherwise filter current market area from _stateTracts and cache it
     else{
-      zones =  zones.zones;         
+      zones =  zones.zones;
       _maTracts[maId] = {type:'FeatureCollection',features:[]};
-      
-      //filter 
+
+      //filter
       _stateTracts.features.forEach(function(feat){
           if(zones.indexOf(feat.properties.geoid) !== -1){
               _maTracts[maId].features.push(feat);
           }
       })
-     
+
     }
 
     return _maTracts[maId];
