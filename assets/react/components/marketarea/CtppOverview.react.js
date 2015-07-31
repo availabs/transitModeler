@@ -135,9 +135,9 @@ var CtppOverview = React.createClass({
                                 {this.directionButtons()}
                             </div>
                             {this._renderSelectedTract()}
-                            <div className="body no-margin">
+                            <div className="body no-margin" style={{overflowY:'scroll'}}>
 
-                                <DataTable data={cdata} columns={ctppColumns} rowValue={'key'} rowClick={this._selectTract} />
+                                <DataTable data={cdata} pagination={true} columns={ctppColumns} rowValue={'key'} rowClick={this._selectTract} />
 
                             </div>
                         </section>
