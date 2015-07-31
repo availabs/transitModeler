@@ -16,13 +16,13 @@ var Router = require('./hereApi');
 function listenToSockets(sessionUser){
 
   io.socket.on("job_created", function(e){
-    console.log('job_created',e)
-    ServerActionCreators.receiveData('job',[e])
+    console.log('job_created',e);
+    ServerActionCreators.receiveData('active_job',[e]);
   });
 
   io.socket.on("job_updated", function(e){
-    console.log('job_updated',e)
-    ServerActionCreators.receiveData('job',e)
+    console.log('job_updated',e);
+    ServerActionCreators.receiveData('active_job',e);
   });
 
 

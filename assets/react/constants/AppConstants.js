@@ -76,8 +76,8 @@ module.exports = {
     RECEIVE_FULL_MODEL_RUNS:null,
 
     // -- Jobs
-    RECEIVE_JOBS:null
-
+    RECEIVE_JOBS:null,
+    RECEIVE_ACTIVE_JOBS:null,
   }),
 
 

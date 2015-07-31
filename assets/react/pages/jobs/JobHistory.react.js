@@ -1,21 +1,42 @@
 /*globals require,module*/
 'use strict'
 var React = require('react'),
-    DataTable = require('../../components/utils/DataTable.react');
+    DataTable = require('../../components/utils/DataTable.react'),
+    JobStore = require('../../stores/JobStore');
 
 var JobHistory = React.createClass({
 
+  getInitialState: function(){
+    var temp  = JobStore.getAll();
+    return {
+      jobs:this.props.jobhistory,
+    };
+  },
+  componentWillReceiveProps : function(nextProps){
+    if(this.props.jobhistory !== nextProps.jobhistory){
+      this.setState({jobhistory:nextProps.jobhistory});
+    }
+  },
   render : function(){
+    var history = [],
+        active = [];
+    this.state.jobs.forEach(function(d){
+      if(d.isFinished){
+        history.push(d);
+      }else {
+        active.push(d);
+      }
+    });
     var acolumns = [
-      {key:'needskey',name:'Type'},
-      {key:'needskey',name:'Time Started'},
-      {key:'needskey',name:'Status'},
-      {key:'needskey',name:'Progress'}
+      {key:'type',name:'Type'},
+      {key:'start',name:'Time Started'},
+      {key:'status',name:'Status'},
+      {key:'progress',name:'Progress'}
     ];
     var fcolumns = [
-      {key:'needskey', name:'Type'},
-      {key:'needskey', name:'Time Finished'},
-      {key:'needskey', name:'Status'}
+      {key:'type', name:'Type'},
+      {key:'updatedAt', name:'Time Finished'},
+      {key:'status', name:'Status'}
     ];
     return (<div className="content container">
       <h2 className="page-title">{"Jobs History"} </h2>

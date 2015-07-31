@@ -16,7 +16,8 @@ var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi');
 
-var _allJobs = [],
+var _history = {},
+    _allJobs = [],
     _loading = false;
 
 
@@ -27,6 +28,12 @@ function _addJobs(rawData){
 
   rawData.forEach(function(ds){
       _allJobs[ds.id] = ds;
+  });
+}
+
+function _addHistory(rawData){
+  rawData.forEach(function(ds){
+    _history[ds.id] = ds;
   });
 }
 
@@ -75,12 +82,15 @@ JobStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   switch(action.type) {
 
-    case ActionTypes.RECEIVE_JOBS:
+    case ActionTypes.RECEIVE_ACTIVE_JOBS:
         //console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
       _addJobs(action.data);
       JobStore.emitChange();
     break;
-
+    case ActionTypes.RECEIVE_JOBS:
+      _addHistory(action.data);
+      JobStore.emitChange();
+    break;
     default:
       // do nothing
   }
