@@ -68,7 +68,8 @@ var MarketAreaIndex = React.createClass({
                      <CtppOverview
                         tracts={this.props.tracts}
                         ctppData = {this.props.ctppData}
-                        marketarea={this.props.marketarea} />
+                        marketarea={this.props.marketarea}
+                        censusData={this.props.censusData} />
                 )
 
             break;
