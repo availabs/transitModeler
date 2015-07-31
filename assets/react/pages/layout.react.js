@@ -149,6 +149,7 @@ var App = React.createClass({
                         {text:'Farebox',type:'Route',action:'FareboxManager'}
                     ]
                 },
+                {text:'Job History', icon:'fa fa-cog', action:'jobhistory',type:'Route'},
                 {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/docs/NJTransit%20User\'s%20Manual.pdf'}
             ]
         };

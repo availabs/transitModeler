@@ -1,3 +1,4 @@
+/*globals require,module*/
 'use strict'
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -13,9 +14,10 @@ var assign = require('object-assign');
 
 var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
-var SailsWebApi = require('../utils/sailsWebApi')
+var SailsWebApi = require('../utils/sailsWebApi');
 
-var _allJobs = [],
+var _history = [],
+    _allJobs = [],
     _loading = false;
 
 

@@ -1,8 +1,8 @@
 'use strict';
 //---------------------------------------
-// App Controller View 
+// App Controller View
 // One Per Server Side Route
-// 
+//
 //---------------------------------------
 
 //  --- Libraries
@@ -12,7 +12,7 @@ var React = require('react'),
     Routes = Router.Routes,
     Redirect = Router.Redirect,
     DefaultRoute = Router.DefaultRoute,
-    
+
     //  --- Layout Controller View
     App = require('./pages/layout.react'),
 
@@ -29,11 +29,11 @@ var React = require('react'),
     SurveyManager = require('./pages/datasources/SurveyManager.react'),
     FareboxManager = require('./pages/datasources/FareboxManager.react'),
     UserAdmin = require('./pages/admin/UserAdmin.react'),
-
+    JobHistory = require('./pages/jobs/JobHistory.react'),
 // --- Server API
     sailsWebApi = require('./utils/sailsWebApi.js');
 
-// --- 
+// ---
     sailsWebApi.init(window.User);
 
 
@@ -42,7 +42,7 @@ var i18n = {
 };
 
 
-//  --- Routes 
+//  --- Routes
 var routes = (
   <Route name="app" path="/" handler={App}>
     <Route name="MarketAreaIndex" path="/marketarea/:marketareaID" handler={MarketAreaIndex} />
@@ -57,6 +57,7 @@ var routes = (
     <Route name="RegressionsManager" path="/datasources/regressions" handler={RegressionsManager} />
     <Route name="dashboard" handler={Dashboard} />
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />
+    <Route name="jobhistory" path="/jobs/jobhistory" handler={JobHistory} />
     <DefaultRoute handler={Dashboard}/>
   </Route>
 );
@@ -64,4 +65,3 @@ var routes = (
 Router.run(routes, function (Handler) {
   React.render(<Handler locales={i18n.locales}/>, document.body);
 });
-
