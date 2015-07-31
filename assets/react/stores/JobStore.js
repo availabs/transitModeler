@@ -16,9 +16,9 @@ var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi');
 
-var _history = [],
-    _allJobs = [],
+var _allJobs = [],
     _loading = false;
+
 
 
 function _addJobs(rawData){
