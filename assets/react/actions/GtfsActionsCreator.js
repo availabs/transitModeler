@@ -35,7 +35,7 @@ module.exports = {
       data:tripData
     });
   },
-  setGtfsChange : function(id){
+  setGtfsChange : function(id,ma){
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_GTFS,
       data:id,

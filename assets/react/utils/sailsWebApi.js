@@ -56,17 +56,17 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
-  getEditRoutesGeo : function(gtfsId,routes,cb){
+  getEditRoutesGeo : function(gtfsId,routes,maId,cb){
     d3.json('datasources/gtfs/routes/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-        ServerActionCreators.receiveDataWithId('gtfs_edit_route',gtfsId,data);
+        ServerActionCreators.receiveDataWithId('gtfs_edit_route',[gtfsId,maId],data);
         if(cb){cb(gtfsId,data);}
       });
   },
-  getEditStopsGeo : function(gtfsId,routes,cb){
+  getEditStopsGeo : function(gtfsId,routes,maId,cb){
     d3.json('datasources/gtfs/stops/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-        ServerActionCreators.receiveDataWithId('gtfs_edit_stop',gtfsId,data);
+        ServerActionCreators.receiveDataWithId('gtfs_edit_stop',[gtfsId,maId],data);
         if(cb){cb(gtfsId,data);}
       });
   },
@@ -78,10 +78,10 @@ module.exports = {
 
     });
   },
-  getRoutesSched: function(gtfsId,routes,cb) {
+  getRoutesSched: function(gtfsId,routes,maId,cb) {
     d3.json('/datasources/gtfs/schedule/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){
-        ServerActionCreators.receiveDataWithId('gtfs_sched',gtfsId,data);
+        ServerActionCreators.receiveDataWithId('gtfs_sched',[gtfsId,maId],data);
         if(cb){ cb(data); }
 
     });

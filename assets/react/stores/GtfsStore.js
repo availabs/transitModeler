@@ -77,17 +77,17 @@ function _loadStopsGeo(maId,gtfsId,routes){
   }
 }
 
-function _loadEditRoutesGeo(gtfsId,routes){
-  if(!_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !== 'loading'){
-    SailsWebApi.getEditRoutesGeo(gtfsId,routes);
+function _loadEditRoutesGeo(gtfsId,routes,maId){
+  if( _eGtfsRoutesGeo[gtfsId] !== 'loading'){
+    SailsWebApi.getEditRoutesGeo(gtfsId,routes,maId);
     _eGtfsRoutesGeo[gtfsId] = 'loading';
   }
 }
 
 
-function _loadEditStopsGeo(gtfsId,routes){
-  if(!_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !== 'loading'){
-    SailsWebApi.getEditStopsGeo(gtfsId,routes);
+function _loadEditStopsGeo(gtfsId,routes,maId){
+  if(_eGtfsStopsGeo[gtfsId] !== 'loading'){
+    SailsWebApi.getEditStopsGeo(gtfsId,routes,maId);
     _eGtfsStopsGeo[gtfsId] = 'loading';
   }
 }
@@ -96,9 +96,9 @@ function _setEditGtfs(gtfsId){
   _editGtfs = gtfsId;
 }
 
-function _loadRouteSchedule(gtfsId,routes){
-  if(!_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId]!=='loading'){
-    SailsWebApi.getRoutesSched(gtfsId,routes);
+function _loadRouteSchedule(gtfsId,routes,maId){
+  if( _gtfsSchedules[gtfsId]!=='loading'){
+    SailsWebApi.getRoutesSched(gtfsId,routes,maId);
     _gtfsSchedules[gtfsId] = 'loading';
   }
 
@@ -194,11 +194,12 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       gtfsId = _editGtfs || ma.origin_gtfs;
       routes = ma.routes;
       console.log('GTFS Store',gtfsId);
-      if(_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !=='loading'){
+      if(_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !=='loading' && ma.id ===_eGtfsRoutesGeo[gtfsId].maId){
         return _eGtfsRoutesGeo[gtfsId];
       }
-      else if(!_eGtfsRoutesGeo[gtfsId]){
-        _loadEditRoutesGeo(gtfsId,routes);
+      else if(!_eGtfsRoutesGeo[gtfsId] || ma.id !== _eGtfsRoutesGeo[gtfsId].maId){
+        _eGtfsRoutesGeo[gtfsId] = _eGtfsRoutesGeo[gtfsId] || {};
+        _loadEditRoutesGeo(gtfsId,routes,ma.id);
       }
       return {type:'FeatureCollection',features:[]};
     }
@@ -214,11 +215,12 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       gtfsId = _editGtfs || ma.origin_gtfs;
       routes = ma.routes;
       console.log('GTFS Store Stops',gtfsId);
-      if(_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !=='loading'){
+      if(_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !=='loading' && ma.id === _eGtfsStopsGeo[gtfsId].maId){
         return _eGtfsStopsGeo[gtfsId];
       }
-      else if(!_eGtfsStopsGeo[gtfsId]){
-        _loadEditStopsGeo(gtfsId,routes);
+      else if(!_eGtfsStopsGeo[gtfsId] || ma.id !==_eGtfsStopsGeo[gtfsId].maId){
+        _eGtfsStopsGeo[gtfsId] = _eGtfsStopsGeo[gtfsId] || {};
+        _loadEditStopsGeo(gtfsId,routes,ma.id);
       }
       return {type:'FeatureCollection',features:[]};
     }
@@ -267,10 +269,10 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     if( ma ){
         gtfsId = _editGtfs || ma.origin_gtfs;
         routes = ma.routes;
-        if(_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId] !=='loading')
-          return  _gtfsSchedules[gtfsId];
-        else if (!_gtfsSchedules[gtfsId]){
-          _loadRouteSchedule(gtfsId,routes);
+        if(_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId] !=='loading' && _gtfsSchedules[gtfsId].maId === ma.id)
+          return  _gtfsSchedules[gtfsId].sched;
+        else if (!_gtfsSchedules[gtfsId] || ma.id !== _gtfsSchedules[gtfsId].maId){
+          _loadRouteSchedule(gtfsId,routes,ma.id);
         }
         return {};
     }
@@ -416,15 +418,17 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_GTFS_EDIT_ROUTES:
-        _eGtfsRoutesGeo[action.Id] = action.data;
-        _eGtfsRoutesGeo[action.Id].id = action.Id;
+        _eGtfsRoutesGeo[action.Id[0]] = action.data;
+        _eGtfsRoutesGeo[action.Id[0]].id = action.Id[0];
+        _eGtfsRoutesGeo[action.Id[0]].maId = action.Id[1];
         GtfsStore.emitChange();
         console.log('ID',action.Id,'Editable Routes',_eGtfsRoutesGeo);
     break;
 
     case ActionTypes.RECEIVE_GTFS_EDIT_STOPS:
-        _eGtfsStopsGeo[action.Id] = action.data;
-        _eGtfsStopsGeo[action.Id].id = action.Id;
+        _eGtfsStopsGeo[action.Id[0]] = action.data;
+        _eGtfsStopsGeo[action.Id[0]].id = action.Id[0];
+        _eGtfsStopsGeo[action.Id[0]].maId = action.Id[1];
         GtfsStore.emitChange();
         console.log('ID',action.Id,'Editable Stops',_eGtfsStopsGeo);
     break;
@@ -452,9 +456,11 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_GTFS_SCHEDS:
-          _gtfsSchedules[action.Id] = action.data;
+          _gtfsSchedules[action.Id[0]] = {};
+          _gtfsSchedules[action.Id[0]].sched = action.data;
           //console.log('Received Gtfs Scheds',action.id, action.data)
-          _gtfsSchedules[action.Id].id = action.Id;
+          _gtfsSchedules[action.Id[0]].id = action.Id[0];
+          _gtfsSchedules[action.Id[0]].maId = action.Id[1];
           GtfsStore.emitChange();
     break;
 
