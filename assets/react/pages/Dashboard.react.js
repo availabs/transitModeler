@@ -38,7 +38,7 @@ var SamplePage = React.createClass({
                     </div>
                     <div className="col-lg-6">
                       <JobDisplay
-                        title={"Most Recent Jobs"}
+                        title={"Recently Completed Jobs"}
                         jobs={this.props.jobhistory}
                         criteria={function(d){return d.isFinished;}}
                         length={5}
