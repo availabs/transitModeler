@@ -6,7 +6,7 @@ var DataTable = React.createClass({
  	getInitialState:function(){
  		return {
  			currentPage : 0,
-            pageLength : 15,
+            pageLength :(this.props.length)?this.props.length:15,
  		};
  	},
 

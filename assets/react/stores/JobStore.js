@@ -14,13 +14,18 @@ var assign = require('object-assign');
 
 var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
+var numActive = null;
 var SailsWebApi = require('../utils/sailsWebApi');
 
 var _history = [],
     _allJobs = [],
     _loading = false;
 
-
+var getHistory = function(){
+  SailsWebApi.read({type:'job',options:{
+    limit:300,sort:"updatedAt DESC"
+  }});
+};
 
 function _addJobs(rawData){
 
@@ -67,9 +72,18 @@ var JobStore = assign({}, EventEmitter.prototype, {
   },
 
   getActive:function(){
-    return _allJobs.filter(function(d){
+    var active =  _allJobs.filter(function(d){
       return !d.isFinished;
     });
+    if(numActive === null){
+      getHistory();
+      numActive = 0;
+    }
+    else if(numActive !== active.length){
+      getHistory();
+      numActive = active.length;
+    }
+    return active;
   }
 
 
@@ -83,6 +97,7 @@ JobStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_ACTIVE_JOBS:
         //console.log("JOBSTORE / RECEIVE_JOBS ",action.data)
       _addJobs(action.data);
+      getHistory();
       JobStore.emitChange();
     break;
     case ActionTypes.RECEIVE_JOBS:
