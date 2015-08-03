@@ -16,7 +16,7 @@ var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi');
 
-var _history = {},
+var _history = [],
     _allJobs = [],
     _loading = false;
 
@@ -32,9 +32,7 @@ function _addJobs(rawData){
 }
 
 function _addHistory(rawData){
-  rawData.forEach(function(ds){
-    _history[ds.id] = ds;
-  });
+    _history = rawData;
 }
 
 
@@ -59,7 +57,7 @@ var JobStore = assign({}, EventEmitter.prototype, {
   },
 
   getAll: function() {
-    return _allJobs;
+    return _history;
   },
 
   getType: function(type) {

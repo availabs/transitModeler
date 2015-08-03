@@ -173,35 +173,35 @@ module.exports = {
   loadSurvey:function(marketareaId){
       d3.json('/datasources/survey/'+marketareaId,function(data){
         ServerActionCreators.receiveDataWithId('survey',marketareaId,data)
-      })
+      });
   },
 
   loadFarebox:function(marketareaId){
       d3.json('/datasources/farebox/'+marketareaId,function(data){
         ServerActionCreators.receiveDataWithId('farebox',marketareaId,data)
-      })
+      });
   },
 
   getRawCensus: function(marketareaId,year){
     io.socket.get('/datasources/acs/'+marketareaId+'/'+year,function(data){
       ServerActionCreators.receiveRawCensus(marketareaId,year,data.census);
-    })
+    });
   },
 
   getCtpp: function(marketareaId){
     io.socket.get('/datasources/ctpp/'+marketareaId,function(data){
       //console.log('sailsWebApi / getCtpp',marketareaId,data)
       ServerActionCreators.receiveCtpp(marketareaId,data);
-    })
+    });
   },
 
   getGtfsRoutes: function(tablename,gtfs_id,cb){
     io.socket.get( '/dataSources/gtfs/routes/'+tablename,function(data){
-      ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data)
+      ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data);
       if(cb){
-        cb( gtfs_id, data)
+        cb( gtfs_id, data);
       }
-    })
+    });
   },
 
   //----------------------------------------------
@@ -211,7 +211,7 @@ module.exports = {
     d3.json('/triptable')
       .post(JSON.stringify({triptable_settings:settings}),function(err,data){
         ServerActionCreators.receiveData('triptable_list',data)
-      })
+      });
 
   },
 
@@ -220,21 +220,21 @@ module.exports = {
       .post(JSON.stringify({model:data}),function(err,data){
         if(err){  console.log('SAILS WEB API / runModel / error',err);  }
         console.log('SAILS WEB API / runModel',data);
-      })
+      });
   },
 
   getModelRuns:function(){
     d3.json('/triptable/list',function(err,data){
       ServerActionCreators.receiveData('model_run',data);
-    })
+    });
 
   },
 
   getModelRun:function(id){
     d3.json('/triptable/'+id+'/modelrun',function(err,data){
       //console.log('sailsWebApi getModelRun',id,'error',err,'data',data)
-      ServerActionCreators.receiveDataWithId('full_model_run',id,data)
-    })
+      ServerActionCreators.receiveDataWithId('full_model_run',id,data);
+    });
   },
   //---------------------------------------------------
   // Datasources Editing
@@ -244,16 +244,17 @@ module.exports = {
     .post(JSON.stringify(newData),function(err,data){
        if(err){  console.log('SAILS WEB API / loadAcs / error',err);  }
        console.log('SAILS WEB API  / loadACS',data);
-    })
+    });
   },
 
   //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
   create: function(type,data,cb){
+
     d3.json('/'+type).post(JSON.stringify(data),function(err,resData){
       if(err){
-        console.log('Create Err',err)
+        console.log('Create Err',err);
       }
       console.log('create',type,resData);
       //add new user back to store through
@@ -262,11 +263,24 @@ module.exports = {
     });
   },
 
-  read: function(type) {
+  read: function(model) {
+    var url = '',type='';
+    if(model.options){
+      url += '/' + model.type+'?';
+      url += Object.keys(model.options).map(function(d){
+        return d+'='+model.options[d];
+      }).reduce(function(p,c){return p+'&'+c;});
+      type = model.type;
+    }
+    else{
+      type = model;
+      url += '/' + model;
+    }
+    console.log(url)
 
     var where = {};
-    d3.json('/'+type,function(err,data){
-      //console.log('utils/sailsWebApi/getUsers',data);
+    d3.json(url,function(err,data){
+      console.log('utils/sailsWebApi/getUsers',data);
       ServerActionCreators.receiveData(type,data);
     });
   },
@@ -290,4 +304,4 @@ module.exports = {
     });
   }
 
-}
+};
