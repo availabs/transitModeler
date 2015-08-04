@@ -1,7 +1,8 @@
-/*globals console*/
+/*globals console,require,module,d3*/
 'use strict';
 
 var React = require('react'),
+Router = require('react-router'),
     Link = require('react-router').Link,
     Navigation = require('react-router').Navigation,
     // -- Utils
@@ -34,8 +35,17 @@ var transfer = function(src,dest,id){
 
 var MarketAreaNew = React.createClass({
 
-    mixins: [Navigation],
+    mixins: [Router.State],
+    statics: {
 
+        willTransitionTo: function (transition, params) {
+
+            if(params.marketareaID){
+               MarketAreaActionsCreator.setCurrentMarketArea(params.marketareaID);
+            }
+        }
+
+    },
     getInitialState: function(){
         var pma = this.props.marketarea;
         return {
@@ -53,7 +63,7 @@ var MarketAreaNew = React.createClass({
             stopsGeo:emptyGeojson,
             routeList:(this.props.routes)?this.props.routes:[],
             countyFilter:(pma.counties)? pma.counties.slice(0):[],
-            tractsFilter:(pma.routes)? pma.zones.slice(0):[],
+            tractsFilter:(pma.zones)? pma.zones.slice(0):[],
             outerTractsFilter:[],
             stateTracts:(this.props.stateTracts) ? JSON.parse(JSON.stringify(this.props.stateTracts)):[],
             message:null,
@@ -71,8 +81,16 @@ var MarketAreaNew = React.createClass({
         }else{
             this.setStopsGeo(this.props.stopsGeo);
         }
-
       }
+      MarketAreaStore.addChangeListener(this._onChange);
+    },
+    _onChange : function(){
+      var ma = MarketAreaStore.getCurrentMarketArea();
+      var sma = this.state.marketarea;
+      Object.keys(ma).forEach(function(d){
+        sma[d] = ma[d];
+      });
+      this.setState({marketarea:sma});
     },
     setRouteList : function(id,data){
       this.setState({routeList:data});
@@ -81,14 +99,28 @@ var MarketAreaNew = React.createClass({
       if(nextProps.routes && (this.props.routes !== nextProps.routes)){
         this.setState({routeList:nextProps.routes});
       }
-      if(nextProps.stopsGeo && (nextProps.stopsGeo !== this.props.stopsGeo) ){
-        this.setStopsGeo(nextProps.stopsGeo);
+      if(nextProps.stopsGeo && nextProps.stopsGeo !== this.props.stopsGeo){
+          this.setState({stopsGeo:nextProps.stopsGeo});
       }
+      if(this.state.outerTractsFilter.length ===0){
+          this.initTracts();
+      }
+
       if(nextProps.routesGeo && (nextProps.routesGeo !== this.props.routesGeo) ){
         this.setRoutesGeo(nextProps.routesGeo);
       }
-      if(nextProps.stateTracts && nextProps.stateTracts !== this.state.stateTracts){
+      if(nextProps.stateTracts && nextProps.stateTracts !== this.state.stateTracts && nextProps.stateTracts.features.length > 0){
         this.setState({stateTracts:nextProps.stateTracts});
+      }
+      if(nextProps.marketarea && nextProps.marketarea !== this.props.marketarea && nextProps.marketarea.id > 0){
+        var nma = this.state.marketarea;
+        Object.keys(nextProps.marketarea).forEach(function(d){
+          nma[d] = nextProps.marketarea[d];
+        });
+        var filter = nma.zones.slice(0);
+        var cfilter = nma.counties.slice(0);
+        console.log("Updating Market Area",filter);
+        this.setState({marketarea:nma,tractsFilter:filter,countyFilter:cfilter});
       }
     },
     initTracts : function(){
@@ -126,7 +158,8 @@ var MarketAreaNew = React.createClass({
       return filterTracts;
     },
     setStopsGeo:function(data){
-        if(data && data.features.length > 0){
+        if(data && data.features.length > 0 && this.props.stateCounties && this.props.stateCounties.features.length > 0
+              && this.props.stateTracts && this.props.stateTracts.length > 0){
             console.log('Processing counties',new Date());
             var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
             console.log('Finished processing counties',new Date());
@@ -149,9 +182,6 @@ var MarketAreaNew = React.createClass({
             console.log('remove last layer');
             this.setState({
               stopsGeo:data,
-              countyFilter:[],
-              tractsFilter:[],
-              outerTractsFilter:[],
               });
         }
     },
@@ -317,8 +347,7 @@ var MarketAreaNew = React.createClass({
         });
     },
     render: function() {
-      if(!this.props.marketarea.id)
-        this.transitionTo('dashboard');
+        console.log("MarketAreaEdit",this.props);
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
@@ -350,7 +379,6 @@ var MarketAreaNew = React.createClass({
               }
           });
         }
-
         return (
         	<div className="content container">
             	<h2 className="page-title">

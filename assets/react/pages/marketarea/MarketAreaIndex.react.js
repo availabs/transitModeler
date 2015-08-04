@@ -1,3 +1,4 @@
+/*globals require,console,module*/
 'use strict';
 
 var React = require('react'),
@@ -37,14 +38,14 @@ var MarketAreaIndex = React.createClass({
 
     getInitialState: function(){
 
-        var state = {}
-        state.activeComponent = 'farebox';
+        var state = {};
+        state.activeComponent = 'survey';
         return state;
 
     },
 
     _setActiveComponent : function(e){
-        this.setState({activeComponent:e.target.getAttribute('value')})
+        this.setState({activeComponent:e.target.getAttribute('value')});
     },
 
     _renderActiveComponent : function(){

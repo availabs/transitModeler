@@ -12,8 +12,12 @@ var SurveyFilters = React.createClass({
         return scope.props.data[d];
       })
       .map(function(d){
+        var label;
+        if(d.contains('_weight')){
+          label = d.substring(0,d.indexOf('_weight'));
+        }
           return (<tr>
-            <td>{d}</td>
+            <td>{label}</td>
            <td>{scope.props.data[d]}</td>
            <td><button className='.btn .btn-danger .btn-sm' onClick={scope.props.buttonclick.bind(null,d)}>clear</button></td>
            </tr>);
