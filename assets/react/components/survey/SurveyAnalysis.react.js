@@ -90,7 +90,7 @@ var SurveyAnalysis = React.createClass({
             filterGeo = {type:'FeatureCollection',features: scope.state.surveyGeo.features.map(function(d){ return d; })};
 
         for(var key in this.state.filters){
-          if(key){ // check if the key is valid
+          if(scope.state.filters[key]){ // check if the key is valid filter
             filterGeo.features =  filterGeo.features.filter(function(d){
                 //console.log(key,d.properties[key], scope.state.filters[key], scope.state.filters[key] === d.properties[key])
                 return d.properties[key] === scope.state.filters[key];
