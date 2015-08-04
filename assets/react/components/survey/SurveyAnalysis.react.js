@@ -26,7 +26,8 @@ var SurveyAnalysis = React.createClass({
         return {
             surveyGeo : SurveyStore.getGeo(this.props.marketarea.id),
             surveyData : SurveyStore.getData(this.props.marketarea.id),
-            filters:{}
+            filters:{},
+            type:'unweighted',
         };
     },
 
@@ -102,19 +103,40 @@ var SurveyAnalysis = React.createClass({
 
 
     },
+    setType : function(){
+      if(this.state.type === 'unweighted')
+        this.setState({type:'weighted'});
+      else{
+        this.setState({type:'unweighted'});
+      }
+    },
+    optionButtons : function(){
+        //set the active button based on the current selected direction
+        var unWeightedClass = "btn btn-default" + (this.state.type == 'unweighted' ? ' active' : ''),
+            weightedClass = "btn btn-default" + (this.state.type == 'weighted' ? ' active' : '');
+
+        return (
+            <div className="btn-group" >
+                <a type="button" className={unWeightedClass} value="from_tract" onClick={ this.setType }>unweighted</a>
+                <a type="button" className={weightedClass} value="to_tract" onClick={ this.setType }>weighted</a>
+            </div>
+        );
+
+    },
     _renderSurveys:function(){
 
         var scope = this,
             discreteCats = ['busroute','captivity','accessmode','vehicleavail','tickettype','tripfreq','triptenure','qualservchg','gender','age','race'];
-
+        var suffix = (this.state.type === 'weighted')?'_weight':'';
         return discreteCats.map(function(cat){
+            var groupName = cat + suffix;
             return (
                 <div className='col-md-4'>
                 <h4>{cat}</h4>
                 <SurveyGraph
                     height="250"
                     surveyData={scope.state.surveyData}
-                    groupName={cat}
+                    groupName={groupName}
                     filters = {scope.state.filters}
                     filterFunction={scope._addFilter}
                     keyMap={SurveyKeys[cat]} />
@@ -137,10 +159,12 @@ var SurveyAnalysis = React.createClass({
                                 stops={this.props.stopsGeo}
                                 routes={this.props.routesGeo}
                                 tracts ={this.props.tracts}
-                                survey= {this._filterGeo()} />
+                                survey= {this._filterGeo()}
+                                type={this.state.type} />
                         </div>
                         <br/>
                         <section className="widget">
+                          {this.optionButtons()}
                           <SurveyFilters
                             data={this.state.filters}
                             buttonclick={this.removeFilter}      />
@@ -150,12 +174,12 @@ var SurveyAnalysis = React.createClass({
                     <div className="col-lg-7">
                         <div className='row'>
                             <section className="widget" style={{overflow:'auto'}}>
-                            Filter:{JSON.stringify(this.state.filters)}
+
                             {this._renderSurveys()}
 
                             </section>
                         </div>
-
+                        Filter:{JSON.stringify(this.state.filters)}
                     </div>
                 </div>
         	</div>

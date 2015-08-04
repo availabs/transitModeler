@@ -7,12 +7,11 @@ crossTrips = {
 	groups:{},
 	initialized:false,
 	loading:false,
-	
-	init:function(data,id){
 
+	init:function(data,id){
 		crossTrips.trips = crossfilter(data);
 		crossTrips.all = crossTrips.trips.groupAll();
-		
+
 		var discreteCats = [
 			'busroute',
 			'captivity',
@@ -28,13 +27,14 @@ crossTrips = {
 		];
 
 		discreteCats.forEach(function(cat){
-			crossTrips.dimensions[cat] = crossTrips.trips.dimension(function(d){ return d[cat]}),
-			crossTrips.groups[cat] = crossTrips.dimensions[cat].group().reduceCount()	
-		})
+			crossTrips.dimensions[cat] = crossTrips.trips.dimension(function(d){ return d[cat];});
+			crossTrips.groups[cat] = crossTrips.dimensions[cat].group().reduceCount();
+			crossTrips.groups[cat+'_weight'] = crossTrips.dimensions[cat].group().reduceSum(function(d){return d.weight;});
+		});
 
 		crossTrips.initialized = true;
 	}
 
-}
+};
 
 module.exports = crossTrips;

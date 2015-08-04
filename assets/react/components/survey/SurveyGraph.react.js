@@ -1,3 +1,4 @@
+/*globals console,module,require*/
 'use strict';
 
 var React = require('react'),
@@ -16,7 +17,7 @@ var SurveyGraph = React.createClass({
     getDefaultProps:function(){
       return {
           height:400
-      }
+      };
     },
 
 
@@ -39,18 +40,18 @@ var SurveyGraph = React.createClass({
                     key:d.key,
                     value:d.value,
 
-                }
-            })
+                };
+            });
             //console.log('busroute group',data)
             if(this.props.keyMap){
                 data.values = data.values.map(function(d){
                     d.key = scope.props.keyMap[d.key];
                     return d;
-                })
+                });
             }
             return [data];
         }
-        return [{key:'none',values:[]}]
+        return [{key:'none',values:[]}];
 
 	},
 
@@ -60,17 +61,17 @@ var SurveyGraph = React.createClass({
 
             nv.addGraph(function(){
                 var chart = nv.models.discreteBarChart()
-                    .x(function(d) { return d.key })    //Specify the data accessors.
-                    .y(function(d) { return d.value })
+                    .x(function(d) { return d.key; })    //Specify the data accessors.
+                    .y(function(d) { return d.value; })
                     .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
                     .tooltips(true)        //Don't show tooltips
                     //.showValues(false)       //...instead, show the bar value right on top of each bar.
-                    .transitionDuration(350)
+                    .transitionDuration(350);
 
                     chart.discretebar.dispatch.on("elementClick", function(e) {
                         console.log(e);
                         var filter = {};
-                        filter[scope.props.groupName] = e.point.key
+                        filter[scope.props.groupName] = e.point.key;
                         console.log(filter,e);
                         scope.props.filterFunction(filter);
                     });
@@ -88,7 +89,7 @@ var SurveyGraph = React.createClass({
                 // }
 
                 nv.utils.windowResize(chart.update);
-            })
+            });
 
         }
     },
@@ -110,7 +111,7 @@ var SurveyGraph = React.createClass({
         			<svg style={svgStyle}/>
         		</div>
             </div>
-    	)
+    	);
     }
 });
 
