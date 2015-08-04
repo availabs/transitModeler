@@ -1,10 +1,10 @@
 'use strict';
 
 var React = require('react'),
-   
+
     // -- Stores
     d3 = require('d3'),
-    
+
     // -- Utils
     nv = require('../../utils/dependencies/nvd3.js'),
     DataTable = require('../utils/DataTable.react');
@@ -12,23 +12,23 @@ var React = require('react'),
 
 
 var SurveyGraph = React.createClass({
-	
+
     getDefaultProps:function(){
       return {
           height:400
       }
     },
 
-    
-    
+
+
     processData:function() {
-		
-        var scope = this;  
-        
+
+        var scope = this;
+
         if(scope.props.surveyData.initialized){
-            
+
             var data = {key: scope.props.groupName};
-            
+
             for(var key in scope.props.filters){
                 scope.props.surveyData.dimensions[key].filterAll();
                 scope.props.surveyData.dimensions[key].filter(scope.props.filters[key]);
@@ -38,7 +38,7 @@ var SurveyGraph = React.createClass({
                 return {
                     key:d.key,
                     value:d.value,
-                    
+
                 }
             })
             //console.log('busroute group',data)
@@ -48,16 +48,16 @@ var SurveyGraph = React.createClass({
                     return d;
                 })
             }
-            return [data];    
+            return [data];
         }
         return [{key:'none',values:[]}]
-		
+
 	},
 
     _renderGraph:function(){
         var scope = this;
         if(scope.props.surveyData.initialized){
-        
+
             nv.addGraph(function(){
                 var chart = nv.models.discreteBarChart()
                     .x(function(d) { return d.key })    //Specify the data accessors.
@@ -66,7 +66,7 @@ var SurveyGraph = React.createClass({
                     .tooltips(true)        //Don't show tooltips
                     //.showValues(false)       //...instead, show the bar value right on top of each bar.
                     .transitionDuration(350)
-                    
+
                     chart.discretebar.dispatch.on("elementClick", function(e) {
                         console.log(e);
                         var filter = {};
@@ -86,22 +86,22 @@ var SurveyGraph = React.createClass({
                 // if(scope.processData()[0].values.length > 10) {
                 //  d3.selectAll('.nv-x text').attr('transform','translate(15,20)rotate(45)');
                 // }
-            
+
                 nv.utils.windowResize(chart.update);
             })
-        
+
         }
     },
 
     render:function(){
 
     	var scope = this;
-        
+
         var svgStyle = {
               height: this.props.height+'px',
               width: '100%'
         };
-        
+
         this._renderGraph();
 
     	return(
