@@ -1,4 +1,4 @@
-/*globals require,module*/
+/*globals require,module,console*/
 'use strict'
 
 var React = require('react');
@@ -13,8 +13,11 @@ var SurveyFilters = React.createClass({
       })
       .map(function(d){
         var label;
-        if(d.contains('_weight')){
+        if(d.indexOf('_weight') >=0){
           label = d.substring(0,d.indexOf('_weight'));
+          console.log(label,d.indexOf('_weight'));
+        }else{
+          label = d;
         }
           return (<tr>
             <td>{label}</td>

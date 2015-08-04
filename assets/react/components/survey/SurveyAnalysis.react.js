@@ -9,13 +9,14 @@ var React = require('react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
-
+    GraphDisplay           = require('./GraphDisplay.react.js'),
     // -- Stores
     SurveyStore = require('../../stores/SurveyStore'),
     SurveyGraph = require('./SurveyGraph.react'),
     SurveyFilters = require('./SurveyFilters.react'),
 
     // -- utils
+
     SurveyKeys = require('../../utils/data/surveyKeys');
 
 
@@ -34,17 +35,20 @@ var SurveyAnalysis = React.createClass({
     getInitialState: function(){
         return this._getStateFromStore();
     },
-
+    filterCheck : function(f){
+      return (f.indexOf('_weight') < 0) ? f:f.substring(0,f.indexOf('_weight'));
+    },
     _addFilter:function(filter){
         console.log('add filter',filter);
         var newState = this.state;
         for(var key in filter){
-
-            if(newState.filters[key] === filter[key]){
+            var value = filter[key];
+            key = this.filterCheck(key);
+            if(newState.filters[key] === value){
                 newState.filters[key] = null;
             }
             else{
-                newState.filters[key] = filter[key];
+                newState.filters[key] = value;
             }
 
         }
@@ -53,6 +57,7 @@ var SurveyAnalysis = React.createClass({
     removeFilter : function(d){
       var newState = this.state;
       if(d){
+        d = this.filterCheck(d);
         newState.filters[d] = null;
       }else{
         Object.keys(newState.filters).forEach(function(d){
@@ -100,8 +105,6 @@ var SurveyAnalysis = React.createClass({
         }
         //console.log('filterGeo',filterGeo.features.length)
         return filterGeo;
-
-
     },
     setType : function(){
       if(this.state.type === 'unweighted')
@@ -130,18 +133,22 @@ var SurveyAnalysis = React.createClass({
         var suffix = (this.state.type === 'weighted')?'_weight':'';
         return discreteCats.map(function(cat){
             var groupName = cat + suffix;
-            return (
-                <div className='col-md-4'>
-                <h4>{cat}</h4>
-                <SurveyGraph
-                    height="250"
-                    surveyData={scope.state.surveyData}
-                    groupName={groupName}
-                    filters = {scope.state.filters}
-                    filterFunction={scope._addFilter}
-                    keyMap={SurveyKeys[cat]} />
-                </div>
-            );
+            var obj ={
+              height:"250",
+              surveyData:scope.state.surveyData,
+              groupName:groupName,
+              filters:scope.state.filters,
+              filterFunction:scope._addFilter,
+              keyMap:SurveyKeys[cat],
+
+            };
+
+              return function(){
+                return (
+                React.createElement('h4',null,cat),
+                React.createElement(SurveyGraph,obj)
+              );
+            };
         });
     },
 
@@ -154,7 +161,7 @@ var SurveyAnalysis = React.createClass({
 
                 <div className="row">
                 	<div className="col-lg-5" >
-                        <div data-spy="affix" data-offset-top="240">
+                        <div >
                             <MarketAreaMap
                                 stops={this.props.stopsGeo}
                                 routes={this.props.routesGeo}
@@ -163,19 +170,22 @@ var SurveyAnalysis = React.createClass({
                                 type={this.state.type} />
                         </div>
                         <br/>
-                        <section className="widget">
-                          {this.optionButtons()}
-                          <SurveyFilters
-                            data={this.state.filters}
-                            buttonclick={this.removeFilter}      />
-                        </section>
+
+                          <section className="widget">
+                            {this.optionButtons()}
+                            <SurveyFilters
+                              data={this.state.filters}
+                              buttonclick={this.removeFilter}      />
+                          </section>
+
 
                     </div>
                     <div className="col-lg-7">
                         <div className='row'>
                             <section className="widget" style={{overflow:'auto'}}>
-
-                            {this._renderSurveys()}
+                            <GraphDisplay
+                            items={this._renderSurveys()}
+                            />
 
                             </section>
                         </div>

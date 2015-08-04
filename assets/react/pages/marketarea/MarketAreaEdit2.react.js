@@ -105,7 +105,6 @@ var MarketAreaNew = React.createClass({
       if(this.state.outerTractsFilter.length ===0){
           this.initTracts();
       }
-
       if(nextProps.routesGeo && (nextProps.routesGeo !== this.props.routesGeo) ){
         this.setRoutesGeo(nextProps.routesGeo);
       }
