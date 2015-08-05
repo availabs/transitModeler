@@ -148,7 +148,7 @@ var SurveyAnalysis = React.createClass({
                 React.createElement(SurveyGraph,obj)
               );
             };
-            retval.obj = obj;
+            retval.settings = obj;
             return retval;
         });
     },

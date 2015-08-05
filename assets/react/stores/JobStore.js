@@ -23,7 +23,7 @@ var _history = [],
 
 var getHistory = function(){
   SailsWebApi.read({type:'job',options:{
-    limit:300,sort:"updatedAt DESC"
+    limit:100,sort:"updatedAt DESC"
   }});
 };
 
