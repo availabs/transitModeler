@@ -140,15 +140,16 @@ var SurveyAnalysis = React.createClass({
               filters:scope.state.filters,
               filterFunction:scope._addFilter,
               keyMap:SurveyKeys[cat],
-
+              label:cat
             };
 
-              return function(){
+            var retval =  function(){
                 return (
-                React.createElement('h4',null,cat),
                 React.createElement(SurveyGraph,obj)
               );
             };
+            retval.obj = obj;
+            return retval;
         });
     },
 
@@ -185,6 +186,7 @@ var SurveyAnalysis = React.createClass({
                             <section className="widget" style={{overflow:'auto'}}>
                             <GraphDisplay
                             items={this._renderSurveys()}
+                            height={"500"}
                             />
 
                             </section>

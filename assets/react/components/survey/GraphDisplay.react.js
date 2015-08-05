@@ -9,13 +9,17 @@ var SurveyFilters = React.createClass({
     return {
       focus:null,
       index:null,
+      oldheight:null,
     };
   },
   clickAction : function(ix){
     if(this.state.index === ix){
+      this.props.items[ix].obj.height = this.state.oldheight;
       this.setState(this.getInitialState());
     }else{
-      this.setState({focus:true,index:ix});
+      var h = this.props.items[ix].obj.height;
+      this.props.items[ix].obj.height = this.props.height;
+      this.setState({focus:true,index:ix,oldheight:h});
     }
   },
   render : function(){
@@ -24,7 +28,10 @@ var SurveyFilters = React.createClass({
     if(!this.state.focus){
       elements = this.props.items.map(function(d,i){
         return (
-        <div className={"col-md-4"} onClick={scope.clickAction.bind(null,i)}>{d()}</div>
+        <div className={"col-md-4"} onClick={scope.clickAction.bind(null,i)}>
+          <h4><span>{d.obj.label}</span></h4>
+          {d()}
+        </div>
         );
       });
     }else{
@@ -32,6 +39,7 @@ var SurveyFilters = React.createClass({
       elements = (
         <div className=".col-lg-12"
               onClick={scope.clickAction.bind(null,ix)}>
+              <h4><span>{this.props.items[ix].obj.label}</span></h4>
               {this.props.items[ix]()}
         </div>
           );
