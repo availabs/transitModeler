@@ -708,7 +708,12 @@ var MarketAreaNew = React.createClass({
         var route = this.getTrips();
         var routingGeo = this.state.routingGeo;
         var gtfsName = this.props.datasources[this.state.currentGtfs].tableName;
-
+        var colors = this.props.marketarea.routecolors;
+        routesGeo.features.forEach(function(d){
+           if(colors && colors[d.properties.short_name]){
+             d.properties.color = colors[d.properties.short_name];
+           }
+        });
         return (
         	<div className="content container">
             	<h2 className="page-title">

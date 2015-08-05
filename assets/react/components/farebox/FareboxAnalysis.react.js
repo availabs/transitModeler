@@ -1,28 +1,28 @@
 'use strict';
 
 var React = require('react'),
-    
+
     // -- Components
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
     FareboxGraph = require('./FareboxGraph.react'),
     DataTable = require('../utils/DataTable.react'),
     CalendarGraph = require('../utils/CalendarGraph.react'),
-    
+
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
-    
+
     // -- Stores
     FareboxStore = require('../../stores/FareboxStore');
     //TripTableStore = require('../../stores/TripTableStore'),
 
     // -- Comp Globals
-    
+
 
 
 var FareboxAnalysis = React.createClass({
 
 
-    
+
     _getStateFromStore:function(){
         return {
             farebox : FareboxStore.getFarebox(this.props.marketarea.id),
@@ -46,30 +46,30 @@ var FareboxAnalysis = React.createClass({
         this.setState(this._getStateFromStore())
     },
     _processData:function(peak) {
-        
-        var scope = this;  
-        
+
+        var scope = this;
+
         if(this.state.farebox.initialized){
             console.log('FareboxGraph',scope.state.farebox)
 
             var data = scope.state.farebox.groups['line'].top(Infinity).map(function(line){
-                
+
                 if(peak){
                     var lower = peak === 'am' ? 6 : 16,
                         upper = peak === 'am' ? 10 : 20;
 
                     scope.state.farebox.dimensions['run_time'].filter(function(d,i){
-                       
+
                         return d.getHours() > lower && d.getHours() < upper
                     });
                 }else{
-                   scope.state.farebox.dimensions['run_time'].filter(null) 
+                   scope.state.farebox.dimensions['run_time'].filter(null)
                 }
                 scope.state.farebox.dimensions['line'].filter(line.key);
-                
+
                 var daySum = scope.state.farebox.groups['run_date'].top(Infinity).reduce(function(a,b){
                     return {value:(a.value + b.value)}
-                
+
                 })
                 //console.log('daysum',scope.state.farebox.groups['run_date'].top(Infinity))
                 return {key:line.key,value:(daySum.value/scope.state.farebox.groups['run_date'].top(Infinity).length)}
@@ -78,9 +78,9 @@ var FareboxAnalysis = React.createClass({
             return [{key:'Time Peak',values:data}]
         }
         return [{key:'none',values:[]}]
-        
+
     },
-        
+
     componentWillReceiveProps:function(nextProps){
         //console.log(nextProps.marketarea.id,this.props.marketarea.id)
         if(nextProps.marketarea && nextProps.marketarea.id !== this.props.marketarea.id){
@@ -95,7 +95,7 @@ var FareboxAnalysis = React.createClass({
         var rows= <span />;
         if(this.state.farebox.initialized){
              var yearsArray = {};
-        
+
             //console.log('Day data',this.props.agencyOverviewDay[type])
              this.state.farebox.groups['run_year'].top(Infinity).forEach(function(year){
                 console.log()
@@ -113,7 +113,7 @@ var FareboxAnalysis = React.createClass({
 
                 yearsArray[currYear] = yearData;
 
-                
+
             })
             console.log('yearData',yearsArray)
             rows = Object.keys(yearsArray).map(function(key){
@@ -121,13 +121,13 @@ var FareboxAnalysis = React.createClass({
                 var graphId = 'cg_'+key;
                 var year = key;
                 return (
-                   
+
                     <CalendarGraph year={parseInt(year)} data={ yearsArray[key] }/>
-                            
+
                 )
-                
+
             })
-            
+
         }
         return rows;
 
@@ -142,7 +142,7 @@ var FareboxAnalysis = React.createClass({
         })
 
         return Object.keys(FareZones).map(function(key){
-            
+
             var secondRow =  FareZones[key].map(function(d){
                 return <td>{d}</td>
             });
@@ -159,11 +159,11 @@ var FareboxAnalysis = React.createClass({
             )
         });
 
-        
+
     },
 
     render: function() {
-       
+
         //console.log(this.state.farebox,this.state.farebox.all)
         var scope = this,
             amPeak = this._processData('am'),
@@ -183,17 +183,22 @@ var FareboxAnalysis = React.createClass({
         ];
 
         var calendars = this._renderCalendars();
-
+        var colors = this.props.marketarea.routecolors;
+        this.props.routesGeo.features.forEach(function(d){
+           if(colors && colors[d.properties.short_name]){
+             d.properties.color = colors[d.properties.short_name];
+           }
+        });
         return (
     	   <div>
-            	
-                
+
+
                 <div className="row">
                 	<div className="col-lg-5">
-                    
-                        <MarketAreaMap 
-                            stops={this.props.stopsGeo} 
-                            routes={this.props.routesGeo} 
+
+                        <MarketAreaMap
+                            stops={this.props.stopsGeo}
+                            routes={this.props.routesGeo}
                             tracts ={this.props.tracts}
                             stopFareZones={true}/>
                          <section className="widget">
@@ -201,11 +206,11 @@ var FareboxAnalysis = React.createClass({
                            {this._renderFareZones()}
 
                         </section>
-                    
+
                     </div>
                     <div className="col-lg-7">
                         <div className='row'>
-                           
+
                             <section className="widget" style={{overflow:'auto'}}>
                                 <div className="col-lg-4">
                                     <h4>AM Peak (6am - 10am)</h4>
@@ -227,7 +232,7 @@ var FareboxAnalysis = React.createClass({
                                     {calendars}
                                 </div>
                             </section>
-                        </div> 
+                        </div>
                     </div>
                 </div>
         	</div>

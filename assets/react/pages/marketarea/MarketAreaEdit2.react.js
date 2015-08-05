@@ -89,7 +89,7 @@ var MarketAreaNew = React.createClass({
       var ma = MarketAreaStore.getCurrentMarketArea();
       var sma = this.state.marketarea;
       Object.keys(ma).forEach(function(d){
-        sma[d] = ma[d];
+        sma[d] = (ma[d])?ma[d]:sma[d];
       });
       this.setState({marketarea:sma});
     },
@@ -190,19 +190,21 @@ var MarketAreaNew = React.createClass({
     setRoutesGeo:function(data){
         console.log('setRoutesGeo',data);
         var colors = this.state.marketarea.routecolors;
+        if(!colors)
+          colors = {};
         data.features = data.features.map(function(d,i){
-            if(colors && colors[d.properties.route_id]){
-              d.properties.color = colors[d.properties.route_id];
+            if(colors && colors[d.properties.short_name]){
+              d.properties.color = colors[d.properties.short_name];
             }
             if(!d.properties.color){
               console.log(colors);
                 d.properties.color = d3.scale.category20().range()[i%20];
-                colors[d.properties.route_id] = d.properties.color;
+                colors[d.properties.short_name] = d.properties.color;
             }
             return d;
         });
-
-        this.setState({routesGeo:data});
+        this.state.marketarea.routecolors = colors;
+        this.setState({routesGeo:data,marketarea:this.state.marketarea});
     },
 
     removeRoute:function(route){
@@ -236,7 +238,7 @@ var MarketAreaNew = React.createClass({
 
 
     renderSelectors : function(){
-
+        console.log(this.state.marketarea.routecolors);
             return (
                 <div>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />

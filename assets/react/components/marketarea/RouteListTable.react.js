@@ -1,3 +1,4 @@
+/*globals console,require,module*/
 'use strict';
 
 var React = require('react');
@@ -21,9 +22,11 @@ var RouteListTable= React.createClass({
       var scope = this,
           routes = this.props.marketarea ? this.props.marketarea.routes : [],
           rows = routes.map(function(route,i){
+            var colors = scope.props.marketarea.routecolors;
+            var color = (colors[route])?colors[route]:'#000';
             var divStyle = {
                 "width":'10px',
-                "backgroundColor" : d3.scale.category20().range()[i%20]
+                "backgroundColor" : color,
             };
             var colorClass='route_color_'+route;
             return (

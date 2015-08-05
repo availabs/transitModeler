@@ -23,6 +23,7 @@
   "dependencies": {
     "bootstrap": "~3.3.1",
     "leaflet": "~0.7.3",
-    "select2": "~3.5.2"
+    "select2": "~3.5.2",
+    "mjolnic-bootstrap-colorpicker": "~2.2.0"
   }
 }
