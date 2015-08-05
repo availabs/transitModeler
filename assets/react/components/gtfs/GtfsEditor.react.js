@@ -121,7 +121,6 @@ var MarketAreaNew = React.createClass({
           TripObj:undefined,
           edited:false,
           currentRoute:id,
-          tripChange:false,
           graph:new Graph(),
           editInfo:{}
           });//reset the trip
@@ -136,7 +135,6 @@ var MarketAreaNew = React.createClass({
                       currentTrip: null,
                       TripObj:undefined,
                       edited:false,
-                      tripChange:false,
                       graph:new Graph(),
                       editInfo:{},
                     });
@@ -227,7 +225,7 @@ var MarketAreaNew = React.createClass({
         var stop = this._getStop(tempStop.getId());
         stop.setPoint(tempStop.getPoint());
         stop.setEdited();
-        this.setState({edited:true,tripChange:false});
+        this.setState({edited:true});
     },
     _buildSave:function(){
       console.log('attempted save');
@@ -295,7 +293,7 @@ var MarketAreaNew = React.createClass({
             else
                 graph.updateEdge(stops[i],stops[i+1],newdata);
         }
-        this.setState({lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
+        this.setState({routingGeo:graph.toFeatureCollection(),lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
     },
     cleanEdits : function(){
       var partialState = {};
@@ -341,7 +339,6 @@ var MarketAreaNew = React.createClass({
             });
             this.setState({schedules:nextProps.schedules,routeColl:routecoll});
         }
-        //console.log(nextProps.routingGeo);
         if(nextProps.routingGeo && Object.keys(nextProps.routingGeo).length > 0 &&
            nextProps.routingGeo.legs &&(nextProps.routingGeo.legs.length > 0) &&
            nextProps.routingGeo !== this.props.routingGeo){
@@ -423,7 +420,6 @@ var MarketAreaNew = React.createClass({
         this.setState({TripObj:trip,
           edited:true,
           graph:this.state.graph,
-          tripChange:false,
           });
 
 
@@ -455,7 +451,6 @@ var MarketAreaNew = React.createClass({
         this.setState({TripObj:trip,
             graph:graph,stopColl:this.state.stopColl,
             edited:true,
-            tripChange:false,
             }); //so set it
         this.state.tracker.addEvent('i',{id:id,position:i+1,data:nStop});
         return id;
@@ -546,12 +541,12 @@ var MarketAreaNew = React.createClass({
     editTripAction : function(trip){
         var info = this.state.editInfo;
         info.trip = trip;
-        this.setState({editInfo:info,needEdit:true,tripChange:true});
+        this.setState({editInfo:info,needEdit:true});
     },
     editStopAction : function(id){//
         var info = {};
         info.stop = this._getStop(id);
-        this.setState({editInfo:info,needEdit:true,tripChange:false});
+        this.setState({editInfo:info,needEdit:true});
     },
     changeStop : function(sInfo){
         //new stopid, stopName
@@ -599,7 +594,7 @@ var MarketAreaNew = React.createClass({
     setRouteEdit : function(id){
       var info = {},route = this.state.routeColl.filter(function(d){return d.getId()===id;})[0];
       info.route = route;
-      this.setState({editInfo:info,needEdit:true,tripChange:false});
+      this.setState({editInfo:info,needEdit:true});
     },
 
     changeRoute : function(rInfo){
@@ -648,7 +643,6 @@ var MarketAreaNew = React.createClass({
                         currentTrip:null ,
                         TripObj:undefined,
                         edited:false,
-                        tripChange:false,
                         graph:new Graph(),
                         editInfo:{},
                       },function(){scope.setTrip(0);});//once that is complete
@@ -687,7 +681,11 @@ var MarketAreaNew = React.createClass({
       };
       return freq;
     },
-
+    componentDidUpdate : function(prevProps,prevState){
+      if(this.state.tripChange && prevState.routingGeo !== this.state.routingGeo){
+        this.setState({tripChange:false});
+      }
+    },
     render: function() {
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
@@ -708,7 +706,7 @@ var MarketAreaNew = React.createClass({
         var tracts = check(this.props.tracts) ;
         var scheds = this.state.schedules || {};
         var route = this.getTrips();
-        var routingGeo = this.state.graph.toFeatureCollection();
+        var routingGeo = this.state.routingGeo;
         var gtfsName = this.props.datasources[this.state.currentGtfs].tableName;
 
         return (
@@ -784,8 +782,5 @@ var MarketAreaNew = React.createClass({
         );
     }
 });
-//  {stopsGeo.features.length}
-                       // {this.state.currentRoute}
-                       // {this.state.currentTrip}
-                       // {routingGeo}
+
 module.exports = MarketAreaNew;
