@@ -1,3 +1,4 @@
+/*globals require,module,console,d3*/
 'use strict';
 
 var React = require('react'),
@@ -41,6 +42,7 @@ var MarketAreaNew = React.createClass({
                 routes:[],
                 counties:[],
                 origin_gtfs:null,
+                routecolors:{},
                 stateFips:'34',
                 geounit:'tracts',
             },
@@ -106,10 +108,16 @@ var MarketAreaNew = React.createClass({
     },
 
     setRoutesGeo:function(data){
-        //console.log('setRoutesGeo',data)
+        console.log('setRoutesGeo',data);
+        var colors = this.state.marketarea.routecolors;
         data.features = data.features.map(function(d,i){
+            if(colors && colors[d.properties.route_id]){
+              d.properties.color = colors[d.properties.route_id];
+            }
             if(!d.properties.color){
-                d.properties.color = d3.scale.category20().range()[i];
+              console.log(colors);
+                d.properties.color = d3.scale.category20().range()[i%20];
+                colors[d.properties.route_id] = d.properties.color;
             }
             return d;
         });

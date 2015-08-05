@@ -16,8 +16,8 @@ module.exports = {
 	routes : 'ARRAY',
 	center : 'ARRAY',
 	origin_gtfs:'INTEGER',
-	stateFips:'STRING'
+	stateFips:'STRING',
+  routecolors:'OBJECT',
   }
-  
-};
 
+};

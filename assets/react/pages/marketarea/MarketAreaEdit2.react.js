@@ -56,6 +56,7 @@ var MarketAreaNew = React.createClass({
               routes:(pma.routes !== undefined)? pma.routes:[],
               counties:(pma.counties !== undefined)? pma.counties:[],
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
+              routecolors:(pma.routecolors !== null)? pma.routecolors:{},
               stateFips:'34',
               geounit:'tracts',
             },
@@ -114,12 +115,13 @@ var MarketAreaNew = React.createClass({
       if(nextProps.marketarea && nextProps.marketarea !== this.props.marketarea && nextProps.marketarea.id > 0){
         var nma = this.state.marketarea;
         Object.keys(nextProps.marketarea).forEach(function(d){
-          nma[d] = nextProps.marketarea[d];
+          nma[d] = (nextProps.marketarea[d]) ? nextProps.marketarea[d]:{};
         });
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);
         console.log("Updating Market Area",filter);
         this.setState({marketarea:nma,tractsFilter:filter,countyFilter:cfilter});
+
       }
     },
     initTracts : function(){
@@ -187,9 +189,15 @@ var MarketAreaNew = React.createClass({
 
     setRoutesGeo:function(data){
         console.log('setRoutesGeo',data);
+        var colors = this.state.marketarea.routecolors;
         data.features = data.features.map(function(d,i){
+            if(colors && colors[d.properties.route_id]){
+              d.properties.color = colors[d.properties.route_id];
+            }
             if(!d.properties.color){
+              console.log(colors);
                 d.properties.color = d3.scale.category20().range()[i%20];
+                colors[d.properties.route_id] = d.properties.color;
             }
             return d;
         });
@@ -226,15 +234,6 @@ var MarketAreaNew = React.createClass({
         }
     },
 
-    gtfsSelect:function(gtfsData){
-        if(gtfsData){
-            var newState = this.state;
-            newState.marketarea.origin_gtfs = gtfsData.id;
-            newState.gtfs_source = gtfsData;
-            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList);
-            this.setState(newState);
-        }
-    },
 
     renderSelectors : function(){
 
