@@ -17,7 +17,8 @@
 var cssFilesToInject = [
   'styles/white/application.css',
   'bower_components/leaflet/dist/leaflet.css',
-  'styles/custom.css'
+  'styles/custom.css',
+  'bower_components/mjolnic-bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css'
 ];
 
 
@@ -25,14 +26,14 @@ var cssFilesToInject = [
 // (uses Grunt-style wildcard/glob/splat expressions)
 var jsFilesToInject = [
 
-  
+
   // Dependencies like sails.io.js, jQuery, or Angular
   // are brought in here
   //'js/dependencies/**/*.js',
   'bower_components/jquery/dist/jquery.js',
   'bower_components/select2/select2.js',
-  'bower_components/bootstrap/dist/js/bootstrap.js'
-
+  'bower_components/bootstrap/dist/js/bootstrap.js',
+  'bower_components/mjolnic-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js'
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
   //'js/**/*.js'

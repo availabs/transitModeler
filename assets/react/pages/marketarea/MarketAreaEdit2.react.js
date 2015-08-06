@@ -32,9 +32,8 @@ var transfer = function(src,dest,id){
   }
 };
 
-
 var MarketAreaNew = React.createClass({
-
+    colors:{},
     mixins: [Router.State],
     statics: {
 
@@ -48,6 +47,7 @@ var MarketAreaNew = React.createClass({
     },
     getInitialState: function(){
         var pma = this.props.marketarea;
+        this.colors = (this.props.marketarea && this.props.marketarea.routecolors)? this.props.marketarea.routecolors : {};
         return {
             marketarea:{
               id:(pma.id) ? pma.id:'',
@@ -119,6 +119,7 @@ var MarketAreaNew = React.createClass({
         });
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);
+        this.colors = nextProps.marketarea.routecolors;
         console.log("Updating Market Area",filter);
         this.setState({marketarea:nma,tractsFilter:filter,countyFilter:cfilter});
 
@@ -159,8 +160,8 @@ var MarketAreaNew = React.createClass({
       return filterTracts;
     },
     setStopsGeo:function(data){
-        if(data && data.features.length > 0 && this.props.stateCounties && this.props.stateCounties.features.length > 0
-              && this.props.stateTracts && this.props.stateTracts.length > 0){
+        if(data && data.features.length > 0 && this.props.stateCounties && this.props.stateCounties.features.length > 0 &&
+               this.props.stateTracts && this.props.stateTracts.features.length > 0){
             console.log('Processing counties',new Date());
             var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
             console.log('Finished processing counties',new Date());
@@ -183,13 +184,13 @@ var MarketAreaNew = React.createClass({
             console.log('remove last layer');
             this.setState({
               stopsGeo:data,
-              });
+            });
         }
     },
 
     setRoutesGeo:function(data){
         console.log('setRoutesGeo',data);
-        var colors = this.state.marketarea.routecolors;
+        var colors = this.colors;
         if(!colors)
           colors = {};
         data.features = data.features.map(function(d,i){
@@ -236,13 +237,18 @@ var MarketAreaNew = React.createClass({
         }
     },
 
-
+    colorChange : function(route,color){
+      d3.selectAll('.route_'+route).style('stroke',color);
+      this.state.marketarea.routecolors[route] = color;
+      this.colors = this.state.marketarea.routecolors;
+      this.colors[route] = color;
+    },
     renderSelectors : function(){
         console.log(this.state.marketarea.routecolors);
             return (
                 <div>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
-                    <RouteListTable marketarea={this.state.marketarea} removeRoute={this.removeRoute} />
+                    <RouteListTable marketarea={this.state.marketarea} colorChange={this.colorChange} removeRoute={this.removeRoute} />
                 </div>
             );
 
@@ -290,6 +296,7 @@ var MarketAreaNew = React.createClass({
 
     updateMarketArea: function(){
         var scope = this;
+        this.state.marketarea.routecolors = this.colors;
         var marketarea = JSON.parse(JSON.stringify(this.state.marketarea));
         marketarea.zones = this.state.tractsFilter;
         marketarea.counties = this.state.countyFilter;
