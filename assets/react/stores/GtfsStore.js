@@ -36,6 +36,17 @@ var _currentGtfs = null,
     _victimid = '';
     _routingWaypoints = [];
 
+function isEmpty(obj){
+  if(typeof obj ==='object'){
+    for(var k in obj){
+      if(obj.hasOwnProperty(k)){
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function _addRoutes(id,rawData) {
 
   //console.log('stores/GtfsStore/_addRoutes',rawData);
@@ -269,8 +280,10 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     if( ma ){
         gtfsId = _editGtfs || ma.origin_gtfs;
         routes = ma.routes;
-        if(_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId] !=='loading' && _gtfsSchedules[gtfsId].maId === ma.id)
-          return  _gtfsSchedules[gtfsId].sched;
+        if(_gtfsSchedules[gtfsId] && _gtfsSchedules[gtfsId] !=='loading' && _gtfsSchedules[gtfsId].maId === ma.id){
+            _gtfsSchedules[gtfsId].sched.id = _gtfsSchedules[gtfsId].id;
+            return  _gtfsSchedules[gtfsId].sched;
+        }
         else if (!_gtfsSchedules[gtfsId] || ma.id !== _gtfsSchedules[gtfsId].maId){
           _loadRouteSchedule(gtfsId,routes,ma.id);
         }
@@ -295,7 +308,8 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     if( !ma )
       return undefined;
 
-    if(_trip_ids.length === 0 && _frequencyData && Object.keys(_frequencyData).length > 0)
+
+    if(_trip_ids.length === 0 && _frequencyData && !isEmpty(_frequencyData))
       return _frequencyData;
     if(_trip_ids.length > 0){
       gtfsId = _editGtfs || ma.origin_gtfs;

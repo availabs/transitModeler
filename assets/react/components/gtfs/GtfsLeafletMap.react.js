@@ -84,15 +84,22 @@ var Map = React.createClass({
                               // saver.attr('disabled',null);
                            });
                         obj.on('dblclick',function(){
-                            if(layers.stopsLayer.layer.getLayers().length > 2){
-                                scope.props.deleteStop(obj.feature);
-                            }
+                          if(layers.stopsLayer.layer.getLayers().length > 2){
+                              scope.props.deleteStop(obj.feature);
+                          }
                         });
                         return obj;
                     },
                     onEachFeature:function(f,layer){
-                            layer.on('click',function(){
+                            layer.on('click',function(e){
+                              if(e.originalEvent.ctrlKey){//added ctrl click for firefox support
+                                if(layers.stopsLayer.layer.getLayers().length > 2){
+                                    scope.props.deleteStop(f);
+                                }
+                              }else{
                                 scope.props.editStop(f.properties.stop_id);
+                              }
+
                             });
 
                     },
