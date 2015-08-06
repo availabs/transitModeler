@@ -1,4 +1,4 @@
-/*globals require,console,module*/
+/*globals require,console,module,d3*/
 'use strict';
 
 var React = require('react'),
@@ -131,7 +131,8 @@ var SurveyAnalysis = React.createClass({
         var scope = this,
             discreteCats = ['busroute','captivity','accessmode','vehicleavail','tickettype','tripfreq','triptenure','qualservchg','gender','age','race'];
         var suffix = (this.state.type === 'weighted')?'_weight':'';
-        return discreteCats.map(function(cat){
+        var colors = d3.scale.category20().range();
+        return discreteCats.map(function(cat,i){
             var groupName = cat + suffix;
             var obj ={
               height:"250",
@@ -140,7 +141,8 @@ var SurveyAnalysis = React.createClass({
               filters:scope.state.filters,
               filterFunction:scope._addFilter,
               keyMap:SurveyKeys[cat],
-              label:cat
+              colors:(cat==='busroute')?scope.props.marketarea.routecolors:colors[i%20],
+              label:cat,
             };
 
             var retval =  function(){

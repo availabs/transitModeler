@@ -22,7 +22,7 @@ var SurveyFilters = React.createClass({
           return (<tr>
             <td>{label}</td>
            <td>{scope.props.data[d]}</td>
-           <td><button className='.btn .btn-danger .btn-sm' onClick={scope.props.buttonclick.bind(null,d)}>clear</button></td>
+           <td><button className='btn btn-danger btn-sm' onClick={scope.props.buttonclick.bind(null,d)}>clear</button></td>
            </tr>);
        });
   },
@@ -32,7 +32,7 @@ var SurveyFilters = React.createClass({
     var rows = this._createRows();
     var clrbtn;
     if(rows.length){
-      clrbtn = (<button className='.btn .btn-danger .btn-sm' onClick={this.props.buttonclick.bind(null,null)}>clear all</button>);
+      clrbtn = (<button className='btn btn-danger btn-sm' onClick={this.props.buttonclick.bind(null,null)}>clear all</button>);
     }
     return (
       <div>

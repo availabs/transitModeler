@@ -77,6 +77,18 @@ var SurveyGraph = React.createClass({
                     });
                     //.showControls(false)
 
+                    if(scope.props.colors && (typeof scope.props.colors !== 'string')){
+                      console.log(scope.props.colors);
+                      chart.color(function(d){
+                        console.log(d.key);
+                        return scope.props.colors[d.key];
+                      });
+                    }
+                    else if(scope.props.colors){
+                      chart.color(function(d){
+                        return scope.props.colors;
+                      });
+                    }
 
                 //console.log('_renderGraph,data',scope.processData(),'#SurveyGraph_'+scope.props.groupName+' svg')
                 d3.select('#SurveyGraph_'+scope.props.groupName+' svg')
