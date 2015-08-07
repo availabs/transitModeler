@@ -198,12 +198,17 @@ module.exports = {
 	    }
 
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
-	    	if(err){console.log('find datasource error',err)}
+	    	if(err){console.log('find datasource error',err);}
+			var routes = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
+			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
+								'stops.zone_id,stops.stop_url,R.route_short_name '+
+								'FROM "'+mgtfs.tableName+'".stops '+
+								'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
+								'JOIN "'+mgtfs.tableName+'".stop_times AS ST on ST.stop_id = stops.stop_id ' +
+								'JOIN "'+mgtfs.tableName+'".trips AS T on T.trip_id = ST.trip_id '+
+								'JOIN "'+mgtfs.tableName+'".routes AS R on R.route_id = T.route_id '+
+								'where (a.line IS NULL OR a.line IN '+routes+ ') AND R.route_short_name IN '+routes;
 
-			var sql = 'SELECT ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,stops.zone_id,stops.stop_url ' +
-                      'FROM "'+mgtfs.tableName+'".stops  ' +
-                      'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num ' +
-                      'where a.line IS NULL OR a.line IN '+ JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 			console.log(sql);
             Datasource.query(sql,{},function(err,data){
                 if (err) {
@@ -223,7 +228,7 @@ module.exports = {
                     Feature.properties = {};
                     Feature.properties.stop_code = stop.stop_code;
                     Feature.properties.fare_zone = stop.fare_zone;
-                    Feature.properties.line = stop.line;
+                    Feature.properties.line = stop.line || stop.route_short_name;
                     Feature.properties.stop_id = stop.stop_id;
 										Feature.properties.stop_desc = stop.stop_desc;
 										Feature.properties.stop_url = stop.stop_url;
