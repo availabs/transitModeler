@@ -126,7 +126,12 @@ var MarketAreaNew = React.createClass({
         this.state.marketarea.routecolors = colors;
         this.setState({routesGeo:data,marketarea:this.state.marketarea});
     },
-
+    colorChange : function(route,color){
+      d3.selectAll('.route_'+route).style('stroke',color);
+      this.state.marketarea.routecolors[route] = color;
+      this.colors = this.state.marketarea.routecolors;
+      this.colors[route] = color;
+    },
     removeRoute:function(route){
         //console.log('removeRoute',route)
         var newState = this.state;
@@ -174,7 +179,7 @@ var MarketAreaNew = React.createClass({
                 <div>
                     <GtfsSelector currentSelection={this.state.marketarea.origin_gtfs} gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
-                    <RouteListTable marketarea={this.state.marketarea} removeRoute={this.removeRoute} />
+                    <RouteListTable marketarea={this.state.marketarea} colorChange={this.colorChange} removeRoute={this.removeRoute} />
                 </div>
             );
         }

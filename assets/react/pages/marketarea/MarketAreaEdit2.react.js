@@ -68,7 +68,8 @@ var MarketAreaNew = React.createClass({
             outerTractsFilter:[],
             stateTracts:(this.props.stateTracts) ? JSON.parse(JSON.stringify(this.props.stateTracts)):[],
             message:null,
-            bMessage:'Update Market Area'
+            bMessage:'Update Market Area',
+            gtfs_source:null,
         };
     },
     componentDidMount : function(){
@@ -94,6 +95,8 @@ var MarketAreaNew = React.createClass({
       this.setState({marketarea:sma});
     },
     setRouteList : function(id,data){
+      SailsWebApi.getRoutesGeo(-1,this.state.marketarea.origin_gtfs,this.state.marketarea.routes,this.setRoutesGeo);
+      SailsWebApi.getStopsGeo(-1,this.state.marketarea.origin_gtfs,this.state.marketarea.routes,this.setStopsGeo);
       this.setState({routeList:data});
     },
     componentWillReceiveProps: function(nextProps){
@@ -120,7 +123,7 @@ var MarketAreaNew = React.createClass({
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);
         this.colors = nextProps.marketarea.routecolors;
-        console.log("Updating Market Area",filter);
+
         this.setState({marketarea:nma,tractsFilter:filter,countyFilter:cfilter});
 
       }
@@ -189,7 +192,7 @@ var MarketAreaNew = React.createClass({
     },
 
     setRoutesGeo:function(data){
-        console.log('setRoutesGeo',data);
+
         var colors = this.colors;
         if(!colors)
           colors = {};
@@ -198,7 +201,6 @@ var MarketAreaNew = React.createClass({
               d.properties.color = colors[d.properties.short_name];
             }
             if(!d.properties.color){
-              console.log(colors);
                 d.properties.color = d3.scale.category20().range()[i%20];
                 colors[d.properties.short_name] = d.properties.color;
             }
@@ -209,7 +211,6 @@ var MarketAreaNew = React.createClass({
     },
 
     removeRoute:function(route){
-        console.log('removeRoute',route);
         var newState = this.state;
         newState.marketarea.routes =  newState.marketarea.routes.filter(function(d){
             return d !== route;
@@ -243,10 +244,20 @@ var MarketAreaNew = React.createClass({
       this.colors = this.state.marketarea.routecolors;
       this.colors[route] = color;
     },
+    gtfsSelect:function(gtfsData){
+        if(gtfsData){
+            var newState = this.getInitialState();
+            newState.marketarea.origin_gtfs = gtfsData.id;
+            newState.gtfs_source = gtfsData;
+            this.setState(newState);
+            SailsWebApi.getGtfsRoutes(gtfsData.tableName,gtfsData.id,this.setRouteList);
+
+        }
+    },
     renderSelectors : function(){
-        console.log(this.state.marketarea.routecolors);
             return (
                 <div>
+                    <GtfsSelector currentSelection={this.state.marketarea.origin_gtfs} gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
                     <RouteListTable marketarea={this.state.marketarea} colorChange={this.colorChange} removeRoute={this.removeRoute} />
                 </div>
@@ -285,7 +296,7 @@ var MarketAreaNew = React.createClass({
     },
 
     updatedMa:function(data){
-        console.log('marketarea update callback',data);
+
         if(data.id){
             this.setState({bMessage:'Update Again',marketarea:data});
             GeoDataStore.purgeMarketTracts();
@@ -314,7 +325,6 @@ var MarketAreaNew = React.createClass({
         if(typeof this.props.marketarea == 'undefined'){
             return <span />;
         }
-        console.log('renderStats',this.props.marketarea);
         return (
             <section className="widget">
                 <div className="body no-margin">
@@ -354,7 +364,7 @@ var MarketAreaNew = React.createClass({
         });
     },
     render: function() {
-        console.log("MarketAreaEdit",this.props);
+
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
