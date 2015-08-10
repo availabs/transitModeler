@@ -185,6 +185,12 @@ var Map = React.createClass({
             map.removeLayer(layers[key].layer);
           }
         }
+        var toplayers = Object.keys(layers).filter(function(d){
+          return layers[d].layer.options.bringToFront;
+        });
+        toplayers.forEach(function(d){
+          layers[d].layer.bringToFront();
+        });
         if(layer.options.zoomOnLoad && isZooming && layer.geo.features.length > 0 && layer.geo.features[0].geometry.coordinates.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
@@ -282,6 +288,9 @@ var Map = React.createClass({
 
                 }
                 map.addLayer(layers[key].layer);
+                if(currLayer.options.bringToFront){
+                  layers[key].layer.bringToFront();
+                }
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0 && currLayer.geo.features[0].geometry.coordinates.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);
                     map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);

@@ -54,16 +54,16 @@ var GtfsEditorMap = React.createClass({
 
         //console.log('processLayers, diplay tracts',this.props.displayTracts);
         if(this.props.stops){
-            stops = this.props.stops
+            stops = this.props.stops;
         }
         if(this.props.tracts){
-            tracts = this.props.tracts
+            tracts = this.props.tracts;
         }
         if(this.props.routes){
-            routes = this.props.routes
+            routes = this.props.routes;
         }
         if(this.props.counties){
-            counties = this.props.counties
+            counties = this.props.counties;
         }
         if(this.props.routingGeo){
             routingGeo = this.props.routingGeo;
@@ -105,6 +105,7 @@ var GtfsEditorMap = React.createClass({
                 id:routingLayerId++,
                 geo:routingGeo,
                 options:{
+                  bringToFront:true,
                   zoomOnLoad:true,
                 }
             },
@@ -154,6 +155,7 @@ var GtfsEditorMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
+                    bringToFront:true,
                     zoomOnLoad:true,
                     style:function (feature,i) {
                         return {

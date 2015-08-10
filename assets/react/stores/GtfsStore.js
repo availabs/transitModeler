@@ -162,6 +162,34 @@ function _loadRouteSchedule(gtfsId,routes,maId){
         _victimid = undefined;
       }
   }
+  function idCheck(id){
+    if(!id){
+        var ma = MarketAreaStore.getCurrentMarketArea();
+        if(ma)
+          id = ma.id;
+    }
+    return id;
+  }
+  //delete the routes and stops so on the next request they will be refreshed
+  function _resetRoutesAndStops(id){
+    id = idCheck(id);
+    if(!id)
+      return;
+    _resetRoutes(id);
+    _resetStops(id);
+  }
+  function _resetRoutes(id){
+    id = idCheck(id);
+    if(!id)
+      return;
+    delete _gtfsRoutesGeo[id];
+  }
+  function _resetStops(id){
+    id = idCheck(id);
+    if(!id)
+      return;
+    delete _gtfsStopsGeo[id];
+  }
 
   function _putGtfsData(data,gtfsId){
     if(data && gtfsId){
@@ -395,6 +423,15 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     }
     return undefined;
   },
+  resetRoutesAndStop : function(){
+    _resetRoutesAndStops();
+  },
+  resetRoutes : function(){
+    _resetRoutes();
+  },
+  resetStops : function(){
+    _resetStops();
+  },
   getAll: function() {
     return _gtfsDataSets;
   }
@@ -489,6 +526,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         _editResponse = action.data;
         //console.log('Receive Upload Response:',action.data);
         _killVictimGtfs();
+        _resetRoutesAndStops();
         GtfsStore.emitChange();
     break;
 
@@ -499,6 +537,12 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_FREQ_EDIT_RESPONSES:
         _frequencyEditResponse = action.data;
+        GtfsStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_MARKETAREAS:
+    //when marketares are retreived reset the routes and stops
+        _resetRoutesAndStops();
         GtfsStore.emitChange();
     break;
     default:

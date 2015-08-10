@@ -368,21 +368,21 @@ function spawnGtfsClone(job,names,config,savedata){
 		Job.update({id:job.id},{status:'Building Frequencies',progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done
 			if(error){console.log('job update error',error); return;}
 			sails.sockets.blast('job_updated',updated_job); //update the client
-			console.log('Building Frequencies');
-			exec('node api/support/frequencybuilder.js '+backupName,function(err,sout,serr){ //build the frequencies table of the new set
-				if(err){console.log('ERROR : ',err);return;}
-				if(serr){console.log('STDERR : ',serr);return;}
-				if(sout){console.log('STDOUT : ',sout);}
-				Job.update({id:job.id},{status:'saving',progress:90})//complete the job
-					.exec(function(err,updated_job){
-						if(err){console.log('job update error',err);}
-						sails.sockets.blast('job_updated',updated_job);
-						debugger;
+			// console.log('Building Frequencies');
+			// exec('node api/support/frequencybuilder.js '+backupName,function(err,sout,serr){ //build the frequencies table of the new set
+			// 	if(err){console.log('ERROR : ',err);return;}
+			// 	if(serr){console.log('STDERR : ',serr);return;}
+			// 	if(sout){console.log('STDOUT : ',sout);}
+				// Job.update({id:job.id},{status:'saving',progress:90})//complete the job
+				// 	.exec(function(err,updated_job){
+				// 		if(err){console.log('job update error',err);}
+				// 		sails.sockets.blast('job_updated',updated_job);
+				// 		debugger;
 						if(savedata && Object.keys(savedata).length > 0){
 							save(job,backupName,savedata);
 						}
-					});
-			});
+					// });
+			//});
 		});
 	});
 }

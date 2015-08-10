@@ -218,14 +218,15 @@ var MarketAreaNew = React.createClass({
         });
         GtfsActionsCreator.setWaypoints(waypoints);
     },
-    _movedStop:function(feat){
+    _movedStop:function(feat){//if the stop is moved, assume its already on the map
         var ids = this._getActiveIds(), tempStop = new Stop(feat);
         this._requestData(ids);
 
-        var stop = this._getStop(tempStop.getId());
+        var stop = this.state.stopColl.cloneStop(tempStop.getId());
         stop.setPoint(tempStop.getPoint());
         stop.setEdited();
-        this.setState({edited:true});
+        this.state.stopColl.addTemp(stop);
+        this.setState({edited:true,stopColl:this.state.stopColl});
     },
     _buildSave:function(){
       console.log('attempted save');
@@ -535,7 +536,7 @@ var MarketAreaNew = React.createClass({
             };
             schedules[this.state.currentRoute].trips.push(trip);
             freq = this.createNewFreq(trip.tripids[0]);
-            this.setState({isCreating:true,schedules:schedules,frequencies:[freq]});
+            this.setState({isCreating:true,routingGeo:emptyGeojson,schedules:schedules,frequencies:[freq]});
         }
     },
     editTripAction : function(trip){
