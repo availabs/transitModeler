@@ -6,6 +6,9 @@ var React = require('react'),
     SailsWebApi=require('../../utils/sailsWebApi');
 
 var reg = /:\d\d /;
+var tFormat = function(date){
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
 var JobHistory = React.createClass({
   getDefaultProps : function(){
     return {
@@ -15,7 +18,7 @@ var JobHistory = React.createClass({
       length:15,
       columns:[
         {key:'type', name:'Type'},
-        {key:'updatedAt', name:'Time Finished'},
+        {key:'finished', name:'Time Finished',format:function(d){return tFormat(new Date(d.updatedAt)); }},
         {key:'status', name:'Status'}
       ],
       criteria:null,
@@ -24,9 +27,6 @@ var JobHistory = React.createClass({
   render : function(){
     var scope = this;
     var jobs = this.props.jobs.filter(function(d){
-      var t = new Date(d.updatedAt);
-      t = t.toLocaleString();
-      d.updatedAt =  t.replace(reg,' ').replace(',','');
       if(scope.props.criteria){
         return scope.props.criteria(d);
       }

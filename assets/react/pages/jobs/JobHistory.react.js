@@ -12,6 +12,9 @@ var obj2array = function(obj){
   return arr;
 };
 var reg = /:\d\d /;
+var tFormat = function(date){
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+};
 var JobHistory = React.createClass({
   criteria : function(d){
     return d.isFinished;
@@ -19,15 +22,11 @@ var JobHistory = React.createClass({
   render : function(){
     var acolumns = [
       {key:'type',name:'Type'},
-      {key:'start',name:'Time Started'},
+      {key:'start',name:'Time Started',format:function(d){return tFormat(new Date(d.start));}},
       {key:'status',name:'Status'},
       {key:'progress',name:'Progress'}
     ];
-    var fcolumns = [
-      {key:'type', name:'Type'},
-      {key:'updatedAt', name:'Time Finished'},
-      {key:'status', name:'Status'}
-    ];
+
 
     return (
       <div className="content container">
@@ -46,7 +45,7 @@ var JobHistory = React.createClass({
             criteria={this.criteria}
             pagination={true}
             length={15}
-            columns={fcolumns}/>
+            />
         </div>
       </div>
     </div>);

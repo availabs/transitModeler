@@ -1,3 +1,4 @@
+/*globals require,module,console*/
 'use strict';
 var React = require('react');
 
@@ -55,6 +56,13 @@ var DataTable = React.createClass({
 							</td>
 						);
 					}
+          if(col.format){
+              return (
+    						<td data-key={rowValue}>
+    							{col.format(row)}
+    						</td>
+    					);
+          }
 					return (
 						<td data-key={rowValue}>
 							{row[col.key]}
