@@ -132,8 +132,15 @@ var SurveyAnalysis = React.createClass({
             discreteCats = ['busroute','captivity','accessmode','vehicleavail','tickettype','tripfreq','triptenure','qualservchg','gender','age','race'];
         var suffix = (this.state.type === 'weighted')?'_weight':'';
         var colors = d3.scale.category20().range();
+
         return discreteCats.map(function(cat,i){
             var groupName = cat + suffix;
+            var displayFilter;
+            if(cat ==='busroute'){
+              displayFilter = function(d){
+                return scope.props.marketarea.routes.indexOf(d.key) >=0;
+              };
+            }
             var obj ={
               height:"250",
               surveyData:scope.state.surveyData,
@@ -143,6 +150,7 @@ var SurveyAnalysis = React.createClass({
               keyMap:SurveyKeys[cat],
               colors:(cat==='busroute')?scope.props.marketarea.routecolors:colors[i%20],
               label:cat,
+              displayFilter:displayFilter,
             };
 
             var retval =  function(){

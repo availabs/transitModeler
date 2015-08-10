@@ -16,7 +16,8 @@ var SurveyGraph = React.createClass({
 
     getDefaultProps:function(){
       return {
-          height:400
+          height:400,
+          displayFilter:function(){return true;},
       };
     },
 
@@ -35,11 +36,12 @@ var SurveyGraph = React.createClass({
                 scope.props.surveyData.dimensions[key].filter(scope.props.filters[key]);
             }
 
-            data.values = scope.props.surveyData.groups[scope.props.groupName].top(Infinity).map(function(d){
+            data.values = scope.props.surveyData.groups[scope.props.groupName].top(Infinity)
+            .filter(this.props.displayFilter)
+            .map(function(d){
                 return {
                     key:d.key,
                     value:d.value,
-
                 };
             });
             //console.log('busroute group',data)
@@ -49,6 +51,9 @@ var SurveyGraph = React.createClass({
                     return d;
                 });
             }
+            if(data.values.length ===0){
+              return [{key:'none',values:[[]]}];
+            }
             return [data];
         }
         return [{key:'none',values:[]}];
@@ -57,6 +62,7 @@ var SurveyGraph = React.createClass({
 
     _renderGraph:function(){
         var scope = this;
+        var data = scope.processData();
         if(scope.props.surveyData.initialized){
 
             nv.addGraph(function(){
@@ -89,15 +95,15 @@ var SurveyGraph = React.createClass({
                         return scope.props.colors;
                       });
                     }else{
-                      console.log('no colors');
                       chart.color(function(d){
                         return '#000';
                       });
                     }
 
+                //
                 //console.log('_renderGraph,data',scope.processData(),'#SurveyGraph_'+scope.props.groupName+' svg')
                 d3.select('#SurveyGraph_'+scope.props.groupName+' svg')
-                    .datum(scope.processData())
+                    .datum(data)
                     .call(chart);
 
                 //console.log('render graph',scope.processData())
@@ -109,6 +115,7 @@ var SurveyGraph = React.createClass({
             });
 
         }
+
     },
 
     render:function(){
