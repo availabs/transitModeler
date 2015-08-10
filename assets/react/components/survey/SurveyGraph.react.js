@@ -88,6 +88,11 @@ var SurveyGraph = React.createClass({
                       chart.color(function(d){
                         return scope.props.colors;
                       });
+                    }else{
+                      console.log('no colors');
+                      chart.color(function(d){
+                        return '#000';
+                      });
                     }
 
                 //console.log('_renderGraph,data',scope.processData(),'#SurveyGraph_'+scope.props.groupName+' svg')
