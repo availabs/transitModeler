@@ -28,7 +28,12 @@ var CsvLink = React.createClass({
                     if(scope.props.format)
                     return rec[k].toString();
                   }).join(',');
-      lines += line + '%0A';
+      if(navigator.msSaveBlob){ //IF WE R IN IE :(
+          lines += line + '\r\n';
+      }else{
+          lines += line + '%0A';
+      }
+
     });
     if(this.props.headers){
       lines = this.props.headers.join(',') + '\n' + lines;
