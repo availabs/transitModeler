@@ -54,7 +54,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			            {parseInt(census.total_population.value)}
+			            {parseInt(census.total_population.value).toLocaleString()}
 			               
 			            </h3>
 			            <div className="description">
@@ -65,7 +65,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			               {parseInt(census.occupied_housing.value)}
+			               {parseInt(census.occupied_housing.value).toLocaleString()}
 			            </h3>
 			            <div className="description">
 			                Households
@@ -75,7 +75,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			                {parseInt(census.employment.value+census.unemployment.value)}
+			                {parseInt(census.employment.value+census.unemployment.value).toLocaleString()}
 			            </h3>
 			            <div className="description">
 			                in Labor Force<br />
@@ -86,7 +86,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			               {this.state.marketarea.routes.length}
+			               {this.state.marketarea.routes.length.toLocaleString()}
 			            </h3>
 			            <div className="description">
 			                # Bus Routes<small> defined in marketarea</small>
@@ -97,7 +97,7 @@ var censusOverviewHeader = React.createClass({
 			    <div className="col-md-2 col-sm-4 col-xs-6">
 			        <div className="box">
 			            <h3>
-			                {parseInt(census.bus_to_work.value)}
+			                {parseInt(census.bus_to_work.value).toLocaleString()}
 			            </h3>
 			            <div>
 			            	{parseInt(census.bus_to_work.value/census.travel_to_work_total.value*100)}%<br />

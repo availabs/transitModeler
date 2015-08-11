@@ -46,7 +46,7 @@ var CensusTable= React.createClass({
             return [  cen_var,divStyle,
                     cen_var.replace(/_/g," "),
                     (total_data[cen_var].value/total*100).toFixed(2),
-                    total_data[cen_var].value
+                    total_data[cen_var].value.toLocaleString()
                   ];
         });
         var rows = data.map(function(d,i){

@@ -35,7 +35,7 @@ var CensusMap = React.createClass({
                             '<td style="width:10px;background-color:'+ d3.scale.category20().range()[i] +'"></td>'+
                             '<td>'+ cen_var.replace(/_/g," ") +'</td>'+
                             '<td>'+ (tractData[props.geoid][cen_var] / total*100).toFixed(2) +'%</td>'+
-                            '<td>'+ tractData[props.geoid][cen_var] +'</td>'+
+                            '<td>'+ tractData[props.geoid][cen_var].toLocaleString() +'</td>'+
                         '</tr>'
         
             return row;
