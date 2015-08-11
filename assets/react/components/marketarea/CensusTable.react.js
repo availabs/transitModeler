@@ -59,13 +59,14 @@ var CensusTable= React.createClass({
             </tr>
           );
         });
+        data.push([null,null,'Total','100%',total]);
 
         return(
             <div id="tableDiv">
                 <CSVDownload
                   data={data}
                   keys={[2,3,4]}
-
+                  filename={category_name}
                   />
                 <h4>Category:{category_name}</h4>
                 <table className="table table-striped table-hover" id="overview-table">

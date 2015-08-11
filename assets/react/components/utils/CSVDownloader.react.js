@@ -43,7 +43,7 @@ var CsvLink = React.createClass({
       return {data:null};
   },
   componentWillReceiveProps : function(nextProps){
-    if(!this.props.data && nextProps.data){
+    if(this.props.data !== nextProps.data){
       this.setState({data:this.processData(nextProps.data)});
     }
   },
