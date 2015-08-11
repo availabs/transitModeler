@@ -1,7 +1,7 @@
 'use strict';
 /*globals console,require,module*/
 var React = require('react'),
-    idGen = require('./randomId');
+    idGen = require('../utils/randomId');
     //comps
     // -- Actions
     // -- Stores

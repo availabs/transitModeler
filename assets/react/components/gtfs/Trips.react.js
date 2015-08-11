@@ -8,7 +8,7 @@ var React = require('react'),
 
     // -- Stores
 
-var idGen = require('./randomId');
+var idGen = require('../utils/randomId');
 var MarketAreaNew = React.createClass({
     getInitialState : function(){
       return {

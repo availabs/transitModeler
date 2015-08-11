@@ -12,7 +12,7 @@ var React = require('react'),
     colorbrewer = require('colorbrewer'),
     Stop = require('./Gtfsutils').Stop,
     topojson = require('topojson'),
-    newStopId = require('./randomId');
+    newStopId = require('../utils/randomId');
 
 var map = null,
     layers = {},

@@ -35,7 +35,7 @@ var React = require('react'),
 
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
-var idGen = require('./randomId');
+var idGen = require('../utils/randomId');
 var check = function(obj){
     return (obj && obj!=='loading')?obj:emptyGeojson;
 };
