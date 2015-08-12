@@ -67,11 +67,13 @@ var Map = React.createClass({
         layers[key].layer.addData(layer.geo); // to get layerAdd event
         map.addLayer(layers[key].layer);
         //priority check force front layers back to front
-        var toplayers = Object.keys(layers).filter(function(d){
-          return layers[d].layer.options.bringToFront;
-          });
-        toplayers.forEach(function(d){
-          layers[d].layer.bringToFront();
+        var toplayers = Object.keys(layers).forEach(function(d){
+          if(layers[d].layer.options.bringToFront){
+              layers[d].layer.bringToFront();
+          }
+          if(layers[d].layer.options.bringToBack){
+            layers[d].layer.bringToBack();
+          }
         });
         //end priority check;
         if(layer.options.zoomOnUpdate && layer.geo.features.length > 0){
@@ -132,6 +134,9 @@ var Map = React.createClass({
                 map.addLayer(layers[key].layer);
                 if(currLayer.options.bringToFront){
                   layers[key].layer.bringToFront();
+                }
+                if(currLayer.options.bringToBack){
+                  layers[key].layer.bringToBack();
                 }
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);

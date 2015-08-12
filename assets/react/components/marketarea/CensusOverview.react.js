@@ -113,6 +113,7 @@ var CensusOverview = React.createClass({
         }).map(function(d,i){
           return {id:d,text:acss[d].tableName,year:acss[d].settings.year};
         });
+        console.log(this.props.stopsGeo,this.props.routesGeo);
         return (
         	<div >
                 <CensusOverviewHeader/>
@@ -123,7 +124,9 @@ var CensusOverview = React.createClass({
                             tracts={this.props.tracts}
                             activeVariable={this.props.activeVariable}
                             censusData={this.props.censusData}
-                            activeCategory={this.state.activeCensusCategory} />
+                            activeCategory={this.state.activeCensusCategory}
+                            stops={this.props.stopsGeo}
+                            routes={this.props.routesGeo} />
 
                     </div>
                     <div className="col-lg-5">

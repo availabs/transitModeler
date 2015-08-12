@@ -60,9 +60,11 @@ var MarketAreaIndex = React.createClass({
                     tracts={this.props.tracts}
                     activeVariable={this.props.activeCensusVariable}
                     censusData={this.props.censusData}
-                    marketarea={this.props.marketarea} />
-                )
-            break;
+                    marketarea={this.props.marketarea}
+                    stopsGeo={this.props.stopsGeo}
+                    routesGeo={this.props.routesGeo} />
+                );
+            // break;
 
             case 'ctpp':
                 return (
@@ -70,10 +72,12 @@ var MarketAreaIndex = React.createClass({
                         tracts={this.props.tracts}
                         ctppData = {this.props.ctppData}
                         marketarea={this.props.marketarea}
-                        censusData={this.props.censusData} />
-                )
+                        censusData={this.props.censusData}
+                        stopsGeo={this.props.stopsGeo}
+                        routesGeo={this.props.routesGeo} />
+                    );
 
-            break;
+            // break;
 
             case 'gtfs':
                 return (
@@ -90,9 +94,9 @@ var MarketAreaIndex = React.createClass({
                         datasources={this.props.datasources.gtfs}
                         jobs = {this.props.jobhistory}/>
 
-                    )
+                    );
 
-            break;
+            // break;
 
             case 'survey':{
                 return (
@@ -102,9 +106,9 @@ var MarketAreaIndex = React.createClass({
                         routesGeo ={this.props.routesGeo}
                         stopsGeo = {this.props.stopsGeo} />
 
-                    )
+                    );
             }
-            break;
+            // break;
 
              case 'farebox':{
                 return (
@@ -114,17 +118,17 @@ var MarketAreaIndex = React.createClass({
                         routesGeo ={this.props.routesGeo}
                         stopsGeo = {this.props.stopsGeo} />
 
-                    )
+                    );
             }
-            break;
+            // break;
 
 
 
             default:
                 return (
                      <span />
-                )
-            break;
+                );
+            // break;
 
         }
 

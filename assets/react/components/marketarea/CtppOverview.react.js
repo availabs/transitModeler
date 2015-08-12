@@ -128,7 +128,9 @@ var CtppOverview = React.createClass({
                             direction = {this.state.direction}
                             selected={this.state.filter}
                             censusData={this.props.censusData}
-                            selectTract={this.mapTractSelect}/>
+                            selectTract={this.mapTractSelect}
+                            routes={this.props.routesGeo}
+                            stops={this.props.stopsGeo}/>
 
                     </div>
                     <div className="col-lg-5">

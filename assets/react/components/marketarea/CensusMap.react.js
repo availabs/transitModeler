@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react'),
-    
+
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
 
@@ -11,15 +11,18 @@ var React = require('react'),
      deepEqual = require('deep-equal'),
     odScale = d3.scale.quantile().range(colorbrewer.PuBu[6]),
     tractlayerID = 0,
+    stopslayerID = 0,
+    routeLayerID = 0,
     prevTractLength = 0,
-    prevDomain = [];
-
+    prevDomain = [],
+    prevStopsLength = 0,
+    prevRoutesLength = 0;
     //--Stores
-    
+
 
 
 var CensusMap = React.createClass({
-    
+
      _toolTipContent:function(props,index){
         var scope = this;
 
@@ -30,16 +33,16 @@ var CensusMap = React.createClass({
         var total = 0;
         category.forEach(function(val){ total += tractData[props.geoid][val] });
         var rows= category.map(function(cen_var,i){
-            
+
             var row =   '<tr>'+
                             '<td style="width:10px;background-color:'+ d3.scale.category20().range()[i] +'"></td>'+
                             '<td>'+ cen_var.replace(/_/g," ") +'</td>'+
                             '<td>'+ (tractData[props.geoid][cen_var] / total*100).toFixed(2) +'%</td>'+
                             '<td>'+ tractData[props.geoid][cen_var].toLocaleString() +'</td>'+
                         '</tr>'
-        
+
             return row;
-        
+
         });
 
         var test = rows.join('').toString();
@@ -59,7 +62,7 @@ var CensusMap = React.createClass({
             activeVariable = this.props.activeVariable;
 
         odScale.domain(
-            
+
             geo.features.map(function(feature){
                 if( tractData[feature.properties.geoid] ){
                     return tractData[feature.properties.geoid][activeVariable];
@@ -73,10 +76,17 @@ var CensusMap = React.createClass({
 
         );
 
-        
+        if(scope.props.routes.features.length !== prevRoutesLength){
+          routeLayerID++;
+          prevRoutesLength = scope.props.routes.features.length;
+        }
+        if(scope.props.stops.features.length !== prevStopsLength){
+          stopslayerID++;
+          prevStopsLength = scope.props.stops.features.length;
+        }
         if(geo.features.length != prevTractLength || !deepEqual(prevDomain,odScale.domain())){
             tractlayerID++;
-        }        
+        }
         prevDomain = odScale.domain();
         prevTractLength = geo.features.length;
 
@@ -84,8 +94,9 @@ var CensusMap = React.createClass({
                 tractsLayer:{
                 id: tractlayerID,
                 geo: geo,
-                options:{ 
+                options:{
                     zoomOnLoad:true,
+                    bringToFront:true,
                     style:function(feature){
                         return {
                             stroke:false,
@@ -130,6 +141,84 @@ var CensusMap = React.createClass({
                     }
 
                 }
+            },
+            routesLayer:{
+                id:routeLayerID,
+                geo:scope.props.routes,
+                options:{
+                    bringToBack:true,
+                    style:function (feature,i) {
+                        return {
+                            className: 'route_'+feature.properties.short_name,
+                            weight:7,
+                            opacity:0.3,
+                            color : feature.properties.color ? feature.properties.color : '#000'
+                        };
+                    },
+
+                    onEachFeature: function (feature, layer) {
+
+                        layer.on({
+
+                            click: function(e){
+                                //console.log('station_click',e.target.feature.properties);
+                            },
+                            mouseover: function(e){
+                                var classColor = feature.properties.color ? feature.properties.color : '#000'; //d3.select('.route_color_'+feature.properties.short_name).style('background-color');
+                                e.target.setStyle({opacity:0.7,weight:10});
+                                d3.select('.ToolTip').style({
+                                    left:e.originalEvent.clientX+'px',
+                                    top:e.originalEvent.clientY+'px',
+                                    display:'block',
+                                    opacity:1.0,
+                                    'border-top':'5px solid '+classColor
+                                }).select('h4')
+                                    .attr('class','TT_Title')
+                                    .style({
+                                        color:classColor
+                                    })
+                                    .html('Route '+feature.properties.short_name)
+                            },
+                            mouseout: function(e){
+                                //console.log('mouseout1')
+                                //scope._updateTooltip({ x:0,y:0,display:'none'});
+                                d3.select('.ToolTip').style({opacity:0});
+                                e.target.setStyle({opacity :0.3});
+                                //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
+                            },
+
+
+                        });
+
+                    }
+                }
+            },
+            stopsLayer:{
+                id:stopslayerID,
+                geo:scope.props.stops,
+                options:{
+                  bringToBack:true,
+                    pointToLayer: function (d, latlng) {
+
+                        var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
+                        if(isNaN(r)){
+                            r = 2;
+                        }
+                        var options = {
+
+
+                            color: "#00a" ,
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                            stroke:false,
+                            className:'busStop',
+                            fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
+                            radius: r
+                        };
+                        return L.circleMarker(latlng, options);
+                    },
+                }
             }
         }
 
@@ -139,14 +228,14 @@ var CensusMap = React.createClass({
                 scale:odScale
             }
         }
-        
+
         return (
             <div>
                 <LeafletMap layers={layers} legendLayers={legendLayers} height="750px" />
             </div>
         );
     },
-    
+
 
 });
 
