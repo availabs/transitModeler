@@ -6,7 +6,7 @@ var React = require('react'),
     // -- Components
     DataTable = require('../utils/DataTable.react'),
     CtppMap = require('./CtppMap.react'),
-
+    CSVDownload = require('../utils/CSVDownloader.react'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
@@ -75,7 +75,15 @@ var CtppOverview = React.createClass({
         );
 
     },
-
+    _csvButton : function(keys,data){
+      return (
+        <CSVDownload
+          data={data}
+          keys={keys}
+          filename={this.props.marketarea.name + '_ctpp'}
+          />
+      );
+    },
     render: function() {
 
         var direction = this.state.direction,
@@ -105,7 +113,8 @@ var CtppOverview = React.createClass({
                 {key:'key',name:'Tract'},
                 {key:'value',name:'Num Trips'},
             ];
-
+            console.log('data',cdata);
+            console.log('colnumns',ctppColumns);
         return (
         	<div >
 
@@ -133,6 +142,7 @@ var CtppOverview = React.createClass({
                             </header>
                             <div className="form-group" >
                                 {this.directionButtons()}
+                                {this._csvButton(['key','value'],cdata)}
                             </div>
                             {this._renderSelectedTract()}
                             <div className="body no-margin" style={{overflowY:'scroll'}}>

@@ -113,10 +113,6 @@ var CensusOverview = React.createClass({
         }).map(function(d,i){
           return {id:d,text:acss[d].tableName,year:acss[d].settings.year};
         });
-        console.log(this.props.tracts);
-        console.log(this.props.activeVariable);
-        console.log(this.props.censusData);
-        console.log(this.state.activeCensusCategory);
         return (
         	<div >
                 <CensusOverviewHeader/>

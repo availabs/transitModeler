@@ -55,7 +55,7 @@ var CsvLink = React.createClass({
   },
   clickAction : function(id){
     var fname = this.props.filename + extension;
-    this.downloadFile(type,this.state.data,fname,id);
+    downloadFile(type,this.state.data,fname,id);
   },
 
 	render: function() {
