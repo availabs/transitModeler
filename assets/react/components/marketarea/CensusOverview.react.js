@@ -1,7 +1,8 @@
+/*globals $,d3,require,module,console*/
 'use strict';
 
 var React = require('react'),
-    
+    downloadFile = require('../utils/downloadHelper'),
     // -- Components
     Select2Component = require('../utils/Select2.react'),
     CensusOverviewHeader = require('./CensusOverviewHeader.react'),
@@ -10,10 +11,11 @@ var React = require('react'),
     CensusTable = require('./CensusTable.react'),
 
     // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
     // -- Stores
-   
+    DataSourceStore = require('../../stores/DatasourcesStore');
+
 var i18n = {
     locales: ['en-US']
 };
@@ -21,32 +23,73 @@ var i18n = {
 
 var CensusOverview = React.createClass({
 
-   
-    
+
+
     getInitialState: function(){
-    
-        var state = {}
+
+        var state = {};
         state.activeCensusCategory = 18;
         return state;
-    
+
     },
 
     censusCategorySelections: function (e, selections) {
-    
+
         var newState = this.state;
         newState.activeCensusCategory = selections.id;
-        MarketAreaActionsCreator.setActiveCensusVariable(this.props.censusData.getCategories()[Object.keys(this.props.censusData.getCategories())[selections.id]][0])
+        MarketAreaActionsCreator.setActiveCensusVariable(this.props.censusData.getCategories()[Object.keys(this.props.censusData.getCategories())[selections.id]][0]);
         this.setState(newState);
-    
-    },
 
+    },
+    downloadShape : function(type){
+      var scope = this;
+      if(type){
+        var geoData = {
+          zones:this.props.marketarea.zones,
+          outputName:'acs5_34_2010_tracts',
+          name:this.props.marketarea.name,
+        };
+        d3.xhr('/acs/geoJsonToShp')
+          .post(JSON.stringify({geoData:geoData}),function(err,data){
+            if(err){console.log('err',err);}
+            console.log('got shapefile',JSON.parse(data.response).url,$('#downloadShp'));
+            $('#downloadShp')
+              .attr({
+                'download':geoData.name+'_'+geoData.outputName+'.zip',
+                'href':JSON.parse(data.response).url,
+                'target':'_blank'
+              });
+              $('#downloadShp')[0].click();
+          });
+      }else{//get the census tract data points
+        var tracts = this.props.censusData.getTractData();
+        //get their geoids
+        var tractIds = Object.keys(tracts);
+        var geoJson = {type:"FeatureCollection",features:[]};
+        var tractMap = {};
+        //create a maping for which geo id is which feature in the geoTract collection
+        this.props.tracts.features.forEach(function(d,i){
+          tractMap[d.properties.geoid] = i;
+        });
+        //set the features for the new Feature Collection
+        geoJson.features = tractIds.map(function(id){
+          tracts[id].geoid=id;
+          return  {type:"Feature",
+            properties:tracts[id],
+            geometry:scope.props.tracts.features[tractMap[id]].geometry
+          };
+        });
+        downloadFile('data:text/json;charset=utf-8,',JSON.stringify(geoJson),this.props.marketarea.name+'.geojson','#downloadGeo');
+      }
+    },
     render: function() {
-       
+        console.info('census data',this.props.censusData);
+        console.info('census tracts',this.props.tracts);
         var censusData = this.props.censusData.getTotalData();
         var data = Object.keys(this.props.censusData.getCategories()).map(function(cat,id){
             return {"id":id,"text":cat};
         });
-        
+
 
 
         return (
@@ -54,29 +97,33 @@ var CensusOverview = React.createClass({
                 <CensusOverviewHeader/>
                 <div className="row">
                 	<div className="col-lg-7">
-                       
-                        <CensusMap 
+
+                        <CensusMap
                             tracts={this.props.tracts}
-                            activeVariable={this.props.activeVariable} 
-                            censusData={this.props.censusData} 
+                            activeVariable={this.props.activeVariable}
+                            censusData={this.props.censusData}
                             activeCategory={this.state.activeCensusCategory} />
-            
+
                     </div>
                     <div className="col-lg-5">
-                        
+                      <section className="widget">
+                        <div className="body no-margin">
+
+                        </div>
+                      </section>
                         <div>
-                            <CensusGraph 
-                                activeCategory={this.state.activeCensusCategory} 
-                                censusData={this.props.censusData} 
+                            <CensusGraph
+                                activeCategory={this.state.activeCensusCategory}
+                                censusData={this.props.censusData}
                                 marketarea={this.props.marketarea} />
 
                         </div>
 
                         <section className="widget">
                             <div className="body no-margin">
-                                
+
                                 <fieldset>
-                                
+
                                     <div className="form-group">
                                         <label className="col-sm-3 control-label" htmlFor="grouped-select">Census Category</label>
                                         <div className="col-sm-9">
@@ -89,19 +136,29 @@ var CensusOverview = React.createClass({
                                               val={[this.state.activeCensusCategory]} />
                                         </div>
                                     </div>
-                                   
+
                                 </fieldset>
-                               
+
                             </div>
                         </section>
-                        
+
                         <section className="widget">
                             <div className="body no-margin">
-                                <CensusTable 
+                                <CensusTable
                                     censusData={this.props.censusData}
                                     activeVariable={this.props.activeCensusVariable}
                                     activeCategory={this.state.activeCensusCategory} />
                             </div>
+                        </section>
+                        <section className="widget" style={{overflow:'hidden'}}>
+                          <div className="body no-margin">
+                            <a type='button' className="btn btn-block btn-warning col-sm-4 pull-right" onClick={this.downloadShape.bind(null,null)} id='downloadGeo'>
+                              Download Census GeoJson</a>
+
+
+                            <a type='button' className="btn btn-block btn-danger col-sm-4 pull-right" onClick={this.downloadShape.bind(null,'shape')} id='downloadShape'>
+                              Download Census ShapeFile</a><a id='downloadShp'></a>
+                          </div>
                         </section>
                     </div>
                 </div>

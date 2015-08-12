@@ -25,7 +25,8 @@ module.exports.routes = {
 
   '/farebox/upload':'FareboxController.upload',
 
-
+  '/data/acs/:file' : 'MarketAreaController.acsDownload',
+  '/acs/geoJsonToShp' : 'MarketAreaController.geoJsonToShp',
   '/acs/load':'DataSourceController.loadACSData',
   '/acs/delete/:id':'DataSourceController.deleteACS',
 

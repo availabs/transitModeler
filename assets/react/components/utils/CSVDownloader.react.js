@@ -2,7 +2,8 @@
 'use strict';
 var React = require('react'),
 
-    idGen = require('./randomId');
+    idGen = require('./randomId'),
+    downloadFile = require('./downloadHelper');
 var extension = '.csv',
     type = 'data:text/csv;charset=utf-8,';
 var CsvLink = React.createClass({
@@ -57,44 +58,12 @@ var CsvLink = React.createClass({
     this.downloadFile(type,this.state.data,fname,id);
   },
 
-  downloadFile :function(type,output,filename,elem){
-    var csvContent = type+output;
-    var encodedUri = encodeURI(csvContent);
-    var link = document.createElement("a");
-
-    if(link.download !== undefined){
-      console.log('download');
-      link.setAttribute("href", type+output);
-      link.setAttribute("download", filename);
-      link.setAttribute('target', '_blank');
-      link.click();
-    }
-    else if(navigator.msSaveBlob) { // IE 10+
-      var blob = new Blob([output], {
-        "type": "text/csv;charset=utf8;"
-      });
-      navigator.msSaveBlob(blob, filename);
-    }
-    else{
-      console.log('none');
-      //var encodedUri = encodeURI(csvContent);
-      //window.open(encodedUri);
-       $(elem)
-            .attr({
-            'download': filename,
-            'href': encodedUri,
-            'target': '_blank'
-        });
-        $(elem).click();
-    }
-
-  },
 	render: function() {
-  return (  <a id={this.props.id}
-       className={this.props.classes}
-       style={this.props.style}
-       onClick={this.clickAction.bind(null,this.props.id)}
-       >{this.props.label}</a>);
+    return (  <a id={this.props.id}
+         className={this.props.classes}
+         style={this.props.style}
+         onClick={this.clickAction.bind(null,this.props.id)}
+         >{this.props.label}</a>);
 	},
 
 
