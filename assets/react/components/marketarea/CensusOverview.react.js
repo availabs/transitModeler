@@ -15,6 +15,7 @@ var React = require('react'),
     SailsWebApi = require('../../utils/sailsWebApi'),
 
     // -- Stores
+    CensusStore = require('../../stores/CensusStore'),
     DataSourceStore = require('../../stores/DatasourcesStore');
 
 var i18n = {
@@ -27,11 +28,18 @@ var CensusOverview = React.createClass({
 
 
     getInitialState: function(){
-
+        var acss = DataSourceStore.getType('acs');
+        var censusMeta = CensusStore.getCurrentInfo();
+        var id;
+        Object.keys(acss).forEach(function(d){
+          if(acss[d].settings.year === censusMeta.currentYear){
+            id = d;
+          }
+        });
         var state = {};
         state.activeCensusCategory = 18;
         state.activeState = '34';
-        state.activeCensus = 0;
+        state.activeCensus = id;
         state.censusData = this.props.censusData;
         return state;
 
@@ -56,7 +64,7 @@ var CensusOverview = React.createClass({
       if(type){
         var geoData = {
           zones:this.props.marketarea.zones,
-          outputName:'acs5_34_2010_tracts',
+          outputName:DataSourceStore.get('acs',this.state.activeCensus).tableName,
           name:this.props.marketarea.name,
         };
         d3.xhr('/acs/geoJsonToShp')
@@ -103,7 +111,7 @@ var CensusOverview = React.createClass({
         var censi = Object.keys(acss).filter(function(d){
           return acss[d].stateFips === scope.state.activeState;
         }).map(function(d,i){
-          return {id:i,text:acss[d].tableName,year:acss[d].settings.year};
+          return {id:d,text:acss[d].tableName,year:acss[d].settings.year};
         });
         console.log(this.props.tracts);
         console.log(this.props.activeVariable);

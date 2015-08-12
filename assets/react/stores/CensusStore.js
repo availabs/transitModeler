@@ -23,6 +23,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var _rawDataSets = {},
     _currentYear = 2010,
     _loading = false,
+
     _activeVariable = 'car_0';
 
 function _addCensusData(marketAreaId,year,rawData) {
@@ -63,7 +64,7 @@ var CensusStore = assign({}, EventEmitter.prototype, {
     return {
       currentYear:_currentYear,
       marketareaId: MarketareaStore.getCurrentMarketAreaId()
-    }
+    };
   },
 
   getCurrentDataSet: function() {
@@ -78,7 +79,7 @@ var CensusStore = assign({}, EventEmitter.prototype, {
       _loadData();
       _loading = true;
     }
-    currentData.update_data([])
+    currentData.update_data([]);
     //console.log('getCurrentCensusData',marketAreaId,_rawDataSets[marketAreaId],currentData,_loading)
     return currentData;
   },
