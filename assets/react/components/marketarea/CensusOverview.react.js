@@ -12,6 +12,7 @@ var React = require('react'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
+    SailsWebApi = require('../../utils/sailsWebApi'),
 
     // -- Stores
     DataSourceStore = require('../../stores/DatasourcesStore');
@@ -29,17 +30,26 @@ var CensusOverview = React.createClass({
 
         var state = {};
         state.activeCensusCategory = 18;
+        state.activeState = '34';
+        state.activeCensus = 0;
+        state.censusData = this.props.censusData;
         return state;
 
     },
-
+    censusSelection : function(e,selections){
+      if(selections.id !== this.state.activeCensus){
+        var newState = this.state;
+        newState.activeCensus = selections.id;
+        console.log(selections);
+        SailsWebApi.getRawCensus(this.props.marketarea.id,selections.year);
+        this.setState(newState);
+      }
+    },
     censusCategorySelections: function (e, selections) {
-
         var newState = this.state;
         newState.activeCensusCategory = selections.id;
         MarketAreaActionsCreator.setActiveCensusVariable(this.props.censusData.getCategories()[Object.keys(this.props.censusData.getCategories())[selections.id]][0]);
         this.setState(newState);
-
     },
     downloadShape : function(type){
       var scope = this;
@@ -83,15 +93,22 @@ var CensusOverview = React.createClass({
       }
     },
     render: function() {
-        console.info('census data',this.props.censusData);
-        console.info('census tracts',this.props.tracts);
+        var scope = this;
         var censusData = this.props.censusData.getTotalData();
         var data = Object.keys(this.props.censusData.getCategories()).map(function(cat,id){
             return {"id":id,"text":cat};
         });
+        var acss = DataSourceStore.getType('acs');
 
-
-
+        var censi = Object.keys(acss).filter(function(d){
+          return acss[d].stateFips === scope.state.activeState;
+        }).map(function(d,i){
+          return {id:i,text:acss[d].tableName,year:acss[d].settings.year};
+        });
+        console.log(this.props.tracts);
+        console.log(this.props.activeVariable);
+        console.log(this.props.censusData);
+        console.log(this.state.activeCensusCategory);
         return (
         	<div >
                 <CensusOverviewHeader/>
@@ -108,14 +125,30 @@ var CensusOverview = React.createClass({
                     <div className="col-lg-5">
                       <section className="widget">
                         <div className="body no-margin">
+                          <fieldset>
 
+                              <div className="form-group">
+                                  <label className="col-sm-3 control-label" htmlFor="grouped-select">Census</label>
+                                  <div className="col-sm-9">
+                                       <Select2Component
+                                        id="the-other-hidden-input-id"
+                                        dataSet={censi}
+                                        onSelection={this.censusSelection}
+                                        multiple={false}
+                                        styleWidth="100%"
+                                        val={[this.state.activeCensus]} />
+                                  </div>
+                              </div>
+
+                          </fieldset>
                         </div>
                       </section>
                         <div>
                             <CensusGraph
                                 activeCategory={this.state.activeCensusCategory}
                                 censusData={this.props.censusData}
-                                marketarea={this.props.marketarea} />
+                                marketarea={this.props.marketarea}
+                                />
 
                         </div>
 

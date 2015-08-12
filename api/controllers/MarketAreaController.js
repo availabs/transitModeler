@@ -11,7 +11,6 @@ var acs_data = require('./utils/acsData');
 var mkdirp = require('mkdirp');
 
 function getCensusData(marketarea,table,cb){
-
     var sql = 'SELECT a.*,b.aland FROM public.'+table+' as a' +
           ' join tl_2013_34_tract as b on a.geoid = b.geoid' +
           ' where a.geoid in '+JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
