@@ -224,6 +224,13 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     return _marketAreas[id];
   },
 
+  refreshEdits : function(){
+    delete _eGtfsRoutesGeo[_editGtfs];
+    delete _eGtfsStopsGeo[_editGtfs];
+    delete _gtfsSchedules[_editGtfs];
+    GtfsStore.emitChange();
+  },
+
   getEditRoutesGeo : function(){
     var ma = MarketAreaStore.getCurrentMarketArea();
     if( ma ){
@@ -467,6 +474,8 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
       _addDatasets(action.data);
       GtfsStore.emitChange();
     break;
+
+
 
     case ActionTypes.RECEIVE_GTFS_EDIT_ROUTES:
         _eGtfsRoutesGeo[action.Id[0]] = action.data;

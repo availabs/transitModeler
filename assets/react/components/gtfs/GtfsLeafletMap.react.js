@@ -185,11 +185,15 @@ var Map = React.createClass({
             map.removeLayer(layers[key].layer);
           }
         }
-        var toplayers = Object.keys(layers).filter(function(d){
-          return layers[d].layer.options.bringToFront;
-        });
-        toplayers.forEach(function(d){
-          layers[d].layer.bringToFront();
+
+        var toplayers = Object.keys(layers).forEach(function(d){
+          var currLayer = layers[d];
+          if(currLayer.layer.options.bringToFront && map.hasLayer(currLayer.layer)){
+              currLayer.layer.bringToFront();
+          }
+          if(currLayer.layer.options.bringToBack && map.hasLayer(currLayer.layer)){
+            currLayer.layer.bringToBack();
+          }
         });
         if(layer.options.zoomOnLoad && isZooming && layer.geo.features.length > 0 && layer.geo.features[0].geometry.coordinates.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
@@ -201,11 +205,11 @@ var Map = React.createClass({
         if( Object.keys(this.props.legendLayers).length === 0 ){
             return (
                 <span />
-            )
+            );
         }
         return (
             <MapLegend layers={this.props.legendLayers} options={this.props.legendOptions} />
-        )
+        );
     },
 
     render: function() {
@@ -272,7 +276,7 @@ var Map = React.createClass({
 
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){
-                var currLayer = scope.props.layers[key]
+                var currLayer = scope.props.layers[key];
                 if(key==='stopsLayer'){
                     currLayer.options = scope._setStopOptions(map);
                 }
@@ -288,8 +292,11 @@ var Map = React.createClass({
 
                 }
                 map.addLayer(layers[key].layer);
-                if(currLayer.options.bringToFront){
-                  layers[key].layer.bringToFront();
+                if(currLayer.options.bringToFront && map.hasLayer(currLayer.layer)){
+                  currLayer.layer.bringToFront();
+                }
+                if(currLayer.options.bringToBack && map.hasLayer(currLayer.layer)){
+                  currLayer.layer.bringToBack();
                 }
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0 && currLayer.geo.features[0].geometry.coordinates.length > 0){
                     var ezBounds = d3.geo.bounds(currLayer.geo);

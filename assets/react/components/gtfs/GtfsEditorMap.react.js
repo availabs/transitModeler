@@ -130,6 +130,7 @@ var GtfsEditorMap = React.createClass({
                 geo:tracts,
                 options:{
                     zoomOnLoad:true,
+                    bringToBack:true,
                     style:function (feature) {
                         return {
                             //className: 'ma-tract',
@@ -155,7 +156,6 @@ var GtfsEditorMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
-                    bringToFront:true,
                     zoomOnLoad:true,
                     style:function (feature,i) {
                         return {
@@ -204,6 +204,7 @@ var GtfsEditorMap = React.createClass({
                 }
             },
             stopsLayer:{
+                zoomOnLoad:true,
                 id:stopslayerID,
                 geo:stops,
                 options:{}

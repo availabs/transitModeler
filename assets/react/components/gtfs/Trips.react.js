@@ -13,18 +13,28 @@ var MarketAreaNew = React.createClass({
     getInitialState : function(){
       return {
         trips:this.props.route.trips,
+
       };
     },
+    componentWillReceiveProps : function(nextProps){
+      var nextState = this.state;
+      if(nextProps.route.trips && (nextProps.route.trips !== this.props.route.trips) ){
+          nextState.trips = nextProps.route.trips;
+      }
+
+      this.setState(nextState);
+
+    },
     _crtTripButton : function(length){
-      if(length < 2)
+      if(length < 2 && !this.props.isCreating){
         return (
             <CreationForm
-              values={{Trip_Id:'Trip',Shape_Id:'Shape',Headsign:'HeadSign'}}
+              values={{Headsign:'HeadSign'}}
               buttonText={"Create New Trip"}
               id={"trips"}
               saveAction={this.props.addTrip} />
           );
-      else{
+      }else{
         return (<div></div>);
       }
     },
@@ -41,14 +51,11 @@ var MarketAreaNew = React.createClass({
         return (<div></div>);
       }
     },
-    componentWillReceiveProps : function(nextProps){
-      if(nextProps.route.trips && (nextProps.route.trips !== this.props.route.trips) ){
-          this.setState({trips:nextProps.route.trips});
-      }
-    },
     render: function() {
         var buttons = <span/>,scope=this;
         if(this.props.route && this.props.route.trips){
+          //if the current route is defined and we have a list of trips
+          //render buttons to be able to select them.
           buttons = scope.state.trips.map(function(trip,i){
             var classes = "btn btn-lg btn-block";
             if(scope.props.currentTrip === i){
@@ -59,12 +66,12 @@ var MarketAreaNew = React.createClass({
             }else{
               classes+=' btn-primary';
             }
-            if(scope.props.isCreating){
+            if(scope.props.isCreating && !scope.props.editing){
               return (
               <button id={'tooltip'} data-toggle={'tooltip'} data-placement={'left'}
                 data-original-title={'Click Me to Begin'} style={{fontSize:'10px'}} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
-                                {i+" "+trip.headsign };
+                                {trip.headsign }
               </button>
             );
             }
@@ -73,14 +80,13 @@ var MarketAreaNew = React.createClass({
               <div className='input-group-btn'>
               <button style={{fontSize:'10px'}} width={'75%'} className={classes}
               onClick={scope.props.onTripSelect.bind(null,i)}>
-                          {i+" "+trip.headsign };
+                          {trip.headsign}
               </button>
               </div>
             </div>
             );
           });
         }
-        //var routesGeo = this.state.routesGeo || emptyGeojson;
         var divstyle = {
           'overflowY':'scroll',
           maxHeight:300,
@@ -99,7 +105,7 @@ var MarketAreaNew = React.createClass({
     },
     componentDidUpdate : function(){
       if(this.props.isCreating){
-        $('#tooltip').tooltip('show');
+        $('#tooltip.active').tooltip('show');
       }
     },
 });

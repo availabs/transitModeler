@@ -69,7 +69,7 @@ var MarketAreaNew = React.createClass({
 
               <button style={{fontSize:'20px'}} data-toggle="modal" data-target={'#myModal'} data-backdrop="static" className={classes}
               onClick={this.onSave}>
-                                {'Save Changes'};
+                                {'Save Changes'}
               </button>
 
             );

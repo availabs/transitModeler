@@ -73,7 +73,7 @@ var MarketAreaNew = React.createClass({
         var classes = "btn btn-lg btn-block";
         var selectRouteData = Object.keys(this.props.schedules)
                                 .map(function(key){
-                                    return {"id":scope.props.schedules[key].id ,"text":key };
+                                    return {"id":scope.props.schedules[key].id ,"text":scope.props.schedules[key].shortName };
                                 }).filter(function(d){return d.text !=='id';});
         var serviceData = {};                        //selector has been chose;
         if(this.props.schedules[this.state.selection]){

@@ -166,23 +166,23 @@ var CensusMap = React.createClass({
                             mouseover: function(e){
                                 var classColor = feature.properties.color ? feature.properties.color : '#000'; //d3.select('.route_color_'+feature.properties.short_name).style('background-color');
                                 e.target.setStyle({opacity:0.7,weight:10});
-                                d3.select('.ToolTip').style({
-                                    left:e.originalEvent.clientX+'px',
-                                    top:e.originalEvent.clientY+'px',
-                                    display:'block',
-                                    opacity:1.0,
-                                    'border-top':'5px solid '+classColor
-                                }).select('h4')
-                                    .attr('class','TT_Title')
-                                    .style({
-                                        color:classColor
-                                    })
-                                    .html('Route '+feature.properties.short_name)
+                                // d3.select('.ToolTip').style({
+                                //     left:e.originalEvent.clientX+'px',
+                                //     top:e.originalEvent.clientY+'px',
+                                //     display:'block',
+                                //     opacity:1.0,
+                                //     'border-top':'5px solid '+classColor
+                                // }).select('h4')
+                                //     .attr('class','TT_Title')
+                                //     .style({
+                                //         color:classColor
+                                //     })
+                                //     .html('Route '+feature.properties.short_name)
                             },
                             mouseout: function(e){
                                 //console.log('mouseout1')
                                 //scope._updateTooltip({ x:0,y:0,display:'none'});
-                                d3.select('.ToolTip').style({opacity:0});
+                                // d3.select('.ToolTip').style({opacity:0});
                                 e.target.setStyle({opacity :0.3});
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
