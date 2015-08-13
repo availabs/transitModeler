@@ -90,7 +90,7 @@ var Util = {
 	addDelStops:function(datafile,featlist,trips,deltas,cb){
 		if(featlist.length <=0) cb(undefined,{});
 
-			debugger;
+
 			var sql = '';
 
 			var	template2 = 'SELECT add_stop_to_stop_times(\'?\',?,?,\'?\')',
@@ -111,7 +111,7 @@ var Util = {
 				var f = new Feature(feat);
 				if(feat.isNew()){ //if it is a new feature add it to the database
 					sql += gtfshelper.insert('stop',feat.toRaw(),datafile);
-					debugger;
+
 					sql += buildFeatureQuery(template2,map2,f);
 				}
 				else if(feat.isDeleted()){ //if it was marked for deletion from a tgroup
@@ -138,16 +138,9 @@ var Util = {
 		if(updates.length > 0){
 			sql += this.updateStops(datafile,updates,trips,deltas);
 		}
-//		updateNonRequiredStopInfo(datafile,updates,inserts);
 		return sql;
 	},
-	// updateNonRequiredStopInfo : function(datafile,updates,inserts){
-	// 	var sql = '';
-	// 	template = 'UPDATE ""?.stops'
-	// 	updates.concat(inserts).forEach(function(d){
-	//
-	// 	});
-	// },
+
 	putTrip: function(datafile,trip){
 		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\',\'?\')',
 		map =['trip_id','headsign','route_id','service_id','shape_id','file'],sql ='';
@@ -170,8 +163,8 @@ var Util = {
 	putService: function(datafile,service_id){
 		return 'SELECT create_or_update_service(\''+service_id+'\',\''+datafile+'\');';
 	},
-	putRoute: function(datafile,route_id){ //currently only bus route type;
-		var sql = 'Select create_or_update_route(\''+route_id+'\',3,\''+datafile+'\');';
+	putRoute: function(datafile,route_id,short_name){ //currently only bus route type;
+		var sql = 'Select create_or_update_route(\''+route_id+'\',\''+short_name+'\',3,\''+datafile+'\');';
 		return sql;
 	},
 	editRoute: function(datafile,route){
@@ -196,14 +189,14 @@ var Util = {
 				console.log('Everything is Good');
 			}
 			var sql = '', datafile=agency.tableName ;
-		
+
 			if(route && route.isEdited()){
 				sql += db.editRoute(datafile,route);
 				console.log('Edited Route');
 			}
 			if(trip.isNew){ //if we are adding a new trip
 				sql += db.putService(datafile,trip.service_id); //add its associated service
-				sql += db.putRoute(datafile,route_id);	//add the associated route
+				sql += db.putRoute(datafile,route_id,route.getRouteShortName());	//add the associated route
 				sql += db.putTrip(datafile,trip);	// add the trip itself
 			}
 			else if(trip.isEdited){//the trip meta was changed;

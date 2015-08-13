@@ -7,7 +7,7 @@ DROP FUNCTION IF EXISTS update_st_times(trip_ids TEXT[], time_deltas INT[], sche
 DROP FUNCTION IF EXISTS delete_and_update_shapes_with_trips(trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[],schema TEXT);
 DROP FUNCTION IF EXISTS insert_into_shapes_with_trips(shape_id TEXT,trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[], schema TEXT);
 DROP FUNCTION IF EXISTS update_route_geom(route_id TEXT,schema TEXT);
-DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, type INT, schema TEXT);
+DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, short_name TEXT, type INT, schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text,text);
 DROP FUNCTION IF EXISTS create_or_update_service(text,text);
 DROP FUNCTION IF EXISTS create_or_update_freq(text,text,text,integer,text);
@@ -177,7 +177,7 @@ RETURNS void AS $$
 		$$ LANGUAGE plpgsql;
 --THESE CREATE AND UPDATES ARE ONLY GOOD FOR basic pipelining to get imperitive data
 --For functionality, must be updated for full featured data
-CREATE OR REPLACE FUNCTION create_or_update_route(route_id TEXT,type INT, schema TEXT)
+CREATE OR REPLACE FUNCTION create_or_update_route(route_id TEXT, short_name TEXT,type INT, schema TEXT)
 RETURNS void as $$
  	DECLARE
 		chk BOOLEAN;
@@ -187,11 +187,11 @@ RETURNS void as $$
 					USING route_id;
 	RAISE NOTICE 'query value : %', chk;
 	IF NOT chk THEN
-		EXECUTE format('INSERT INTO %I.routes(route_id,route_type,route_short_name) VALUES ($1,$2,$1)',schema)
-					USING route_id,type;
+		EXECUTE format('INSERT INTO %I.routes(route_id,route_type,route_short_name) VALUES ($1,$2,$3)',schema)
+					USING route_id,type, short_name;
 	ELSE
-		EXECUTE format('UPDATE %I.routes SET route_id=$1, route_short_name=$1, route_type=$2 WHERE route_id=$1',schema)
-						USING route_id,type;
+		EXECUTE format('UPDATE %I.routes SET route_id=$1, route_short_name=$3, route_type=$2 WHERE route_id=$1',schema)
+						USING route_id,type,short_name;
 	END IF;
 	END;
 	$$ LANGUAGE plpgsql;
