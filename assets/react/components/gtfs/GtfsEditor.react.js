@@ -315,11 +315,18 @@ var MarketAreaNew = React.createClass({
         d.isNew = undefined;
         d.clean();
       });
-      partialState.tracker = new EditTracker(); //scrap the edit last edit tracker
-      partialState.TripObj = this.state.TripObj;
-      partialState.TripObj.isNew = false;
-      partialState.edited = false;
-      partialState.saved=true;
+      partialState = this.getInitialState();
+      if(!this.props.datasources[this.state.currentGtfs].settings.readOnly){
+        partialState.tracker = new EditTracker(); //scrap the edit last edit tracker
+        partialState.TripObj = this.state.TripObj;
+        partialState.TripObj.isNew = false;
+        partialState.frequencies = this.state.frequencies;
+        partialState.routingGeo = this.state.routingGeo;
+        partialState.deltas = this.state.deltas;
+        partialState.lengths = this.state.lengths;
+        partialState.edited = false;
+        partialState.saved=true;
+      }
       this.setState(partialState);
     },
     componentDidMount : function(){
@@ -330,7 +337,8 @@ var MarketAreaNew = React.createClass({
     componentWillReceiveProps:function(nextProps){
       var scope = this;
         if(!this.props.marketarea && nextProps.marketarea){
-          GtfsActionsCreator.setGtfsChange(nextProps.marketare.origin_gtfs);
+          this.setState({currentGtfs:nextProps.marketArea.origin_gtfs});
+          GtfsActionsCreator.setGtfsChange(nextProps.marketarea.origin_gtfs);
         }
         if(this.state.stopColl.getLength()===0 || ((!this.props.stopsGeo.features && nextProps.stopsGeo.features) || (nextProps.stopsGeo.features &&
              (nextProps.stopsGeo.features.length !== this.props.stopsGeo.features.length || nextProps.stopsGeo.id !== this.props.stopsGeo.id))) &&
@@ -731,7 +739,7 @@ var MarketAreaNew = React.createClass({
         var scheds = this.state.schedules || {};
         var route = this.getTrips();
         var routingGeo = this.state.routingGeo;
-        var gtfsName = this.props.datasources[this.state.currentGtfs].tableName;
+        var gtfsName = (this.props.datasources[this.state.currentGtfs])? this.props.datasources[this.state.currentGtfs].tableName:'';
         var colors = this.props.marketarea.routecolors;
         routesGeo.features.forEach(function(d){
            if(colors && colors[d.properties.short_name]){

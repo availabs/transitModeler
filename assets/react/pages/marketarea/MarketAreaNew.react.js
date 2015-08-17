@@ -171,7 +171,16 @@ var MarketAreaNew = React.createClass({
 
         }
     },
-
+    routeFilter : function(rsn){
+      if(this.state.routesGeo.features.length > 0){
+        var list = this.state.routesGeo.features.filter(function(d){
+          return d.properties.short_name === rsn;
+        });
+        return list.length > 0;
+      }else{
+        return true;
+      }
+    },
     renderSelectors : function(){
         if(this.state.gtfs_source){
 
@@ -179,7 +188,7 @@ var MarketAreaNew = React.createClass({
                 <div>
                     <GtfsSelector currentSelection={this.state.marketarea.origin_gtfs} gtfsData={this.props.datasources.gtfs} gtfsChange={this.gtfsSelect}/>
                     <RoutesSelector addRoute={this.addRoute} routeList={this.state.routeList} />
-                    <RouteListTable marketarea={this.state.marketarea} colorChange={this.colorChange} removeRoute={this.removeRoute} />
+                    <RouteListTable marketarea={this.state.marketarea} rfilter={this.routeFilter} colorChange={this.colorChange} removeRoute={this.removeRoute} />
                 </div>
             );
         }

@@ -34,7 +34,9 @@ var RouteListTable= React.createClass({
       var scope = this,
           routes = this.props.marketarea ? this.props.marketarea.routes : [],
           colors = scope.props.marketarea.routecolors,
-          rows = routes.map(function(route,i){
+          rows = routes.filter(function(d){
+            return scope.props.rfilter(d);
+          }).map(function(route,i){
             var color = (colors[route])?colors[route]:'#000';
             var divStyle = {
                 "width":'10px',
