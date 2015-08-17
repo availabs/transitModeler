@@ -196,7 +196,7 @@ var Util = {
 			}
 			if(trip.isNew){ //if we are adding a new trip
 				sql += db.putService(datafile,trip.service_id); //add its associated service
-				sql += db.putRoute(datafile,route_id,route.getRouteShortName());	//add the associated route
+				sql += db.putRoute(datafile,route_id,route.getRouteShortName() || '');	//add the associated route
 				sql += db.putTrip(datafile,trip);	// add the trip itself
 			}
 			else if(trip.isEdited){//the trip meta was changed;
@@ -227,11 +227,16 @@ var Util = {
 					MarketArea.findOne({id:maId}).exec(function(err,ma){//get the market area from db
 						if(err)console.log(err);
 						console.log(ma,maId);
-						ma.routes.push(route_id);//update add the new route_id to the list
-						MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
-							if(err)console.log(err);
+						if(route.getRouteShortName()){
+							ma.routes.push(route.getRouteShortName());//update add the new route_id to the list
+							MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
+								if(err)console.log(err);
+								populateRoutesGeo(datafile,route_id);
+							});
+						}
+						else{
 							populateRoutesGeo(datafile,route_id);
-						});
+						}
 					});
 				}else{
 				// debugger;

@@ -8,7 +8,8 @@ var React = require('react'),
 var MarketAreaNew = React.createClass({
     getInitialState: function(){
       return {
-        modal:false
+        modal:false,
+        name:Math.round(Math.random()*1000) +'',
       };
     },
     onSave : function(){
@@ -22,9 +23,11 @@ var MarketAreaNew = React.createClass({
       this.setState({modal:false});
     },
     _saveChange : function(){
-      var name = Math.round(Math.random()*1000)+'';
-      this.props.cloneSave(name);
+      this.props.cloneSave(this.state.name);
       this.setState({modal:false});
+    },
+    nameChange : function(e){
+      this.setState({name:e.target.value});
     },
     prompt : function(){
       if(this.props.gtfs && this.props.gtfs.settings.readOnly && this.state.modal){
@@ -38,7 +41,11 @@ var MarketAreaNew = React.createClass({
                               <button type="button" onClick={this._cancelAction} className="close" data-dismiss="modal" aria-hidden="true">×</button>
                               <h4 className="modal-title" id={"myModalLabel"+this.props.id}>{'Clone Data'}</h4>
                           </div>
-                          {'The Current Data is Protected, would you like to copy it?'}
+                          <h4>{'The Current Data is Protected, please create a name for its clone'}</h4>
+                          <br/>
+                          <br/>
+                          <label className={'control-label col-sm-4'}>Dataset Name:</label>
+                          <input type='text' onChange={this.nameChange} value={this.state.name}></input>
                           <div className="modal-footer">
                               <button type="button" onClick={this._cancelAction} className="btn btn-default" data-dismiss="modal">No</button>
                               <button type="button" onClick={this._saveChange} className="btn btn-primary" data-dismiss="modal">Yes</button>

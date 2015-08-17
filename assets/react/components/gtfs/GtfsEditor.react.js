@@ -32,6 +32,7 @@ var React = require('react'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     GtfsActionsCreator       = require('../../actions/GtfsActionsCreator'),
     // -- Stores
+    MarketAreaStore          = require('../../stores/MarketAreaStore'),
     GtfsStore                = require('../../stores/GtfsStore');
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
@@ -239,6 +240,8 @@ var MarketAreaNew = React.createClass({
         return d.isNew || d.isEdited();
       })[0];
       if(route){
+        if(route.isNew)
+          this.props.marketarea.routes.push(route.getRouteShortName());
         route = route.getFeature();
       }
       var saveObj = new SaveObj(this.state.graph,
@@ -302,13 +305,16 @@ var MarketAreaNew = React.createClass({
         this.setState({routingGeo:graph.toFeatureCollection(),lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
     },
     cleanEdits : function(){
-      var partialState = {};
-      if(this.state.buffStopColl){
-          this.state.stopColl.takeNew(this.state.buffStopColl);
-      }
+      var partialState = {},scope=this;
       this.state.stopColl.merge(); //merge changes with the original data
       this.state.stopColl.clean(); //remove edited and new flags
-      partialState.stopColl = this.state.stopColl;
+      var route = this.state.routeColl.filter(function(d){
+        return d.isNew || d.isEdited();
+      }).forEach(function(d){
+        //editing props directly to make it obvious instead of subtly through references
+        d.isNew = undefined;
+        d.clean();
+      });
       partialState.tracker = new EditTracker(); //scrap the edit last edit tracker
       partialState.TripObj = this.state.TripObj;
       partialState.TripObj.isNew = false;
@@ -322,6 +328,7 @@ var MarketAreaNew = React.createClass({
       }
     },
     componentWillReceiveProps:function(nextProps){
+      var scope = this;
         if(!this.props.marketarea && nextProps.marketarea){
           GtfsActionsCreator.setGtfsChange(nextProps.marketare.origin_gtfs);
         }
@@ -362,6 +369,12 @@ var MarketAreaNew = React.createClass({
           }
           else{
             console.log('Data upload unsuccessful');
+            var routes = this.props.marketarea.routes;
+            this.state.routeColl.filter(function(d){return d.isNew;}).forEach(function(d){
+              var ix = routes.indexOf(d.getRouteShortName());
+              if(ix >=0)
+                routes.splice(ix,1);
+            });
             this.setState({edited:true});
           }
         }
@@ -505,6 +518,7 @@ var MarketAreaNew = React.createClass({
             var route = new RouteObj();
             route.setId(id);
             route.setRouteShortName(shortname);
+            route.isNew = true;
             this.state.routeColl.push(route);
             this.setState({
               schedules:this.state.schedules,
@@ -700,7 +714,7 @@ var MarketAreaNew = React.createClass({
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
         var stopsGeo;
-        if(!this.state.TripObj)
+        if(!this.state.TripObj || (this.state.stopColl.getLength() <= 0))
             stopsGeo = emptyGeojson;
         else{
             var ids = this.state.TripObj.getStops(),

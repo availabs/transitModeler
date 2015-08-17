@@ -146,6 +146,7 @@ module.exports = {
 				return new Stop(d.stop);
 			});
 		var route = new RouteObj(reqobj.route);
+		console.log('route obj',route);
 		console.log(featList);
 		var trips = reqobj.trip_ids;
 		var deltas = reqobj.deltas;
@@ -390,13 +391,14 @@ function spawnGtfsClone(job,names,config,savedata){
 function save(job,backupName,data){
 
 	Datasource.find( {tableName:backupName},function(err,result){
-		console.log('save data object : ',data);
-		var agency=result[0].id,deltas=data.deltas,maId = data.maId,route = data.route,
+
+		var agency=result[0].id,deltas=data.deltas,maId = data.maId,route = new RouteObj(data.route),
 		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.freqs;
 		var featList = data.data
 		.map(function(d){
 				return new Stop(d.stop);
 			});
+		console.log("PUTTING DATA");
 		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,maId,function(err,data){
 			if(err){
 				console.log(err);

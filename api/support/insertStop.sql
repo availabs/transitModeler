@@ -190,8 +190,16 @@ RETURNS void as $$
 		EXECUTE format('INSERT INTO %I.routes(route_id,route_type,route_short_name) VALUES ($1,$2,$3)',schema)
 					USING route_id,type, short_name;
 	ELSE
-		EXECUTE format('UPDATE %I.routes SET route_id=$1, route_short_name=$3, route_type=$2 WHERE route_id=$1',schema)
-						USING route_id,type,short_name;
+		IF short_name is NULL THEN
+			EXECUTE format('UPDATE %I.routes SET route_id=$1, route_type=$2 WHERE route_id=$1',schema)
+							USING route_id,type;
+		ELSIF char_length(short_name) = 0 THEN
+			EXECUTE format('UPDATE %I.routes SET route_id=$1, route_type=$2 WHERE route_id=$1',schema)
+							USING route_id,type;
+		ELSE
+			EXECUTE format('UPDATE %I.routes SET route_id=$1, route_short_name=$3, route_type=$2 WHERE route_id=$1',schema)
+							USING route_id,type,short_name;
+		END IF;
 	END IF;
 	END;
 	$$ LANGUAGE plpgsql;
