@@ -48,7 +48,7 @@ var CensusOverview = React.createClass({
       if(selections.id !== this.state.activeCensus){
         var newState = this.state;
         newState.activeCensus = selections.id;
-        console.log(selections);
+        //console.log(selections);
         SailsWebApi.getRawCensus(this.props.marketarea.id,selections.year);
         this.setState(newState);
       }
@@ -113,7 +113,7 @@ var CensusOverview = React.createClass({
         }).map(function(d,i){
           return {id:d,text:acss[d].tableName,year:acss[d].settings.year};
         });
-        console.log(this.props.stopsGeo,this.props.routesGeo);
+        //console.log(this.props.stopsGeo,this.props.routesGeo);
         return (
         	<div >
                 <CensusOverviewHeader/>

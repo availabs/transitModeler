@@ -142,9 +142,7 @@ var ModelCreate = React.createClass({
                                 datasources={this.props.datasources}
                                 currentSettings={this.state.currentSettings} />
                         </section>
-                        <span style={{color:'black'}}>
-                        {JSON.stringify(this.state.currentSettings)}
-                        </span>
+                       
                     </div>
                 </div>
         	</div>

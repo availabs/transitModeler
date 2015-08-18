@@ -35,7 +35,7 @@ var TripTableOverview = React.createClass({
 
         return (
             <div className="body">
-                Trips Planned:{this.props.currentTripTable.tt.length}
+                Trips Planned:{this.props.currentTripTable ? this.props.currentTripTable.tt.length : 0}
                 
                 <button type="submit" 
                     className="btn btn-danger pull-right" 

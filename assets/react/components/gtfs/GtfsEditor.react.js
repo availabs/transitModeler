@@ -747,7 +747,7 @@ var MarketAreaNew = React.createClass({
            }
         });
         return (
-        	<div className="content container">
+        	<div>
             	<h2 className="page-title">
                   <a  data-toggle={'tooltip'} data-placement={'right'}
                     data-original-title={'Then Click Any 2 Points on the Map'} id={'tooltip2'} data>{'Edit GTFS'}</a>

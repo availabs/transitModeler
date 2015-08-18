@@ -39,7 +39,7 @@ var MarketAreaIndex = React.createClass({
     getInitialState: function(){
 
         var state = {};
-        state.activeComponent = 'gtfs';
+        state.activeComponent = 'acs';
         return state;
 
     },
@@ -189,11 +189,11 @@ var MarketAreaIndex = React.createClass({
                                    Survey Analysis
                                 </div>
                                 <div id="farebox" className="tab-pane clearfix">
-                                   farebox
+                                   Farebox Analysis
 
                                 </div>
                                 <div id="gtfs" className="tab-pane clearfix">
-                                   GTFS
+                                   GTFS Editor
                                 </div>
 
                             </div>
