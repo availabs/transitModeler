@@ -99,6 +99,9 @@ var Map = React.createClass({
     },
 
     render: function() {
+        if(map){    
+            map.invalidateSize();
+        }
         return (
             <div className="map" id={this.props.mapId}>
                 <ToolTip/>

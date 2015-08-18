@@ -17,6 +17,7 @@ var React = require('react'),
     prevTractLength,
     routeLayerID = 0,
     prevRouteLength,
+    tractCounts={},
     odScale = d3.scale.quantile().range(colorbrewer.PuBu[6]);    
 
 
@@ -42,8 +43,8 @@ var ModelMap = React.createClass({
     },
 
     processLayers:function(){
-        var scope = this,
-            tractCounts = this._reduceTripTable();
+        var scope = this;
+        tractCounts = this._reduceTripTable();
 
         if(this.props.tracts.features.length !== prevTractLength){
             tractlayerID++;
@@ -86,7 +87,7 @@ var ModelMap = React.createClass({
                         scaleValue = scope.props.mode === 'Origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
 
                     }
-                    console.log('fdata',forecastData)
+                    //console.log('fdata',forecastData)
                     if((scope.props.mode === 'pop'  || scope.props.mode === 'emo') &&  forecastData[geoid]){
                         //console.log('pop',geoid,forecastData[geoid].pop2020_growth)
                         scaleValue = scope.props.mode === 'pop' ? forecastData[geoid].pop2020_growth : forecastData[geoid].emp2020_growth;forecastData[geoid].pop2020_growth;
@@ -120,7 +121,7 @@ var ModelMap = React.createClass({
                             click: function(e){
                             },
                             mouseover: function(e){
-                                //console.log(feature.properties)
+                                //console.log(feature.properties,tractCounts)
                                 this.setStyle({weight:2,stroke:true,fillColor:this._path.attributes[3].nodeValue});
                                 var table=scope.renderToolTip(feature,tractCounts);
                                 var tt = d3.select('.ToolTip').style({

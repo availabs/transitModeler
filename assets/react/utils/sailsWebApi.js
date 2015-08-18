@@ -154,7 +154,7 @@ module.exports = {
   },
   putAndCloneGtfsData : function(data,gtfsId,cb){
     var url = '/datasources/gtfs/clone/'+gtfsId;
-    console.log(url);
+    //console.log(url);
     d3.json(url)
       .post(JSON.stringify(data),function(err,data){
         if(err){
@@ -256,7 +256,7 @@ module.exports = {
       if(err){
         console.log('Create Err',err);
       }
-      console.log('create',type,resData);
+      //console.log('create',type,resData);
       //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
       if(cb) {cb(resData);}
@@ -280,7 +280,7 @@ module.exports = {
 
     var where = {};
     d3.json(url,function(err,data){
-      console.log('utils/sailsWebApi/getUsers',data);
+      //console.log('utils/sailsWebApi/getUsers',data);
       ServerActionCreators.receiveData(type,data);
     });
   },

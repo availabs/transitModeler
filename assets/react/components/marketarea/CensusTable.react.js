@@ -25,7 +25,7 @@ var CensusTable= React.createClass({
     },
 
     _rowClick:function(d){
-      console.log('set active category',d)
+      //console.log('set active category',d)
       MarketAreaActionsCreator.setActiveCensusVariable(d);
     },
 
@@ -55,7 +55,7 @@ var CensusTable= React.createClass({
             <tr key={i} onClick={scope._rowClick.bind(null,d[0])} >
               <td style={d[1]}></td>
               <td value={d[0]}>{d[2]}</td>
-              <td value={d[0]}>{d[3]}</td>
+              <td value={d[0]}>{d[3]}%</td>
               <td value={d[0]}>{d[4]}</td>
             </tr>
           );
