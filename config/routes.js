@@ -32,6 +32,7 @@ module.exports.routes = {
 
   //------GTFS Routes------------------------------
   //routes Geo :id is datasource id for gtfs
+  '/datasources/gtfs/delete/:id'    : 'DataSourceController.deleteGtfs',
   '/datasources/gtfs/routes/geo/:id': 'DataSourceController.getRouteGeo',
   '/datasources/gtfs/stops/geo/:id': 'DataSourceController.getStopsGeo',
   '/datasources/gtfs/routes/:tablename':'DataSourceController.getRoutes',
@@ -46,6 +47,8 @@ module.exports.routes = {
   '/triptable':'TriptableController.calculateTripTable',
   '/triptable/run':'TriptableController.runModel',
   '/triptable/list':'TriptableController.finishedModels',
-  '/triptable/:id/modelrun':'TriptableController.getModelRun'
+  '/triptable/:id/modelrun':'TriptableController.getModelRun',
 
+  //---------Gtfs Upload----------------------------
+  '/gtfs/upload':'UploadsController.upload',
 };

@@ -6,6 +6,7 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 var models = require('../../config/models'),
+	_ = require('lodash'),
 	connections = require('../../config/connections');
 	var connection = connections.connections[models.models.connection];
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
@@ -356,7 +357,83 @@ module.exports = {
 			}
 
 		})//Check for data source
-	}
+	},
+
+	deleteGtfs : function(req,res){
+		var victimId = parseInt(req.param('id')); //get the id of the gtfs set to be deleted
+		console.log(victimId);
+		if(!victimId){
+			res.send('{"error":"No datasource id"}',500); //if no such id then fail
+		}
+		Datasource.find({type:'gtfs'}).exec(function(err,data){ //find all gtfs sets
+			if(err){
+				res.send(JSON.stringify(err),500); // if error fail
+				return;
+			}
+			var victim = data.filter(function(d){return d.id===victimId;})[0]; //get the one record to be deleted
+
+			if(typeof victim === 'undefined'){   //if it doesn't exist
+				res.send('{"error":"No Such DataSource"}',500); //fail
+				return;
+			}
+			//If it was an uploaded dataset we take special precaution before deleting
+			if(victim.settings.readOnly && victim.settings.uploaded && !(req.param('passwordasdfasdwerwe'))){
+				res.send('{"error":"Requires PassKey"}',500);
+				return;
+			}
+			//construct query to get the union of all the shortNames in all the datasets except the current one
+			var query = data.filter(function(d){return d.id !==victimId;})
+											.map(function(d){return 'SELECT route_short_name FROM "'+ d.tableName +'".routes ';})
+											.reduce(function(p,c){return p+' UNION '+c;});
+			console.log('made it');
+			Datasource.query(query,{},function(err,data){ //query the database for them
+				if(err){
+					res.send(JSON.stringify(err),500);
+					return;
+				}
+				var keepRoutes = data.rows.map(function(d){return d.route_short_name;});//collect the just the short names
+				var victimQuery = 'Select route_short_name FROM "'+victim.tableName+'".routes'; //select the routes from only the victim
+				Datasource.query(victimQuery,{},function(err,data){
+					if(err){
+						res.send(JSON.stringify(err),500);
+						return;
+					}
+					var victimRoutes = data.rows.map(function(d){return d.route_short_name;}); //collect just the short names
+					var marketareaVics = _.difference(victimRoutes,keepRoutes); //take the set difference between those of the victim and all others
+					MarketArea.find().exec(function(err,data){ //get all market areas
+
+						data = data.map(function(d){
+							var gtfsid = d.origin_gtfs;
+							if(d.origin_gtfs === victimId){
+								gtfsid = 1;
+							}
+							return {routes:d.routes,id:d.id,origin_gtfs:gtfsid};}); //we only currently care about its id and its routes
+						data.forEach(function(d){d.routes = _.difference(d.routes,marketareaVics);}); //for each market area remove the appropriate routes
+						var temp = data.map(function(d){return 'UPDATE marketarea SET routes=\''+JSON.stringify(d.routes)+'\',origin_gtfs='+d.origin_gtfs+' WHERE id='+d.id;});
+						var q = (temp.length === 0) ? '' : temp.reduce(function(p,c){return p+';'+c;}); //create query string to update them
+						MarketArea.query(q,{},function(err,data){
+							if(err){
+								res.send(JSON.stringify(err),500);
+								return;
+							}
+							//after updating the marketareas
+							console.log("Made it to the cleaner"); //drop the schema and tables that contained its data
+							var cleaningQuery = 'DROP SCHEMA IF EXISTS "'+victim.tableName + '" CASCADE;';
+							cleaningQuery += 'DELETE FROM datasource where id = ' + victimId + ';'; //and remove it from the list of available datasources
+							console.log(cleaningQuery);
+							Datasource.query(cleaningQuery,{},function(err,data){ //execute query
+								if(err){
+									res.send(JSON.stringify(err),500);
+								}
+								res.json(data);
+							});
+						});
+
+					});
+				});
+			});
+		});
+	},
 };
 
 //--------------------------------------------------------

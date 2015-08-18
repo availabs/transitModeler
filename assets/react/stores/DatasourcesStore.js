@@ -26,6 +26,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
       ctpp:{},
       gtfs:{}
     },
+    _refreshHard=false,
     _refresh = false,
     _lastjob = '',
     _loading = false;
@@ -49,7 +50,9 @@ function _addDatasets(rawData){
   });
 }
 
-
+function _deleteDataset(data){
+  delete _DataSets[data.type][data.id];
+}
 
 var DatasourcesStore = assign({}, EventEmitter.prototype, {
 
@@ -64,6 +67,11 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
   },
 
   refresh : function(){
+    if(_refreshHard){
+      SailsWebApi.read('datasource');
+      _refreshHard = false;
+      return;
+    }
     var jobs = JobStore.getType('clone gtfs');
     var newestjob = '';
     if(jobs.length === 0){
@@ -113,6 +121,11 @@ DatasourcesStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.REFRESH_DATASOURCES:
       _refresh = true;
+      DatasourcesStore.emitChange();
+    break;
+    case ActionTypes.DELETE_DATASOURCE:
+      _refreshHard=true;
+      _deleteDataset(action.data);
       DatasourcesStore.emitChange();
     break;
     default:

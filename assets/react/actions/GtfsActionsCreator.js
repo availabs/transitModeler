@@ -47,4 +47,10 @@ module.exports = {
       data:null,
     });
   },
+  deleteDataSource : function(dataset){
+    AppDispatcher.handleViewAction({
+      type : ActionTypes.DELETE_DATASOURCE,
+      data:dataset,
+    });
+  }
 };

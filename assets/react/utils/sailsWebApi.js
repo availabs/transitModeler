@@ -8,6 +8,7 @@
 var io = require('./sails.io.js')();
 var d3 = require('d3');
 var ServerActionCreators = require('../actions/ServerActionsCreator');
+var GtfsActionsCreator = require('../actions/GtfsActionsCreator');
 var Router = require('./hereApi');
 
 //---------------------------------------------------
@@ -210,7 +211,7 @@ module.exports = {
   getTriptable:function(settings){
     d3.json('/triptable')
       .post(JSON.stringify({triptable_settings:settings}),function(err,data){
-        ServerActionCreators.receiveData('triptable_list',data)
+        ServerActionCreators.receiveData('triptable_list',data);
       });
 
   },
@@ -246,7 +247,12 @@ module.exports = {
        console.log('SAILS WEB API  / loadACS',data);
     });
   },
-
+  deleteGtfs : function(ds,cb){
+    var url = '/datasources/gtfs/delete/'+ds.id;
+    d3.json(url,function(err,data){
+      GtfsActionsCreator.deleteDataSource(ds);
+    });
+  },
   //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
@@ -267,16 +273,17 @@ module.exports = {
     var url = '',type='';
     if(model.options){
       url += '/' + model.type+'?';
-      url += Object.keys(model.options).map(function(d){
+      var temp =  Object.keys(model.options).map(function(d){
         return d+'='+model.options[d];
-      }).reduce(function(p,c){return p+'&'+c;});
+      });
+      if(temp.length !== 0)
+        url += temp.reduce(function(p,c){return p+'&'+c;});
       type = model.type;
     }
     else{
       type = model;
       url += '/' + model;
     }
-    console.log(url)
 
     var where = {};
     d3.json(url,function(err,data){
@@ -285,9 +292,20 @@ module.exports = {
     });
   },
 
-  update: function(type,data,cb){
-    io.socket.put('/'+type+'/'+data.id,data,function(resData){
-
+  update: function(model,data,cb){
+    var url = '';
+    if(model.options){
+      url += '/' + model.type+'?';
+      var temp =  Object.keys(model.options).map(function(d){
+        return d+'='+model.options[d];
+      });
+      if(temp.length !== 0)
+        url += temp.reduce(function(p,c){return p+'&'+c;});
+    }else{
+      url += '/'+model+'/'+data.id;
+    }
+    io.socket.put(url,data,function(resData){
+      var type = (model.options) ? model.returnType:model;
       //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
       if(cb){cb(resData);}

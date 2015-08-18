@@ -1,11 +1,14 @@
 var React = require('react'),
     sailsWebApi = require('../../utils/sailsWebApi'),
+    GtfsActionsCreator = require('../../actions/GtfsActionsCreator'),
     Dropzone = require('react-dropzone');
 
     //-- Components
-var action = {true:'lock',false:'unlock'};
+var action = {true:'unlock',false:'lock'};
 var GtfsDisplay = React.createClass({
-
+    getInitialState : function(){
+      return{currentData: null,};
+    },
     onDrop: function (files) {
       console.log('Received files: ', files);
     },
@@ -23,14 +26,15 @@ var GtfsDisplay = React.createClass({
 
       return function(){
         dataset.settings.readOnly = (!dataset.settings.readOnly) ? true : !dataset.settings.readOnly;
-        dataset.settings = JSON.stringify(dataset.settings);
-        sailsWebApi.update('datasource',dataset,function(resData){
-          resData.settings = JSON.parse(resData.settings);
-          console.log('resData',resData);
-          scope.props.datasources.gtfs[resData.id] = resData;
-          scope.setState({forced:true});
+        dataset.settings = [dataset.settings];
+        var updateType =
+        sailsWebApi.update('datasource',dataset,function(){
+          GtfsActionsCreator.refreshDatasources();
         });
       };
+    },
+    setDataset   : function(dataset){
+      this.setState({currentData:dataset});
     },
     renderCurrentData: function(){
         var scope = this;
@@ -38,6 +42,7 @@ var GtfsDisplay = React.createClass({
         var rows = Object.keys(this.props.datasources.gtfs).map(function(key){
 
             var dataset= scope.props.datasources.gtfs[key];
+            console.log(dataset.tableName);
             //console.log(key,dataset);
             return (
                 <tr>
@@ -47,7 +52,7 @@ var GtfsDisplay = React.createClass({
                       {scope.renderButton(dataset) }
                     </td>
                     <td>
-                        <button className="btn btn-danger btn-sm delete" data-toggle="modal" data-target="#deleteModal" data-backdrop="false">
+                        <button onClick={scope.setDataset.bind(null,dataset)} className="btn btn-danger btn-sm delete" data-toggle="modal" data-target="#deleteModal" data-backdrop="false">
                             <i className="fa fa-trash"></i>
                             <span>Delete</span>
                         </button>
@@ -78,10 +83,15 @@ var GtfsDisplay = React.createClass({
                     </tbody>
                     </table>
                 </div>
+                {this.deleteModal()}
             </section>
         );
     },
-
+    deleteGtfs : function(){
+      if(this.state.currentData && this.state.currentData.id){
+          sailsWebApi.deleteGtfs(this.state.currentData);
+      }
+    },
     renderDataController:function(){
         return (
              <section className="widget">
@@ -97,7 +107,7 @@ var GtfsDisplay = React.createClass({
                     </Dropzone>
                 </div>
             </section>
-        )
+        );
     },
     render: function() {
 
@@ -117,7 +127,40 @@ var GtfsDisplay = React.createClass({
                 </div>
             </div>
         );
-      }
+      },
+
+    deleteModal:function(){
+        var name = this.state.currentData ? this.state.currentData.tableName : '';
+        var text = <h4>Are you sure you want to delete {name}?</h4>;
+        var deleteButton = <button type="button" className="btn btn-danger" onClick={this.deleteGtfs} data-dismiss="modal">Delete</button>;
+      if(this.state.currentData && this.state.currentData.settings.readOnly){
+            text = <h4> You cannot delete {name}. </h4>;
+            deleteButton = <span />;
+        }
+        return (
+            <div id="deleteModal" className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+
+                        <div className="modal-header">
+                            <button type="button" className="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 className="modal-title" id="myModalLabel2">Delete GTFS</h4>
+                        </div>
+                        <div className="modal-body">
+                             {text}
+                        </div>
+
+                        <div className="modal-footer">
+                           <br />
+                            <button type="button" className="btn btn-info" data-dismiss="modal">Cancel</button>
+                            {deleteButton}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        );
+    },
 });
 
 module.exports = GtfsDisplay;

@@ -128,7 +128,7 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.DELETE_MARKETAREA:
-      delete _marketAreas[action.Id]
+      delete _marketAreas[action.Id];
       MarketAreaStore.emitChange();
     break;
 
@@ -146,7 +146,10 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
 
         MarketAreaStore.emitChange();
     break;
-
+    case ActionTypes.DELETE_DATASOURCE: //when a datasource has been deleted
+                                        //refresh marketareas just in case
+      SailsWebApi.read('marketarea');
+    break;
 
 
     default:
