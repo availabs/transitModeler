@@ -4,7 +4,9 @@
  * @description :: Server-side logic for managing Uploads
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
-
+var path = require('path');
+var password='transit';
+var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitModeler';
  function spawnJob(job){
  	var terminal = require('child_process').spawn('bash');
  	var current_progress = 0;
@@ -43,31 +45,47 @@
  	    	Job.findOne(job.id).exec(function(err,newJob){
 
  	    		if(newJob.status != 'Cancelled'){
+            //if job is not cancelled, in this version of the app we want to only add to the datasource tableName
+            var ds = {
+              type:'gtfs',
+              tableName:gtfsEntry.tableName,
+              stateFips:34,
+              settings:[{readOnly:true,uploaded:true}],
+            };
+            console.log(ds);
+            Datasource.create(ds).exec(function(err,newEntry){
+              if(err){console.log('Error Creating DataSource',err);}
+              Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+                 .exec(function(err,updated_job){
+                   if(err){console.log('job_update error',error);}
+                   sails.sockets.blast('job_updated',updated_job);
+                 });
+            });
+ 			    // 	var sql = "SELECT agency.agency_name,min(calendar_dates.date) as start_date,max(calendar_dates.date) as end_date FROM "+gtfsEntry.tableName+".calendar_dates,"+gtfsEntry.tableName+".agency group by agency.agency_name";
+ 			    // 	console.log(sql);
+ 			   //  	Datasource.query(sql,{},function(err,data){
+          //
+ 			   //  		console.log('select from new gtfs',data);
+ 			   //  		if(data.rows.length > 0){
+ 				 //    	  gtfsEntry.agency = data.rows[0].agency_name;
+ 				 //    	  gtfsEntry.startDate = data.rows[0].start_date;
+ 				 //    	  gtfsEntry.endDate = data.rows[0].end_date;
+ 				 //    	}else{
+ 				 //    		gtfsEntry.agency = job.info[0].file.filename;
+ 				 //    	}
+ 				 //    	MetaGtfs.create(gtfsEntry)
+ 				// 	    .exec(function(err,newEntry){
+ 				// 	    	if(err){ console.log('metaAcs create error',err);}
+          //
+ 				// 		    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+ 				// 			.exec(function(err,updated_job){
+ 				// 				if(err){ console.log('job update error',error); }
+ 				// 				sails.sockets.blast('job_updated',updated_job);
+ 				// 			});
+ 				// 		});
+          //
+ 				// 	});
 
- 			    	var sql = "SELECT agency.agency_name,min(calendar_dates.date) as start_date,max(calendar_dates.date) as end_date FROM "+gtfsEntry.tableName+".calendar_dates,"+gtfsEntry.tableName+".agency group by agency.agency_name";
- 			    	console.log(sql);
- 			    	MetaGtfs.query(sql,{},function(err,data){
-
- 			    		console.log('select from new gtfs',data);
- 			    		if(data.rows.length > 0){
- 				    	  gtfsEntry.agency = data.rows[0].agency_name;
- 				    	  gtfsEntry.startDate = data.rows[0].start_date;
- 				    	  gtfsEntry.endDate = data.rows[0].end_date;
- 				    	}else{
- 				    		gtfsEntry.agency = job.info[0].file.filename;
- 				    	}
- 				    	MetaGtfs.create(gtfsEntry)
- 					    .exec(function(err,newEntry){
- 					    	if(err){ console.log('metaAcs create error',err);}
-
- 						    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
- 							.exec(function(err,updated_job){
- 								if(err){ console.log('job update error',error); }
- 								sails.sockets.blast('job_updated',updated_job);
- 							});
- 						});
-
- 					});
  				}
 
       });
@@ -85,7 +103,7 @@
 
 
          var query = 'CREATE SCHEMA "'+job.info[0].schemaName+'" ';
- 		MetaGtfs.query(query,{} ,function(err, result) {
+ 		Datasource.query(query,{} ,function(err, result) {
  			if(err){ console.log('create schema error',err); }
 
  		    var destinationStream = job.info[0].file.fd;//__dirname + '/cdta_20140811_0109.zip';//+fileInfo.name;
@@ -107,8 +125,8 @@
 
 module.exports = {
   upload:function(req,res){
-
-
+    console.log(req.file());
+    dirname = path.resolve(sails.config.appPath,'/assets/images');
     req.file('files').upload({dirname:'assets/data/gtfs', maxBytes:500000000},
           function (err, files) {
             if (err){
@@ -154,8 +172,6 @@ module.exports = {
             });
 
         });
-
-
 
     });
   }

@@ -1,4 +1,5 @@
 var React = require('react'),
+    myRequest = require('superagent'),
     sailsWebApi = require('../../utils/sailsWebApi'),
     GtfsActionsCreator = require('../../actions/GtfsActionsCreator'),
     Dropzone = require('react-dropzone');
@@ -7,10 +8,15 @@ var React = require('react'),
 var action = {true:'unlock',false:'lock'};
 var GtfsDisplay = React.createClass({
     getInitialState : function(){
-      return{currentData: null,};
+      return{
+        currentData: null,
+        files : [],
+      };
     },
     onDrop: function (files) {
+      files.map(function(d){d.file=d.name; return d;});
       console.log('Received files: ', files);
+      this.setState({files:files});
     },
     renderButton : function(dataset){
       if(dataset.settings.uploaded){
@@ -27,7 +33,7 @@ var GtfsDisplay = React.createClass({
       return function(){
         dataset.settings.readOnly = (!dataset.settings.readOnly) ? true : !dataset.settings.readOnly;
         dataset.settings = [dataset.settings];
-        var updateType =
+
         sailsWebApi.update('datasource',dataset,function(){
           GtfsActionsCreator.refreshDatasources();
         });
@@ -92,6 +98,22 @@ var GtfsDisplay = React.createClass({
           sailsWebApi.deleteGtfs(this.state.currentData);
       }
     },
+    resetFiles : function(){
+      this.setState({files:[]});
+    },
+    upload : function(){
+      var scope = this;
+      var req = myRequest.post('/gtfs/upload');
+      this.state.files.forEach(function(file){
+        req.attach('files',file);
+      });
+      req.end(function(err,res){
+        console.log('RESPONSE',err,res);
+        if(!err){
+          scope.setState({files:[]});
+        }
+      });
+    },
     renderDataController:function(){
         return (
              <section className="widget">
@@ -105,6 +127,9 @@ var GtfsDisplay = React.createClass({
                     <Dropzone onDrop={this.onDrop} size="100%">
                       <div style={{fontSize:'12px'}}>Drop Files here or Click to Upload.</div>
                     </Dropzone>
+                    {(this.state.files.length !==0)?(<div><button onClick={this.upload} type='submit' className={'btn btn-sm btn-info'}> upload</button>
+                  <button className={'btn btn-sm btn-danger'} onClick={this.resetFiles}>cancel</button></div>):<span></span>}
+                    {this.state.files.map(function(d){return d.name;}).join(',')}
                 </div>
             </section>
         );

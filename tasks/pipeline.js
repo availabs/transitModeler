@@ -33,7 +33,7 @@ var jsFilesToInject = [
   'bower_components/jquery/dist/jquery.js',
   'bower_components/select2/select2.js',
   'bower_components/bootstrap/dist/js/bootstrap.js',
-  'bower_components/mjolnic-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js'
+  'bower_components/mjolnic-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js',
   // All of the rest of your client-side js files
   // will be injected here in no particular order.
   //'js/**/*.js'

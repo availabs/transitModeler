@@ -167,19 +167,28 @@ module.exports = {
       });
   },
 
+  uploadGtfsFiles : function(files){
+    d3.json('/gtfs/upload')
+      .post(JSON.stringify({files:files}),function(err,data){
+        if(err) console.log(err);
+        else {
+          console.log(data);
+        }
+      });
+  },
   //---------------------------------------------
   // DataSources
   //---------------------------------------------
 
   loadSurvey:function(marketareaId){
       d3.json('/datasources/survey/'+marketareaId,function(data){
-        ServerActionCreators.receiveDataWithId('survey',marketareaId,data)
+        ServerActionCreators.receiveDataWithId('survey',marketareaId,data);
       });
   },
 
   loadFarebox:function(marketareaId){
       d3.json('/datasources/farebox/'+marketareaId,function(data){
-        ServerActionCreators.receiveDataWithId('farebox',marketareaId,data)
+        ServerActionCreators.receiveDataWithId('farebox',marketareaId,data);
       });
   },
 
