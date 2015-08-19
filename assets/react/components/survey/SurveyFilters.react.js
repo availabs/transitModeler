@@ -30,14 +30,16 @@ var SurveyFilters = React.createClass({
   render : function(){
 
     var rows = this._createRows();
-    var clrbtn;
+    var clrbtn,title;
     if(rows.length){
       clrbtn = (<button className='btn btn-danger btn-sm' onClick={this.props.buttonclick.bind(null,null)}>clear all</button>);
     }
+    if(rows.length){
+      title = <h4>Current Filters</h4>;
+    }
     return (
       <div>
-      <h4>Current Filters</h4>
-
+        {title}
       <table className='table'>
         <thead><th>Filter</th> <th>Value</th><th></th></thead>
         <tbody>

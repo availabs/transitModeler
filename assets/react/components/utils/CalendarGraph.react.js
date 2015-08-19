@@ -2,17 +2,18 @@
 var React = require('react'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
-   
+
     //-- Stores
-    
+
 
     //-- Utils
     colorRange = colorbrewer.YlGn[8],
     DataScale = d3.scale.quantile().domain([0,70000]).range(colorRange);
+    var lastColors = {};
     var rendered = false;
 
 var GraphContainer = React.createClass({
-    
+
     getDefaultProps:function(){
         return {
             height: 100,
@@ -20,7 +21,7 @@ var GraphContainer = React.createClass({
             year:2015
         }
     },
-    
+
     componentDidMount:function(){
 
         var scope = this;
@@ -39,7 +40,7 @@ var GraphContainer = React.createClass({
         else if(nextProps.data && Object.keys(nextProps.data).length !== Object.keys(this.props.data).length){
             //console.log('receive2',this.props.divId,Object.keys(nextProps.data).length,Object.keys(this.props.data).length);
             this._updateData(nextProps.data);
-        
+
         }
     },
 
@@ -61,7 +62,7 @@ var GraphContainer = React.createClass({
                 max = d3.max(values);
 
             DataScale.domain([d3.min(values),d3.max(values)]);
-            
+
             // console.log('scale stuff',
             //     DataScale,
             //     DataScale.domain(),
@@ -70,23 +71,23 @@ var GraphContainer = React.createClass({
             //     values.length
             // );
 
-            
+
             var days = d3.select('#'+this.props.divId).selectAll("svg").selectAll(".day");
             //console.log('selection',days)
             days
-                .filter(function(d) { 
+                .filter(function(d) {
                     //console.log('filtering',d,d in scope.props.data)
-                    return d in showData; 
+                    return d in showData;
                 })
-                .attr("fill", function(d,i) { 
+                .attr("fill", function(d,i) {
                     // if(i < 10){
                     //     console.log(d,scope.props.data[d],DataScale(scope.props.data[d]),DataScale(max/2),max,max/2)
                     // }
-                    return DataScale(showData[d]); 
+                    return DataScale(showData[d]);
                 })
                 .select("title")
                     .text(function(d) { return d + ": " + showData[d]; });
-       
+
         }
     },
 
@@ -95,14 +96,14 @@ var GraphContainer = React.createClass({
         console.log('test123',this.props.divId,d3.select('#'+this.props.divId).node().getBoundingClientRect().width-40);
         var width = d3.select('#'+this.props.divId).node().getBoundingClientRect().width-60,
             width = width < 0 ? 700 : width,
-            cellSize = Math.floor(width/52),
+            cellSize = Math.floor(width/52), //52 weeks in a year
             height  = cellSize*8;
              // cell size
 
-        var day = d3.time.format("%w"),
-            week = d3.time.format("%U"),
-            percent = d3.format(".1%"),
-            format = d3.time.format("%Y-%m-%d");
+        var day = d3.time.format("%w"), //dayformatter
+            week = d3.time.format("%U"),//weekformatter
+            percent = d3.format(".1%"),//percentformatter
+            format = d3.time.format("%Y-%m-%d");//yearmonthdayformat
 
         var color = d3.scale.quantize()
             .domain([-.05, .05])
@@ -125,7 +126,19 @@ var GraphContainer = React.createClass({
         var rect = svg.selectAll(".day")
             .data(function(d) { return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
           .enter().append("rect")
-            .attr("class", "day")
+            .attr("class", "day") //day rectangles
+            .on('click',function(d){
+              scope.props.onClick(d);
+              var rect = d3.select(this);
+
+                rect.attr('fill',function(){
+                  if(scope.props.filters[d]){
+                    return '#f33';
+                  }
+                  return DataScale(scope.props.data[d]);
+                });
+
+            })
             .attr('fill','#fff')
             .attr('stroke','#ccc')
             .attr("width", cellSize)
@@ -158,7 +171,7 @@ var GraphContainer = React.createClass({
               + "H" + (w0 + 1) * cellSize + "Z";
         }
 
-       
+
     },
 
     render: function() {
@@ -166,13 +179,13 @@ var GraphContainer = React.createClass({
           height: this.props.height+'px',
           width: '100%'
         }
-        
-        
+
+
         return (
-        	
+
             <div id={this.props.divId}>
             </div>
-                
+
         );
     }
 });
