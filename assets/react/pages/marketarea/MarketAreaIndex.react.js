@@ -39,7 +39,7 @@ var MarketAreaIndex = React.createClass({
     getInitialState: function(){
 
         var state = {};
-        state.activeComponent = 'acs';
+        state.activeComponent = 'farebox';
         return state;
 
     },

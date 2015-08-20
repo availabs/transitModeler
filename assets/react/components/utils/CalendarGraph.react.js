@@ -40,7 +40,6 @@ var GraphContainer = React.createClass({
         else if(nextProps.data && Object.keys(nextProps.data).length !== Object.keys(this.props.data).length){
             //console.log('receive2',this.props.divId,Object.keys(nextProps.data).length,Object.keys(this.props.data).length);
             this._updateData(nextProps.data);
-
         }
     },
 
@@ -135,14 +134,20 @@ var GraphContainer = React.createClass({
                   if(scope.props.filters[d]){
                     return '#f33';
                   }
-                  return DataScale(scope.props.data[d]);
+                  return DataScale(scope.props.data[d]) || '#fff';
                 });
 
             })
-            .attr('fill','#fff')
+            .attr('fill',function(d){
+                if(scope.props.filters[d]){
+                  return '#f33';
+                }
+                return DataScale(scope.props.data[d]) || '#fff';
+              })
             .attr('stroke','#ccc')
             .attr("width", cellSize)
             .attr("height", cellSize)
+            .attr('id',function(d){return 'd'+d.getFullYear()+'-'+((d.getMonth() < 9)?'0':'')+(d.getMonth()+1)+'-'+d.getDate();})
             .attr("x", function(d) { return week(d) * cellSize; })
             .attr("y", function(d) { return day(d) * cellSize; })
             .datum(format);

@@ -1,6 +1,8 @@
+/*globals console,require,module,$,d3,L*/
 'use strict';
 
 var React = require('react'),
+    _ = require('lodash'),
 
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
@@ -11,7 +13,7 @@ var React = require('react'),
     outerTractsLength,
     prevTractLength,
     routeLayerID = 0,
-    prevRouteLength,
+    prevRoutes,
     countyLayerID = 0,
     prevCountyLength,
     surveyLayerID = 0,
@@ -37,7 +39,7 @@ var MarketAreaMap = React.createClass({
             mapId:'map',
             displayTracts: true,
             legendLayers:{}
-        }
+        };
     },
 
     getInitialState: function() {
@@ -52,6 +54,7 @@ var MarketAreaMap = React.createClass({
     },
 
     processLayers:function(){
+        var currRoutes;
         var scope = this,
             emptyGeojson = {type:'FeatureCollection',features:[]},
             stops = emptyGeojson,
@@ -69,6 +72,7 @@ var MarketAreaMap = React.createClass({
         }
         if(this.props.routes){
             routes = this.props.routes;
+            currRoutes = routes.features.map(function(d){return d.properties.short_name;});
         }
         if(this.props.counties){
             counties = this.props.counties;
@@ -86,9 +90,9 @@ var MarketAreaMap = React.createClass({
             tractlayerID++;
             prevTractLength = tracts.features.length;
         }
-        if(routes.features.length !== prevRouteLength){
+        if(_.difference(currRoutes,prevRoutes) !== 0 || _.differenece(prevRoutes,currRoutes) !==0){
             routeLayerID++;
-            prevRouteLength = routes.features.length;
+            prevRoutes = currRoutes;
         }
         if(stops.features.length !== prevStopsLength){
             stopslayerID++;
@@ -235,7 +239,7 @@ var MarketAreaMap = React.createClass({
                                     .style({
                                         color:classColor
                                     })
-                                    .html('Route '+feature.properties.short_name)
+                                    .html('Route '+feature.properties.short_name);
                             },
                             mouseout: function(e){
                                 //console.log('mouseout1')
@@ -260,6 +264,8 @@ var MarketAreaMap = React.createClass({
                         var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
                         if(isNaN(r)){
                             r = 2;
+                        }else if(d.properties.color){
+                          r = 10;
                         }
                         var options = {
 
@@ -267,17 +273,24 @@ var MarketAreaMap = React.createClass({
                             color: "#00a" ,
                             weight: 3,
                             opacity: 1,
-                            fillOpacity: 0.8,
+                            fillOpacity: 0.9,
                             stroke:false,
                             className:'busStop',
-                            fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
+                            fillColor: (d.properties.color)?d.properties.color:(scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00'),
                             radius: r
                         };
                         return L.circleMarker(latlng, options);
                     },
+                    onEachFeature : function(feature,layer){
+                      layer.on({
+                        click : function(e){
+                          console.log(feature.properties);
+                        }
+                      });
+                    },
                 }
             }
-        }
+        };
     },
 
     _updateTooltip:function(tt){
