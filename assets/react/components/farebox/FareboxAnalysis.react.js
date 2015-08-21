@@ -122,9 +122,17 @@ var FareboxAnalysis = React.createClass({
         if(this.state.farebox.initialized){
             timer = new Date();
             //this problem wants the average number of transactions  per line via the given date(s);
-
+            scope.state.farebox.dimensions.zone.filterAll();
+            scope.state.farebox.dimensions.run_time.filterAll();
             var data = scope.state.farebox.groups.line.top(Infinity).map(function(line){
-              //for each line
+
+              scope.state.farebox.dimensions.zone.filter(function(d){
+                var zones = d.split(';');
+                 //return true if it matches any of the zones in the filter
+                        //the filter is empty                    its boarding_zone is not in the filter    and   its alighting_zone is not in the filter
+                return (scope.state.zfilter.length ===0) || ((scope.state.zfilter.indexOf(zones[0]) == -1) && (scope.state.zfilter.indexOf(zones[1]) == -1));
+              });
+                //for each line
                 if(peak){//if peak is defined
                     var lower = peak === 'am' ? 6 : 16,
                         upper = peak === 'am' ? 10 : 20;
@@ -140,6 +148,7 @@ var FareboxAnalysis = React.createClass({
                 //filtering by Line
                 scope.state.farebox.dimensions.line.filter(line.key);
 
+                //need to filter by farezone
 
 
                 var daySum = scope.state.farebox.groups.run_date.top(Infinity)
@@ -265,13 +274,23 @@ var FareboxAnalysis = React.createClass({
       },{});
       this.setState({route:id,zones:zones});
     },
-    zoneFilter : function(ix){
+    zoneFilter : function(id){
 
-      var target = d3.select('#fare_zone'+ix);
-      if(target.node() && target.style('background-color') === 'rgb(128, 128, 128)')
+      var target = d3.select('#fare_zone'+id);
+      var zonefilter = this.state.zfilter;
+      var ix = zonefilter.indexOf(id);
+      if(ix > -1){
+        zonefilter.splice(ix,1);
         target.style('background-color','white');
-      else if(target.node())
+      }
+      else{
+        zonefilter.push(id);
         target.style('background-color','gray');
+      }
+      console.log('zonefilter',zonefilter);
+      this.calcData(true);
+      this.setState({zfilter:zonefilter});
+
     },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
@@ -312,7 +331,8 @@ var FareboxAnalysis = React.createClass({
             d.properties.color = scope.state.zones[d.properties.fare_zone].color;
         });
         var zones =( <div className={'row'}> {Object.keys(this.state.zones).map(function(d,i){
-          return (<div onClick={scope.zoneFilter.bind(null,i)} id={'fare_zone'+i} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
+          var name = d.substring(2,d.length);
+          return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
         })} </div>);
         var graphs =[
           {data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
