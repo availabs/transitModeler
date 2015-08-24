@@ -6,11 +6,13 @@ var React = require('react'),
     // -- Components
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
     FareboxGraph = require('./FareboxGraph.react'),
+    AnalysisGraph = require('./AnalysisGraph.react'),
     DataTable = require('../utils/DataTable.react'),
     CalendarGraph = require('../utils/CalendarGraph.react'),
     SurveyFilters = require('../survey/SurveyFilters.react'),
     GraphDisplay = require('../survey/GraphDisplay.react'),
     Select2Component = require('../utils/Select2.react'),
+    TimeGraph = require('../utils/TimeGraph.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
@@ -125,7 +127,7 @@ var FareboxAnalysis = React.createClass({
             scope.state.farebox.dimensions.zone.filterAll();
             scope.state.farebox.dimensions.run_time.filterAll();
             var data = scope.state.farebox.groups.line.top(Infinity).map(function(line){
-
+              //need to filter by farezones
               scope.state.farebox.dimensions.zone.filter(function(d){
                 var zones = d.split(';');
                  //return true if it matches any of the zones in the filter
@@ -148,7 +150,6 @@ var FareboxAnalysis = React.createClass({
                 //filtering by Line
                 scope.state.farebox.dimensions.line.filter(line.key);
 
-                //need to filter by farezone
 
 
                 var daySum = scope.state.farebox.groups.run_date.top(Infinity)
@@ -292,6 +293,49 @@ var FareboxAnalysis = React.createClass({
       this.setState({zfilter:zonefilter});
 
     },
+    routeData : function(){
+      var scope = this;
+      if(this.state.route){
+        scope.state.farebox.clearFilter();
+        var parts = {};
+        scope.state.farebox.groups.trip.top(Infinity).forEach(function(d){
+          var keys = d.key.split(',');
+          if(keys[0] === scope.state.route){
+
+            parts[keys[1]] = parts[keys[1]] || [];
+            parts[keys[1]].push({x:keys[2],y:d.value});
+          }
+        });
+        var items = [];
+        Object.keys(parts).forEach(function(d,i){
+          parts[d].forEach(function(item){
+            item.color = d3.scale.category20().range()[i%20];
+          });
+          items = items.concat(parts[d]);
+        });
+        console.log('data items',items);
+        // return items;
+        return (
+          <TimeGraph
+            width={400}
+            height={500}
+            barWidth={10}
+            rotateXLabels={90}
+            data={items}
+            />
+        );
+        // var data = Object.keys(parts).map(function(d){
+          // parts[d].sort(function(a,b){
+          //   var t1 = a.key.split(':').map(parseInt),t2 = b.key.split(':').map(parseInt);
+          //   return (t1[0]-t1[2])?t1[1]-t2[1]:-1;
+          // });
+        //   return {key:'trip_'+d,values:parts[d]};
+        // });
+
+      }
+      // return [{key:'none',values:[]}];
+      return (<span></span>);
+    },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
         var processData;
@@ -334,26 +378,28 @@ var FareboxAnalysis = React.createClass({
           var name = d.substring(2,d.length);
           return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
         })} </div>);
+
+        var timeGraph = this.routeData();
+
+
         var graphs =[
-          {data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
-          {data:pmPeak,groupName:'pm',peak:'pm',height:'250',colors:colors,label:'PM Peak (4pm - 8pm)'},
-          {data:fullDay,height:'250',colors:colors, label:'Full Day'},
+          {type:FareboxGraph,data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
+          {type:FareboxGraph,data:pmPeak,groupName:'pm',peak:'pm',height:'250',colors:colors,label:'PM Peak (4pm - 8pm)'},
+          {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
         ];
         graphs = graphs.map(function(d){
           var retval = function(){
-            return (React.createElement(FareboxGraph,d));
+            return (React.createElement(d.type,d));
           };
           retval.settings = d;
           return retval;
         });
         // {this._renderFareZones()}
+
         return (
     	   <div>
-
-
                 <div className="row">
                 	<div className="col-lg-5">
-
                         <MarketAreaMap
                             stops={stops}
                             routes={routes}
@@ -367,7 +413,6 @@ var FareboxAnalysis = React.createClass({
                              />
                            {zones}
                         </section>
-
                     </div>
                     <div className="col-lg-7">
                         <div className='row'>
@@ -377,6 +422,7 @@ var FareboxAnalysis = React.createClass({
                                 <div className='col-lg-12'>
                                     <DataTable data={TableData} columns={cols} />
                                 </div>
+                                {timeGraph}
                                 <div className='col-lg-12'>
                                     <h4>Available Data</h4>
                                     <SurveyFilters data={this.state.filters} buttonclick={this.filterClear}/>
