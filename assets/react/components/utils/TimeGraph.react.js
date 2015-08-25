@@ -21,11 +21,12 @@ var TimeGraph = React.createClass({
   getInitialState : function(){
     return {
       data: this.props.data,
+      gid : 0
     };
   },
   componentWillReceiveProps : function(nextProps){
     if(nextProps.data && nextProps.data !== this.state.data){
-      this.setState({data:nextProps.data});
+      this.setState({data:nextProps.data,gid:this.state.gid+1});
     }
   },
 
@@ -63,15 +64,28 @@ var TimeGraph = React.createClass({
                    .scaleExtent([1,100])
                    .on('zoom',draw);
       var timegraph = d3.select('#timeGraph');
-          timegraph.selectAll('svg').data([gid++]).exit().remove();
-
-      var svg = timegraph.selectAll('svg').data([gid++]).enter()
+          //timegraph.select('#parentTimeGraph').data([this.state.gid]).exit().remove();
+      if(timegraph.select('#parentTimeGraph')[0].__data__ !== this.state.gid){
+        timegraph.select('#parentTimeGraph').remove();
+      }
+      if(this.state.data.length === 0){
+        return (<h3>No Data Available</h3>);
+      }
+      var svg = timegraph.selectAll('svg').data([this.state.gid]).enter()
                   .append('svg') //define the surrounding svg
+                  .attr('id','parentTimeGraph')
                   .attr('width',width + margin.left + margin.right)
                   .attr('height',height + margin.top + margin.bottom)
                   .call(zoom)
                   .append('g')
                   .attr('transform','translate('+margin.left+','+margin.top+')');
+      svg.selectAll('svg').data([this.state.gid]).exit().remove();
+      var innerSvg = svg.selectAll('svg').data([this.state.gid]).enter()
+                        .append('svg')
+                        .attr('width',width)
+                        .attr('height',height)
+                        .append('g');
+
           svg.append('g') //add y axis
              .attr('class','y axis')
              .attr('transform','translate(0,0)');
@@ -85,7 +99,7 @@ var TimeGraph = React.createClass({
         y.domain([0,d3.max(data,function(d){return d.y;})]);
         console.log(y.domain());
         zoom.x(x);
-    var bars = svg.selectAll('.bar') //select all the bars
+    var bars = innerSvg.selectAll('.bar') //select all the bars
             .data(data);       //join with the data points
             bars.exit().remove();
             bars.enter().append('rect') //add a rectangle for each data entry not already logged
@@ -99,7 +113,7 @@ var TimeGraph = React.createClass({
         draw();
 
     function updateBars(){
-      svg.selectAll('.bar') //select all the bars
+      innerSvg.selectAll('.bar') //select all the bars
           .attr('x',function(d) {
             return x(parseDate.parse(d.x));
           }); //use as its x value its time filed

@@ -25,10 +25,11 @@ var React = require('react'),
 
 var renderCount = 0;
 var emptyGeojson = {type:'FeatureCollection',features:[]};
-var processor;
-var timer;
 
+var timer;
+var zoneCompareIndex = 2;
 var FareboxRoutes = React.createClass({
+  processor:{},
   getInitialState : function(){
     return {
       selection:[],
@@ -262,7 +263,7 @@ var FareboxAnalysis = React.createClass({
     calcData : function(reset){
       var scope = this;
       if(reset){
-        processor = _.memoize(function(string){
+        scope.processor = _.memoize(function(string){
           return scope._processData(string);
         });
       }
@@ -298,10 +299,12 @@ var FareboxAnalysis = React.createClass({
       if(this.state.route){
         scope.state.farebox.clearFilter();
         var parts = {};
+        var stopZones = Object.keys(scope.state.zones).map(function(d){return d.substring(zoneCompareIndex);});
         scope.state.farebox.groups.trip.top(Infinity).forEach(function(d){
           var keys = d.key.split(',');
-          if(keys[0] === scope.state.route){
-
+          //This filters based on the known stop data ignoring other data
+          if(keys[0] === scope.state.route && stopZones.indexOf(keys[1]) !== -1){
+            console.log(keys,scope.state.route);
             parts[keys[1]] = parts[keys[1]] || [];
             parts[keys[1]].push({x:keys[2],y:d.value});
           }
@@ -309,29 +312,24 @@ var FareboxAnalysis = React.createClass({
         var items = [];
         Object.keys(parts).forEach(function(d,i){
           parts[d].forEach(function(item){
-            item.color = d3.scale.category20().range()[i%20];
+            var zone = Object.keys(scope.state.zones).reduce(function(p,c){if(c.substring(zoneCompareIndex) === d)return c;else return p;},null);
+            item.color = (zone) ? scope.state.zones[zone].color : '#000';
           });
           items = items.concat(parts[d]);
         });
+        console.log('colors',scope.state.zones,'data',parts);
         console.log('data items',items);
-        // return items;
+
         return (
           <TimeGraph
             width={400}
             height={500}
             barWidth={10}
+            opacity={0.9}
             rotateXLabels={90}
             data={items}
             />
         );
-        // var data = Object.keys(parts).map(function(d){
-          // parts[d].sort(function(a,b){
-          //   var t1 = a.key.split(':').map(parseInt),t2 = b.key.split(':').map(parseInt);
-          //   return (t1[0]-t1[2])?t1[1]-t2[1]:-1;
-          // });
-        //   return {key:'trip_'+d,values:parts[d]};
-        // });
-
       }
       // return [{key:'none',values:[]}];
       return (<span></span>);
@@ -340,9 +338,9 @@ var FareboxAnalysis = React.createClass({
         //console.log(this.state.farebox,this.state.farebox.all)
         var processData;
         var scope = this,
-            amPeak = processor('am'),
-            pmPeak = processor('pm'),
-            fullDay = processor();
+            amPeak = scope.processor('am'),
+            pmPeak = scope.processor('pm'),
+            fullDay = scope.processor();
         var TableData = amPeak[0].values.map(function(d,i){
             return {
                 line:d.key,am:Math.round(d.value),pm:Math.round(pmPeak[0].values[i].value),fullDay:Math.round(fullDay[0].values[i].value)
@@ -375,9 +373,10 @@ var FareboxAnalysis = React.createClass({
             d.properties.color = scope.state.zones[d.properties.fare_zone].color;
         });
         var zones =( <div className={'row'}> {Object.keys(this.state.zones).map(function(d,i){
-          var name = d.substring(2,d.length);
+          var name = d.substring(zoneCompareIndex);
           return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
         })} </div>);
+
 
         var timeGraph = this.routeData();
 
@@ -394,7 +393,6 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-        // {this._renderFareZones()}
 
         return (
     	   <div>
@@ -412,6 +410,7 @@ var FareboxAnalysis = React.createClass({
                               setRoute={this.setRoute}
                              />
                            {zones}
+                           {timeGraph}
                         </section>
                     </div>
                     <div className="col-lg-7">
@@ -422,7 +421,6 @@ var FareboxAnalysis = React.createClass({
                                 <div className='col-lg-12'>
                                     <DataTable data={TableData} columns={cols} />
                                 </div>
-                                {timeGraph}
                                 <div className='col-lg-12'>
                                     <h4>Available Data</h4>
                                     <SurveyFilters data={this.state.filters} buttonclick={this.filterClear}/>
