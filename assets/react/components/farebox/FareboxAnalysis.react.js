@@ -303,26 +303,27 @@ var FareboxAnalysis = React.createClass({
         scope.state.farebox.groups.trip.top(Infinity).forEach(function(d){
           var keys = d.key.split(',');
           //This filters based on the known stop data ignoring other data
-          if(keys[0] === scope.state.route && stopZones.indexOf(keys[1]) !== -1){
+          if(keys[0] === scope.state.route ){
             console.log(keys,scope.state.route);
             parts[keys[1]] = parts[keys[1]] || [];
             parts[keys[1]].push({x:keys[2],y:d.value});
           }
         });
         var items = [];
+        var keyMap = {},colors = d3.scale.category20().range();
         Object.keys(parts).forEach(function(d,i){
           parts[d].forEach(function(item){
-            var zone = Object.keys(scope.state.zones).reduce(function(p,c){if(c.substring(zoneCompareIndex) === d)return c;else return p;},null);
-            item.color = (zone) ? scope.state.zones[zone].color : '#000';
+            item.color = colors[i%20];
           });
+          keyMap[d] = colors[i%20];
           items = items.concat(parts[d]);
         });
-        console.log('colors',scope.state.zones,'data',parts);
-        console.log('data items',items);
+        console.log('color key',keyMap);
 
         return (
           <TimeGraph
             width={400}
+            keyMap={keyMap}
             height={500}
             barWidth={10}
             opacity={0.9}

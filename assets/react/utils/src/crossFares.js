@@ -9,7 +9,7 @@ crossFares = {
 	loading:false,
 
 	init:function(data,id){
-		console.log(data);
+		console.log('Farbox Data',data);
 		var t = new Date();
 		crossFares.trips = crossfilter(data);
 		crossFares.all = crossFares.trips.groupAll();

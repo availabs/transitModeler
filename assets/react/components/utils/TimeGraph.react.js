@@ -14,6 +14,9 @@ var TimeGraph = React.createClass({
       barWidth:2,
       opacity:0.7,
       rotateXLabels:0,
+      yLabelOffset:10,
+      rangeLabel:'Count',
+      domainLabel:'Time',
       data : [],
       margin : {},
     };
@@ -50,14 +53,14 @@ var TimeGraph = React.createClass({
       var xAxis = d3.svg.axis() //create x,y axis objects for the graph
                     .scale(x)
                     .orient('bottom')
-                    .tickSize(-height,0)
+                    .tickSize(6,0)
                     .ticks(10)
                     .tickFormat(formatDate)
                     .tickPadding(6);
       var yAxis = d3.svg.axis()
                     .scale(y)
                     .orient('left')
-                    .tickSize(-width)
+                    // .tickSize(6)
                     .tickPadding(6);
       var zoom = d3.behavior.zoom() //define zoom behavior
                    .scale(1)
@@ -85,13 +88,58 @@ var TimeGraph = React.createClass({
                         .attr('width',width)
                         .attr('height',height)
                         .append('g');
+          innerSvg.append('g')
+                  .attr('class','xlines')
+                  .selectAll('line')
+                  .data(d3.range(0,width,10)).enter().append('line')
+                  .attr('x1',function(d){return d;})
+                  .attr('y1',0)
+                  .attr('x2',function(d){return d;})
+                  .attr('y2',height);
 
+          innerSvg.append('g')
+                  .attr('class','ylines')
+                  .selectAll('line')
+                  .data(d3.range(0,height,10)).enter().append('line')
+                  .attr('x1',0)
+                  .attr('y1',function(d){return d;})
+                  .attr('x2',width)
+                  .attr('y2',function(d){return d;})
+                  .style({
+                    stroke:'#999',
+                    opacity:0.7,
+                  });
+          console.log(this.props.rangeLabel);
           svg.append('g') //add y axis
              .attr('class','y axis')
-             .attr('transform','translate(0,0)');
+             .attr('transform','translate(0,0)')
+             .style({
+               fill:null,
+               stroke:'black',
+               shapeRendering:'crispEdges',
+             })
+             .append('text')
+             .attr('transform','rotate('+270+')')
+             .attr('x',-height/2)
+             .attr('y',-margin.left+this.props.yLabelOffset)
+             .attr('dy','.35em')
+             .style('text-anchor','start')
+             .text(this.props.rangeLabel);
+
           svg.append('g') //add x axis
              .attr('class','x axis')
-             .attr('transform','translate(0,'+height+')');
+             .attr('transform','translate(0,'+height+')')
+             .style({
+               fill:null,
+               stroke:'black',
+               shapeRendering:'crispEdges',
+             })
+             .append('text')
+             .attr('class','xlabel')
+             .attr('y',margin.bottom)
+             .attr('x',width/2)
+             .style('text-anchor','middle')
+             .text(this.props.domainLabel);
 
     var data = this.state.data;
         x.domain([formatDate.parse(min),formatDate.parse(max)]);
@@ -139,10 +187,11 @@ var TimeGraph = React.createClass({
       }
       var xxs = svg.select('g.x.axis').call(xAxis);
       if(scope.props.rotateXLabels)
-          xxs.selectAll('text') //select all the text elements of it
+          xxs.selectAll('text:not(.xlabel)') //select all the text elements
           .attr('y',0) //set its y att to 0
           .attr('x',9)
           .attr('dy','.35em')
+          .attr('class','ticks')
           .attr('transform','rotate('+scope.props.rotateXLabels+')') //rotate the text labels 90 degrees to display vertically
           .style('text-anchor','start');
       var yxs = svg.select('g.y.axis').call(yAxis);
@@ -151,11 +200,27 @@ var TimeGraph = React.createClass({
     }
 
   },
+  buildKey : function(){
+    var scope = this;
+    var keymap = (this.props.keyMap) ? this.props.keyMap:{};
+    var rows = Object.keys(keymap).map(function(d){
+      return (
+        <div style={{padding:'1px'}} className={'col-md-3'} ><div className={'col-md-1'} style={{backgroundColor:keymap[d],height:'20px',width:'20px'}}></div>{d}</div>
+      );
+    });
+    return (
+      <div className='row'>{rows}</div>
+    );
+  },
   render: function(){
     var scope = this;
+    console.log('keys',this.props.keyMap);
     return (
-      <div id='timeGraph'><div>{scope.renderGraph()}</div></div>
-
+      <div>
+      <div id='timeGraph'>{scope.renderGraph()}</div>
+      <h4>Trip Key</h4>
+      <div>{scope.buildKey()}</div>
+      </div>
     );
   },
 });
