@@ -91,7 +91,7 @@ var TimeGraph = React.createClass({
       var yAxis = d3.svg.axis()
                     .scale(y)
                     .orient('left')
-                    // .tickSize(6)
+                    .tickFormat(function(d){return d;})
                     .tickPadding(6);
       var zoom = d3.behavior.zoom() //define zoom behavior
                    .scale(1)
@@ -119,27 +119,16 @@ var TimeGraph = React.createClass({
                         .attr('width',width)
                         .attr('height',height)
                         .append('g');
-          innerSvg.append('g')
-                  .attr('class','xlines')
-                  .selectAll('line')
-                  .data(d3.range(0,width,10)).enter().append('line')
-                  .attr('x1',function(d){return d;})
-                  .attr('y1',0)
-                  .attr('x2',function(d){return d;})
-                  .attr('y2',height);
+          // innerSvg.append('g')
+          //         .attr('class','xlines')
+          //         .selectAll('line')
+          //         .data(d3.range(0,width,10)).enter().append('line')
+          //         .attr('x1',function(d){return d;})
+          //         .attr('y1',0)
+          //         .attr('x2',function(d){return d;})
+          //         .attr('y2',height);
 
-          innerSvg.append('g')
-                  .attr('class','ylines')
-                  .selectAll('line')
-                  .data(d3.range(0,height,10)).enter().append('line')
-                  .attr('x1',0)
-                  .attr('y1',function(d){return d;})
-                  .attr('x2',width)
-                  .attr('y2',function(d){return d;})
-                  .style({
-                    stroke:'#999',
-                    opacity:0.7,
-                  });
+
           console.log(this.props.rangeLabel);
           svg.append('g') //add y axis
              .attr('class','y axis')
@@ -175,9 +164,23 @@ var TimeGraph = React.createClass({
     var data = this.getData();
         x.domain([formatDate.parse(min),formatDate.parse(max)]);
         console.log(d3.max(data,function(d){return d.y;}));
-        y.domain([0,d3.max(data,function(d){return d.y;})]);
+        y.domain([0,d3.max(data,function(d){return d.y;})]).nice();
         console.log(y.domain());
         zoom.x(x);
+
+        var range = y.domain().reduce(function(p,c){return (c-p); });
+        innerSvg.append('g')
+                .attr('class','ylines')
+                .selectAll('line')
+                .data(d3.range(0,height,(height/range)*10)).enter().append('line')
+                .attr('x1',0)
+                .attr('y1',function(d){return d;})
+                .attr('x2',width)
+                .attr('y2',function(d){return d;})
+                .style({
+                  stroke:'#999',
+                  opacity:0.7,
+                });
     var bars = innerSvg.selectAll('.bar') //select all the bars
             .data(data);       //join with the data points
             bars.exit().remove();
@@ -255,10 +258,16 @@ var TimeGraph = React.createClass({
     return (
       <div>
       {title}
-      <div id='timeGraph'>{scope.renderGraph()}</div>
+      <div id='timeGraph'></div>
       <div>{scope.buildKey()}</div>
       </div>
     );
   },
+  componentDidMount : function(){
+    this.renderGraph();
+  },
+  componentDidUpdate : function(){
+    this.renderGraph();
+  }
 });
 module.exports = TimeGraph;
