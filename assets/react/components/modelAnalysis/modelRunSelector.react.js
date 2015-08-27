@@ -1,11 +1,11 @@
 var React = require('react'),
-	
+
 	// -- Components
 	Select2Component = require('../utils/Select2.react'),
 
 	// -- Actions
 	ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
-
+var ix=0;
 var ModelRunSelector = React.createClass({
 
   	_loadModelRun:function(){
@@ -16,24 +16,29 @@ var ModelRunSelector = React.createClass({
 
 	render: function() {
 	  	var scope = this;
+		//	console.log('r',ix++,'data',scope.props.model_runs);
 	  	//console.log('ModelRunSelector / Render ',Object.keys(this.props.model_runs),scope.props.marketarea)
+			//filter models that are available for the current market area
 	  	var marketModelKeys = Object.keys(this.props.model_runs).filter(function(key){
 	  		return scope.props.model_runs[key].info.marketarea.id === scope.props.marketarea.id;
 	  	});
+			//take each of those model keys
+	  	var names = marketModelKeys.map(function(key){//create a list consisting of
+				//compose a name from its time,type,and acs datasource
 
-	  	var names = marketModelKeys.map(function(key){
-	  		var name =  scope.props.model_runs[key].info.time+' '+scope.props.model_runs[key].info.type+' '+scope.props.model_runs[key].info.datasources.acs;
-	  		return { 
+	  		var name =  scope.props.model_runs[key].info.time+' '+scope.props.model_runs[key].info.type+' '+(scope.props.model_runs[key].info.datasources.acs || scope.props.model_runs[key].info.datasources.acs_source);
+
+				return {
 	  			"id" : scope.props.model_runs[key].id ,
 	  			"text" : name
-	  		}
+	  		};
 	  	});
-	    
+			//create a select box from the generated names
 	    return (
 	    	<div>
 	    		<div className="form-group">
 	                <div className="input-group input-group">
-	                    
+
 	                    <Select2Component
 	                      id="modelRunId"
 	                      dataSet={names}
@@ -55,4 +60,3 @@ var ModelRunSelector = React.createClass({
 });
 
 module.exports = ModelRunSelector;
-
