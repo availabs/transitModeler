@@ -314,7 +314,9 @@ var FareboxAnalysis = React.createClass({
         Object.keys(parts).forEach(function(d,i){
           parts[d].forEach(function(item){
             item.color = colors[i%20];
+            item.id = d;
           });
+
           keyMap[d] = colors[i%20];
           items = items.concat(parts[d]);
         });
@@ -329,6 +331,7 @@ var FareboxAnalysis = React.createClass({
             opacity={0.9}
             rotateXLabels={90}
             data={items}
+            filterable={true}
             titleSize={'14pt'}
             title={'Yearly Trip Totals Throughout the Day'}
             />

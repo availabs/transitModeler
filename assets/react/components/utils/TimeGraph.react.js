@@ -26,7 +26,8 @@ var TimeGraph = React.createClass({
   getInitialState : function(){
     return {
       data: this.props.data,
-      gid : 0
+      gid : 0,
+      filters:[],
     };
   },
   componentWillReceiveProps : function(nextProps){
@@ -34,7 +35,35 @@ var TimeGraph = React.createClass({
       this.setState({data:nextProps.data,gid:this.state.gid+1});
     }
   },
+  getData : function(){
+    var scope = this;
+    return this.state.data.filter(function(d){
+      console.log(d.id);
+      return scope.state.filters.indexOf(d.id) < 0;
+    });
+  },
+  keyClick : function(id){
+    if(!this.props.filterable)
+      return;
+    var filters = this.state.filters;
+    var ix = this.state.filters.indexOf(id);
+    if( ix < 0){
+      filters.push(id);
+      d3.select('#TGKey_'+id).style('background-color','gray');
+      this.setState({filters:filters});
+    }else{
+      filters.splice(ix,1);
+      d3.select('#TGKey_'+id).style('background-color','white');
+      this.setState({filters:filters});
+    }
+  },
+  clearFilters : function(){
+    if(this.state.filters.length > 0){
+      this.setState({filters:[]});
+      d3.selectAll('.TGKey').style('background-color','white');
+    }
 
+  },
   renderGraph : function(){
     var scope = this;
     var margin = {top:this.props.margin.top || 20,
@@ -143,7 +172,7 @@ var TimeGraph = React.createClass({
              .style('text-anchor','middle')
              .text(this.props.domainLabel);
 
-    var data = this.state.data;
+    var data = this.getData();
         x.domain([formatDate.parse(min),formatDate.parse(max)]);
         console.log(d3.max(data,function(d){return d.y;}));
         y.domain([0,d3.max(data,function(d){return d.y;})]);
@@ -205,15 +234,17 @@ var TimeGraph = React.createClass({
   buildKey : function(){
     var scope = this;
     var keymap = (this.props.keyMap) ? this.props.keyMap:{};
+    var clearBtn = (this.state.filters.length > 0) ?(<a className={'btn btn-danger btn-sm'} onClick={scope.clearFilters}>Clear</a>):(<span></span>);
     var rows = Object.keys(keymap).map(function(d){
       return (
-        <div style={{padding:'1px'}} className={'col-md-3'} ><div className={'col-md-1'} style={{backgroundColor:keymap[d],height:'20px',width:'20px'}}></div>{d}</div>
+        <div style={{padding:'1px'}} id={'TGKey_'+d} onClick={scope.keyClick.bind(null,d)} className={'TGKey col-md-3'} ><div className={'col-md-1'} style={{backgroundColor:keymap[d],height:'20px',width:'20px'}}></div>{d}</div>
       );
     });
     return (
       <div>
         <h4>Trip Key</h4>
         <div className='row'>{rows}</div>
+        {clearBtn}
       </div>
     );
   },
