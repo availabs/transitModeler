@@ -329,6 +329,8 @@ var FareboxAnalysis = React.createClass({
             opacity={0.9}
             rotateXLabels={90}
             data={items}
+            titleSize={'14pt'}
+            title={'Yearly Trip Totals Throughout the Day'}
             />
         );
       }

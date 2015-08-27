@@ -17,6 +17,8 @@ var TimeGraph = React.createClass({
       yLabelOffset:10,
       rangeLabel:'Count',
       domainLabel:'Time',
+      title:'Time Graph',
+      titleSize:'15pt',
       data : [],
       margin : {},
     };
@@ -209,16 +211,20 @@ var TimeGraph = React.createClass({
       );
     });
     return (
-      <div className='row'>{rows}</div>
+      <div>
+        <h4>Trip Key</h4>
+        <div className='row'>{rows}</div>
+      </div>
     );
   },
   render: function(){
     var scope = this;
     console.log('keys',this.props.keyMap);
+    var title = (<div style={{fontSize:this.props.titleSize}}> {this.props.title}</div>);
     return (
       <div>
+      {title}
       <div id='timeGraph'>{scope.renderGraph()}</div>
-      <h4>Trip Key</h4>
       <div>{scope.buildKey()}</div>
       </div>
     );
