@@ -333,6 +333,7 @@ var FareboxAnalysis = React.createClass({
             data={items}
             filterable={true}
             titleSize={'14pt'}
+            guides={5}
             title={'Yearly Trip Totals Throughout the Day'}
             />
         );

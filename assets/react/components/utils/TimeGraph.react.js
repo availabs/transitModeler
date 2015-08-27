@@ -19,6 +19,7 @@ var TimeGraph = React.createClass({
       domainLabel:'Time',
       title:'Time Graph',
       titleSize:'15pt',
+      guides : 5,
       data : [],
       margin : {},
     };
@@ -169,10 +170,11 @@ var TimeGraph = React.createClass({
         zoom.x(x);
 
         var range = y.domain().reduce(function(p,c){return (c-p); });
+        var step = y.ticks()[1] - y.ticks()[0];
         innerSvg.append('g')
                 .attr('class','ylines')
                 .selectAll('line')
-                .data(d3.range(0,height,(height/range)*10)).enter().append('line')
+                .data(d3.range(0,height,(height/range)*(step/this.props.guides) )).enter().append('line')
                 .attr('x1',0)
                 .attr('y1',function(d){return d;})
                 .attr('x2',width)
