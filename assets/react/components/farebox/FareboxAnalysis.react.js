@@ -13,6 +13,7 @@ var React = require('react'),
     GraphDisplay = require('../survey/GraphDisplay.react'),
     Select2Component = require('../utils/Select2.react'),
     TimeGraph = require('../utils/TimeGraph.react'),
+    TimeSlider = require('../utils/TimeSlider.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
@@ -33,6 +34,7 @@ var FareboxRoutes = React.createClass({
   getInitialState : function(){
     return {
       selection:[],
+      timeRange:[],
     };
   },
   update : function(zones,e,selection){
@@ -77,7 +79,7 @@ var FareboxRoutes = React.createClass({
 
 var FareboxAnalysis = React.createClass({
 
-
+    forceRender:false,
     _validDate : function(date){
       var filters = this.state.filters,retval = true;
       var keys = Object.keys(filters);
@@ -97,7 +99,8 @@ var FareboxAnalysis = React.createClass({
             filter :[],
             colors:{},
             zones:[],
-            zfilter:[]
+            zfilter:[],
+            routeFilter:null,
         };
     },
 
@@ -146,7 +149,15 @@ var FareboxAnalysis = React.createClass({
 
                 }else{
                   //otherwise just filter by the date
-                   scope.state.farebox.dimensions.run_time.filter();
+                  console.log('time range',scope.state.timeRange);
+                   scope.state.farebox.dimensions.run_time.filter(function(d){
+                     if(scope.state.timeRange){
+                       var above = d.getHours() >= scope.state.timeRange[0].getHours();
+                       var below = d.getHours() <= scope.state.timeRange[1].getHours();
+                       return above && below;
+                     }
+                     return true;
+                   });
                 }
                 //filtering by Line
                 scope.state.farebox.dimensions.line.filter(line.key);
@@ -174,7 +185,23 @@ var FareboxAnalysis = React.createClass({
         return [{key:'none',values:[]}];
 
     },
-
+    _getHours : function(colors) {
+      var scope = this;
+      if(scope.state.farebox.dimensions.hours){
+        scope.state.farebox.clearFilter();
+        if(scope.state.routeFilter){
+          scope.state.farebox.dimensions.line.filter(scope.state.routeFilter);
+        }
+        var totalDays = scope.state.farebox.groups.run_date.size();
+        var data = scope.state.farebox.groups.hours.top(Infinity).map(function(d){
+          var key = d.key.split(';');
+          return {x:key[0]+':00',y:(d.value/totalDays), color:colors[key[1]], group:key[1]};
+        });
+        console.log(data.map(function(d){return d.y;}).reduce(function(p,c){return p+c;}));
+        return data;
+      }
+      return [];
+    },
     componentWillReceiveProps:function(nextProps){
         //console.log(nextProps.marketarea.id,this.props.marketarea.id)
         if(nextProps.marketarea && nextProps.marketarea.id !== this.props.marketarea.id){
@@ -341,22 +368,37 @@ var FareboxAnalysis = React.createClass({
       // return [{key:'none',values:[]}];
       return (<span></span>);
     },
+    onSet : function(range){
+      this.calcData(true);
+      this.setState({timeRange:range});
+    },
+    rowClick : function(e){
+      var scope = this;
+      var rid = e.target.getAttribute('data-key');
+      scope.forceRender = true;
+      if(this.state.routeFilter === rid){
+          this.setState({routeFilter:null});
+      }
+      else{
+          this.setState({routeFilter:rid});
+      }
+    },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
         var processData;
         var scope = this,
-            amPeak = scope.processor('am'),
-            pmPeak = scope.processor('pm'),
+            //amPeak = scope.processor('am'),
+            //pmPeak = scope.processor('pm'),
             fullDay = scope.processor();
-        var TableData = amPeak[0].values.map(function(d,i){
+        var TableData = fullDay[0].values.map(function(d,i){
             return {
-                line:d.key,am:Math.round(d.value),pm:Math.round(pmPeak[0].values[i].value),fullDay:Math.round(fullDay[0].values[i].value)
+                line:d.key,fullDay:Math.round(d.value)
             };
         }),
         cols = [
             {name:'Bus Line',key:'line'},
-            {name:'AM Peak',key:'am',summed:true},
-            {name:'PM Peak',key:'pm',summed:true},
+            //{name:'AM Peak',key:'am',summed:true},
+            //{name:'PM Peak',key:'pm',summed:true},
             {name:'Full Day',key:'fullDay',summed:true}
         ];
         var calendars = this._renderCalendars();
@@ -371,7 +413,6 @@ var FareboxAnalysis = React.createClass({
         routes.features = this.props.routesGeo.features.filter(function(d){
           return d.properties.short_name === scope.state.route;
         });
-
         stops.features = this.props.stopsGeo.features.filter(function(d){
           return scope.state.route === d.properties.line;
         });
@@ -383,14 +424,13 @@ var FareboxAnalysis = React.createClass({
           var name = d.substring(zoneCompareIndex);
           return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
         })} </div>);
-
-
+        var totalHours = scope._getHours(colors);
+        console.log('totals',totalHours);
         var timeGraph = this.routeData();
 
-
         var graphs =[
-          {type:FareboxGraph,data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
-          {type:FareboxGraph,data:pmPeak,groupName:'pm',peak:'pm',height:'250',colors:colors,label:'PM Peak (4pm - 8pm)'},
+          //{type:FareboxGraph,data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
+          //{type:FareboxGraph,data:pmPeak,groupName:'pm',peak:'pm',height:'250',colors:colors,label:'PM Peak (4pm - 8pm)'},
           {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
         ];
         graphs = graphs.map(function(d){
@@ -400,7 +440,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-
+        console.log('state range',this.state.timeRange);
         return (
     	   <div>
                 <div className="row">
@@ -425,8 +465,19 @@ var FareboxAnalysis = React.createClass({
 
                             <section className="widget" style={{overflow:'auto'}}>
                                 <GraphDisplay items={graphs} height={500}/>
+                                <TimeSlider
+                                  onSet={this.onSet}
+                                  width={500}
+                                  data={totalHours}
+                                  forceRender={scope.forceRender}
+                                  />
                                 <div className='col-lg-12'>
-                                    <DataTable data={TableData} columns={cols} />
+                                    <DataTable
+                                      data={TableData}
+                                      columns={cols}
+                                      rowValue={'line'}
+                                      rowClick={scope.rowClick}
+                                       />
                                 </div>
                                 <div className='col-lg-12'>
                                     <h4>Available Data</h4>
@@ -440,6 +491,10 @@ var FareboxAnalysis = React.createClass({
         	</div>
         );
     },
+    componentDidUpdate :function(){
+      var scope = this;
+      scope.forceRender=false;
+    }
 });
 
 module.exports = FareboxAnalysis;
