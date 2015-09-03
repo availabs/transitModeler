@@ -374,7 +374,8 @@ var FareboxAnalysis = React.createClass({
     },
     rowClick : function(e){
       var scope = this;
-      var rid = e.target.getAttribute('data-key');
+      var rid = e.target.getAttribute('data-key'); //get the route from the row
+      
       scope.forceRender = true;
       if(this.state.routeFilter === rid){
           this.setState({routeFilter:null});
@@ -390,19 +391,22 @@ var FareboxAnalysis = React.createClass({
             //amPeak = scope.processor('am'),
             //pmPeak = scope.processor('pm'),
             fullDay = scope.processor();
+        var colors = this.props.marketarea.routecolors;
         var TableData = fullDay[0].values.map(function(d,i){
             return {
-                line:d.key,fullDay:Math.round(d.value)
+                color: (<div style={{width:'20px',height:'20px',backgroundColor:colors[d.key]}}></div>),
+                line:d.key,
+                fullDay:Math.round(d.value)
             };
         }),
         cols = [
+            {name:'Color',key:'color'},
             {name:'Bus Line',key:'line'},
             //{name:'AM Peak',key:'am',summed:true},
             //{name:'PM Peak',key:'pm',summed:true},
             {name:'Full Day',key:'fullDay',summed:true}
         ];
         var calendars = this._renderCalendars();
-        var colors = this.props.marketarea.routecolors;
         this.props.routesGeo.features.forEach(function(d){
            if(colors && colors[d.properties.short_name]){
              d.properties.color = colors[d.properties.short_name];

@@ -76,16 +76,13 @@ var TimeSlider = React.createClass({
     groups.sort(); //sort the groups to assure lexicographic order
     var keys = Object.keys(table);
     var retval = {data:[],max:null,min:null};
-    console.info('The Groups',groups);
     keys.forEach(function(key){
       var y0 = 0;
-      console.info('Unsorted',table[key].map(function(d){return d.group;}));
       table[key].sort(function(a,b){ //sort the entries of the bars to match to give order
         var g1 = a.group,g2 = b.group,
             ix1= groups.indexOf(g1), ix2 = groups.indexOf(g2);
         return ix1 - ix2;
       });
-      console.info('Sorted',table[key].map(function(d){return d.group;}));
       table[key].forEach(function(d,i){ //assign each of them a range to span
           d.y0 = y0;
           d.y1 = y0 += d.y;
