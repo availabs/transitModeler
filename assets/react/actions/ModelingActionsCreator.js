@@ -12,13 +12,13 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 module.exports = {
 
   setOption: function(option,data) {
-    
+
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_NEW_MODEL_OPTION,
       option: option,
       value: data
     });
-  
+
   },
 
   loadTripTable:function(settings){
@@ -46,6 +46,13 @@ module.exports = {
       id: id
     });
   },
+
+	removeActiveModelRun : function(id){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.DEL_ACTIVE_MODEL_RUN,
+			id:id
+		});
+	},
 
   setMode:function(mode){
     //console.log('setMode',mode)

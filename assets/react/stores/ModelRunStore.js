@@ -14,7 +14,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     CHANGE_EVENT = 'change',
 
     //--Stores
-    
+
     //--Utils
     sailsWebApi = require('../utils/sailsWebApi.js'),
     crossTrips = require('../utils/src/crossTrips.js');
@@ -27,7 +27,7 @@ var _modelRuns = {},
 function addModelRuns(rawData){
 
   //console.log('GTFS STORE/_addDatasets',rawData);
-  
+
   rawData.forEach(function(ds){
       ds.info = JSON.parse(ds.info);
       _modelRuns[ds.id] = ds;
@@ -39,7 +39,7 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit(CHANGE_EVENT);
   },
-  
+
   /**
    * @param {function} callback
    */
@@ -47,11 +47,11 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
-  
+
   getModelRuns:function(){
     return _modelRuns;
   },
@@ -64,9 +64,16 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
       ModelRunStore.emitChange();
     }
   },
-
+  delActiveModelRun : function(id){
+    var ix = _activeRuns.indexOf(id);
+    if(ix >=0){
+      _activeRuns.splice(ix,1);
+      _runData[id] = null;
+      ModelRunStore.emitChange();
+    }
+  },
   getActiveModelRuns : function(){
-    
+
     var loading = false;
     _activeRuns.forEach(function(runId){
       if( _runData[runId] !== 'loading' ) { loading = true; }
@@ -78,7 +85,7 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
         }else{
           console.log('add crosstrips',runId)
           crossTrips.addRun(_runData[runId],runId)
-        } 
+        }
       }
     })
 
@@ -111,7 +118,11 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
       _runData[action.Id] = action.data;
       //console.log('ModelRunStore / RECEIVE_FULL_MODEL_RUNS',action,_runData);
       ModelRunStore.emitChange();
-    
+
+    break;
+
+    case ActionTypes.DEL_ACTIVE_MODEL_RUN:
+      ModelRunStore.delActiveModelRun(action.id);
     break;
 
     case ActionTypes.ADD_ACTIVE_MODEL_RUN:
