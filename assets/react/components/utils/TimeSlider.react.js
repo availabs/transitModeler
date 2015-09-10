@@ -24,6 +24,12 @@ var TimeSlider = React.createClass({
       domainLabel:'Time Of Day',
       rangeLabel :'Total Transactions',
       yLabelOffset:10,
+      id:'',
+      title:'',
+      fontColor:'#000',
+      preParsedData:false,
+      maxRange:null,
+      rangeTicks:5,
       onSet : function(range){console.log(range,lastRange);},
     };
   },
@@ -41,19 +47,11 @@ var TimeSlider = React.createClass({
     return width/24 - 1;//number of hours in a day -1 for
   },
   brushAction : function(range){
-      var scope=this;
-      if(!lastRange[0] || range[0].getTime() !== lastRange[0].getTime() ||
-          range[1].getTime() !== lastRange[1].getTime())
-      {
-        clearTimeout(lastAction);
-        lastAction = setTimeout(function(){
-          scope.props.onSet(range);
-        },100);
-      }
-
+    var scope = this;
+    scope.props.onSet(range);
   },
   timeOfDay : function(date){
-    return date.toTimeString().substr(0,8);
+    return date.toTimeString().substr(0,5);
   },
   compareTime : function(t1,t2){
     var sigs = [3600,60,1];
@@ -65,7 +63,6 @@ var TimeSlider = React.createClass({
   },
   getData : function(){
     var table = {},groups = [];
-
     this.props.data.forEach(function(d){
       table[d.x] = table[d.x] || []; //create the list entry of the hash TableData
       table[d.x].push(d);
@@ -95,20 +92,28 @@ var TimeSlider = React.createClass({
     });
     return retval;
   },
+  parseData : function(){
+    if(this.props.preParsedData){
+      return this.props.data;
+    }else{
+      return this.getData();
+    }
+  },
   renderSelector : function(){
     var scope = this;
-    var margin = {top:this.props.margin.top || 20,
+    var margin = {top:this.props.margin.top || 10,
        right:this.props.margin.right || 60,
-       bottom:this.props.margin.bottom || 60,
+       bottom:this.props.margin.bottom || (scope.props.putXAxis)? 60:0,
        left:this.props.margin.left || 60},
        width = this.props.width - margin.left - margin.right,
        height = this.props.height - margin.top - margin.bottom;
     var totalDomain = [tFormat.parse(this.props.minTime),tFormat.parse(this.props.maxTime)];
+    var dataObj = this.getData();
+    var maxRange = this.props.maxRange || dataObj.max;
     var x = d3.time.scale().range([0,width]);
     x.domain(totalDomain);
     var y = d3.scale.linear().range([height,0]);
-    var dataObj = this.getData();
-    y.domain([0,dataObj.max]);
+    y.domain([0,this.props.maxRange || dataObj.max]);
     var xAxis = d3.svg.axis().scale(x)
                   .orient('bottom')
                   .tickSize(6,0)
@@ -116,25 +121,30 @@ var TimeSlider = React.createClass({
                   .ticks(24);
     var yAxis = d3.svg.axis().scale(y)
                   .orient('left')
+                  .ticks(this.props.rangeTicks)
                   .tickSize(6,0);
-
     var brushRange;
     if(scope.props.range.length===0)
       brushRange = totalDomain;
-    else
-      brushRange = scope.props.range;
-    console.log('internal Range',scope.props.range);
+    else{
+      brushRange = scope.props.range.map(function(d){
+        var temp = scope.timeOfDay(d);
+        return tFormat.parse(temp);
+      });
+    }
+
     var brush = d3.svg.brush()
                   .x(x)
                   .extent(brushRange)
+                  .on('brushend',function(){scope.brushAction(brush.extent());})
                   .on('brush',brushed);
     function brushed(){
       var extent0 = brush.extent(),extent1;
-      if(d3.event.mode==='move'){
+
         var h0 = d3.time.hour.round(extent0[0]),
             h1 = d3.time.hour.offset(h0,Math.round((extent0[1]-extent0[0])/36e5));
+      if(d3.event.mode==='move'){
         var c = scope.compareTime(scope.timeOfDay(h0),scope.timeOfDay(h1));
-        console.log(c);
             if(c > 0){
               h1.setTime(h0.getTime());
               h1.setHours(23);
@@ -146,17 +156,19 @@ var TimeSlider = React.createClass({
         extent1 = extent0.map(d3.time.hour.round);
         if(extent1[0].getHours() >= extent1[1].getHours()){
           extent1[0] = d3.time.minute.floor(extent0[0]);
-          extent1[1] = d3.time.minute.ceil(extent0[1]);
+          extent1[1].setTime(extent1[0].getTime());
+          extent1[1].setHours(23);
+          extent1[1].setMinutes(59);
         }
       }
       d3.select(this).call(brush.extent(extent1));
-      scope.brushAction(extent1);
+      // scope.brushAction(extent1);
 
     }
 
 
 
-    var slider = d3.select('#__TimeSlider__');
+    var slider = d3.select('#__TimeSlider__'+this.props.id);
     if(slider.select('#timeSlider')[0].__data__ !== this.state.gid){
        slider.select('#timeSlider').remove();
     }
@@ -170,6 +182,7 @@ var TimeSlider = React.createClass({
 
 
     var group = svg.append('g').attr('transform','translate('+margin.left+','+margin.top+')');
+    if(scope.props.putXAxis){
     svg.append('g')
         .attr('class','x axis')
         .attr('transform','translate('+margin.left+','+(height+margin.top)+')')
@@ -180,26 +193,31 @@ var TimeSlider = React.createClass({
         })
         .append('text')
         .attr('class','xlabel')
-        .attr('y',margin.bottom)
+        .attr('y',margin.bottom-5)
         .attr('x',width/2)
         .style('text-anchor','middle')
         .text(this.props.domainLabel);
-
-    svg.append('g')
+      }
+  var yxsSvg =   svg.append('g')
        .attr('class','y axis')
        .attr('transform','translate('+margin.left+','+margin.top+')')
        .style({
          fill:null,
          stroke:'black',
          shapeRendering:'crispEdges',
-       })
-       .append('text')
+       });
+       yxsSvg.append('text')
        .attr('transform','rotate('+270+')')
        .attr('x',-width/2)
        .attr('y',-margin.left+this.props.yLabelOffset)
        .attr('dy','.35em')
        .style('text-anchor','start')
        .text(this.props.rangeLabel);
+       yxsSvg.append('text')
+       .attr('y','0')
+       .attr('x',-margin.left/2)
+       .style('text-anchor','start')
+       .text(maxRange);
     var gBrush = group.append('g')
                     .attr('class','brush')
                     .style({
@@ -222,17 +240,29 @@ var TimeSlider = React.createClass({
         .style('fill-opacity',scope.props.opacity)
         .style('fill',function(d){return d.color;});
     draw();
+    if(this.props.title){
+      d3.select('#__TimeSlider__Title__'+this.props.id +' span')
+        .style({'margin-left': margin.left + width/2 +'px',
+                'font-color':scope.props.fontColor,
+                'font-size': '20px',
+                padding:'0px',
+                color:'#000'
 
+                })
+        .text(this.props.title);
+    }
     function draw(){
       var yxs = svg.select('g.y.axis').call(yAxis);
-      var xxs = svg.select('g.x.axis').call(xAxis);
-      xxs.selectAll('text:not(.xlabel)') //select all the text elements
-      .attr('y',0) //set its y att to 0
-      .attr('x',9)
-      .attr('dy','.35em')
-      .attr('class','ticks')
-      .attr('transform','rotate('+scope.props.rotateXLabels+')') //rotate the text labels 90 degrees to display vertically
-      .style('text-anchor','start');
+      if(scope.props.putXAxis){
+        var xxs = svg.select('g.x.axis').call(xAxis);
+        xxs.selectAll('text:not(.xlabel)') //select all the text elements
+        .attr('y',0) //set its y att to 0
+        .attr('x',9)
+        .attr('dy','.35em')
+        .attr('class','ticks')
+        .attr('transform','rotate('+scope.props.rotateXLabels+')') //rotate the text labels 90 degrees to display vertically
+        .style('text-anchor','start');
+      }
       updateBars();
     }
     function updateBars(){
@@ -244,8 +274,11 @@ var TimeSlider = React.createClass({
   },
 
   render: function(){
-    return( <div id='__TimeSlider__'>
-    </div>);
+    return (<div>
+              <div id={'__TimeSlider__Title__' + this.props.id}><span></span></div>
+              <br/>
+              <div id={'__TimeSlider__' + this.props.id}>  </div>
+           </div>);
   },
   componentDidMount : function(){
     this.renderSelector();

@@ -1,4 +1,4 @@
-/*globals d3,$,require,console,module*/
+/*globals d3,$,require,console,module,setTimeout,clearTimeout*/
 'use strict';
 
 var React = require('react'),
@@ -11,10 +11,11 @@ var React = require('react'),
     ModelRunSelector = require('../../components/modelAnalysis/modelRunSelector.react'),
     RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
     ModelRunContainer = require('../../components/modelAnalysis/modelRunContainer.react'),
-
+    TimeSliders = require('../../components/utils/TimeSliders.react'),
+    lastAction,
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
-
+    ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // -- Stores
     ModelRunStore = require('../../stores/ModelRunStore.js');
 
@@ -110,9 +111,39 @@ var MarketAreaIndex = React.createClass({
         );
 
     },
-
+    _onTimeChange : function(range){
+      var scope = this;
+      console.log(range);
+      scope.setState({timeRange:range});
+    },
+    _getTimeData : function(){
+      var scope = this;
+      if(scope.props.loadedModels.initialized){
+      var datasets =   scope.props.loadedModels.loadedModels.map(function(d){ //for each model loaded
+          //consider only the current run only
+          scope.props.loadedModels.dimensions.run_id.filter(d);
+          //get the hour groupings for that particular dataset
+          var data = scope.props.loadedModels.groups.hours.top(Infinity).map(function(d){
+            var key = d.key.split(';'); //key[0] = hour of day,key[1] = route id
+            var color = scope.props.marketarea.routecolors[key[1]]; //get the routes color from the market area
+            return {x:key[0]+':00',y:d.value,color:color,group:key[1]}; //build the record for the timeslider
+          });
+          return {id:d,data:data};
+        });
+        scope.props.loadedModels.dimensions.run_id.filterAll();
+        return datasets;
+      }
+      return [];
+    },
+    deleteModel : function(id){
+      ModelingActionsCreator.removeActiveModelRun(id);
+    },
     render: function() {
-
+      var hourRange;
+      if(this.state.timeRange){
+        hourRange = this.state.timeRange.map(function(d){return d.getHours();});
+      }
+      console.log('models',this.props.loadedModels.loadedModels.length);
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -137,7 +168,19 @@ var MarketAreaIndex = React.createClass({
                             </div>
                         </section>
                         <div style={{width:'100%'}}>
-                            <RouteTotalGraph routeData = {this.props.loadedModels}  />
+                            <TimeSliders
+                              datasets={this._getTimeData()}
+                              height={100}
+                              width={700}
+                              onChange={this._onTimeChange}
+                              delete ={this.deleteModel}
+                              />
+                        </div>
+                        <div style={{width:'100%'}}>
+                            <RouteTotalGraph
+                              colors={this.props.marketarea.routecolors}
+                              timeFilter={hourRange}
+                              routeData={this.props.loadedModels}  />
                         </div>
                     </div>
 

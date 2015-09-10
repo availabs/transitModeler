@@ -20,25 +20,35 @@ var RouteTotalGraph = React.createClass({
       };
     },
 
-    renderDataTable:function(){
+    renderDataTable:function(odata){
+        var scope = this;
         //process the data for easy display format
-        var startData = this.processData();
+        var startData = odata || this.processData();
+
         //if nothing is worth plotting, display nothing
         if(!startData || startData[0].key === 'none'){
             return ( <span /> );
         }
         var cols = [{name:'Route Number',key:'route'}];
+        if(scope.props.colors){
+          cols.push({'key':'colorkey',name:'Color Key'});
+        }
         var values = [];
+        console.log('starting data',startData);
         var tableData = startData.map(function(d){
             //console.log('tableData Map',d)
             cols.push({'key':d.key,'name':'Run '+d.key,summed:true});
+
             return d.values.map(function(count){
+
                 var row  = {'route':count.key};
                 row[d.key]=count.value;
+                row.colorkey = (<div style={{height:'15px',width:'15px',backgroundColor:scope.props.colors[count.key]}}></div>);
                 return row;
             });
 
         });
+        console.log('table Data',tableData);
         //console.log('render data tabke',tableData,cols)
         //take the zeroth entry of the array
         var data = tableData[0];
@@ -56,12 +66,13 @@ var RouteTotalGraph = React.createClass({
                         var newRow = data.filter(function(d){
                             return d.route === row.route;
                         })[0];
-
+                        console.log(row);
                         if(newRow){
-                            newRow[cols[+i+1].key] = row[cols[+i+1].key];
+                            newRow[cols[+i+2].key] = row[cols[+i+2].key];
                             newData.push(newRow);
                         }
                     });
+                    console.log(newData);
                     data = newData;
                 }
             });
@@ -83,6 +94,12 @@ var RouteTotalGraph = React.createClass({
                 //where each element maps to an element
                 //filter the crossfilter object's run data by the current runId
                 scope.props.routeData.dimensions['run_id'].filter(runId);
+                if(scope.props.timeFilter){
+                  scope.props.routeData.dimensions.hours.filter(function(d){
+                    var h = parseInt(d.split(';')[0]);
+                    return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
+                  });
+                }
                 //create a plottable object for the nvd3 multibar plot
                 return {
                     key:runId,
@@ -136,13 +153,14 @@ var RouteTotalGraph = React.createClass({
     render:function(){
 
     	var scope = this;
-
+      if(!scope.props.routeData.initialized)
+        return <span></span>;
         var svgStyle = {
               height: this.props.height+'px',
               width: '100%'
         };
-
-        this._renderGraph();
+        var data = this.processData();
+        this._renderGraph(data);
 
     	return(
             <div className='row' style={{color:'#000'}}>
@@ -150,7 +168,7 @@ var RouteTotalGraph = React.createClass({
         			<svg style={svgStyle}/>
         		</div>
                 <div className='col-md-4'>
-                 { this.renderDataTable() }
+                 { this.renderDataTable(data) }
                 </div>
             </div>
     	);
