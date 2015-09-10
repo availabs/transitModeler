@@ -203,6 +203,13 @@ function _loadRouteSchedule(gtfsId,routes,maId){
       _editResponse = 'loading';
     }
   }
+  function setGtfsRoutes(id,routes){
+    var colors = MarketAreaStore.getCurrentMarketArea().routecolors;
+    routes.features.forEach(function(d){
+      d.properties.color = colors[d.properties.short_name];
+    });
+    _gtfsRoutesGeo[id] = routes;
+  }
 //======================================================
 var GtfsStore = assign({}, EventEmitter.prototype, {
 
@@ -505,7 +512,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_GTFS_GEOS:
-        _gtfsRoutesGeo[action.Id] = action.data;
+        setGtfsRoutes(action.Id,action.data);
         GtfsStore.emitChange();
     break;
 

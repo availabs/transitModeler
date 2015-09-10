@@ -166,12 +166,6 @@ var SurveyAnalysis = React.createClass({
     render: function() {
        //console.log('survey data',this.state.survey)
        console.log('Filters',this.state.filters);
-       var colors = this.props.marketarea.routecolors;
-       this.props.routesGeo.features.forEach(function(d){
-          if(colors && colors[d.properties.short_name]){
-            d.properties.color = colors[d.properties.short_name];
-          }
-       });
         return (
         	<div>
 
