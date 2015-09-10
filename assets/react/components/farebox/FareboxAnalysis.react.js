@@ -375,7 +375,7 @@ var FareboxAnalysis = React.createClass({
     rowClick : function(e){
       var scope = this;
       var rid = e.target.getAttribute('data-key'); //get the route from the row
-      
+
       scope.forceRender = true;
       if(this.state.routeFilter === rid){
           this.setState({routeFilter:null});
@@ -400,8 +400,8 @@ var FareboxAnalysis = React.createClass({
             };
         }),
         cols = [
-            {name:'Color',key:'color'},
             {name:'Bus Line',key:'line'},
+            {name:'Color Key',key:'color'},
             //{name:'AM Peak',key:'am',summed:true},
             //{name:'PM Peak',key:'pm',summed:true},
             {name:'Full Day',key:'fullDay',summed:true}
@@ -474,6 +474,7 @@ var FareboxAnalysis = React.createClass({
                                   width={500}
                                   data={totalHours}
                                   forceRender={scope.forceRender}
+                                  putXAxis={true}
                                   />
                                 <div className='col-lg-12'>
                                     <DataTable
