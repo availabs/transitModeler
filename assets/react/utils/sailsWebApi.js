@@ -266,6 +266,12 @@ module.exports = {
   //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
+  get : function(type,id,cb){
+    io.socket.get('/'+type+'/'+id,function(data){
+      ServerActionCreators.receiveDataWithId(type,id,data);
+      if(cb){cb(data);}
+    });
+  },
   create: function(type,data,cb){
 
     d3.json('/'+type).post(JSON.stringify(data),function(err,resData){

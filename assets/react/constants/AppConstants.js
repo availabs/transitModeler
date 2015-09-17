@@ -72,6 +72,7 @@ module.exports = {
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,
+    RECEIVE_TRIPTABLES:null,
     RECEIVE_MODEL_RUNS:null,
     RECEIVE_FULL_MODEL_RUNS:null,
 

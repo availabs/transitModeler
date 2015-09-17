@@ -1,3 +1,4 @@
+/*globals require,module,console*/
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -43,7 +44,8 @@ var _currentSettings = {
     },
     _currentTripTable = {tt:[],failed:[]},
     _finishedList = {},
-    tableStore = {},
+    _tableStore = {},
+    _modelRuns = {},
     _mode = 'Origin';
 
 function addModelRuns(rawData){
@@ -53,10 +55,10 @@ function addModelRuns(rawData){
   rawData.forEach(function(ds){
       _modelRuns[ds.id] = ds;
   });
-};
+}
 
-function addTable(data){
-
+function addTable(data,id){
+  _tableStore[id] = data;
 }
 
 var TripTableStore = assign({}, EventEmitter.prototype, {
@@ -89,7 +91,13 @@ var TripTableStore = assign({}, EventEmitter.prototype, {
   getCurrentSettings: function() {
     return _currentSettings;
   },
-
+  getSettings : function(id){
+    if(_tableStore[id])
+      return _tableStore[id];
+    else{
+      sailsWebApi.get('triptable',id);
+    }
+  },
   getOptions:function(){
     return newModelOptions;
   },
@@ -120,6 +128,12 @@ TripTableStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_TRIPTABLE_LISTS:
       //console.log('RECEIVE_TRIPTABLE_LISTS',action)
       _currentTripTable = action.data;
+      TripTableStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_TRIPTABLES:
+      action.data.info = JSON.parse(action.data.info);
+      addTable(action.data,action.Id);
       TripTableStore.emitChange();
     break;
 

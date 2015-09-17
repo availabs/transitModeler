@@ -1,6 +1,7 @@
 /*globals require,console,module,d3,$*/
 'use strict'
 var React = require('react'),
+    ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     ModelRunStore = require('../../stores/ModelRunStore'),
     TripTableStore = require('../../stores/TripTableStore');
 
@@ -11,17 +12,22 @@ var ModelSummary = React.createClass({
     };
   },
   getInitialState : function(){
-    return {
-      activeId : null,
-      model_runs: null,
-      trip_settings:null,
+    var id = this.props.activeId || this.props.modelIds[0];
+    var Is =  {
+      activeId : id,
+      model_runs: ModelRunStore.getModelRuns(),
+      model_settings:TripTableStore.getSettings(id),
       trip_table:TripTableStore.getCurrentTripTable(),
     };
+    if(Is.activeId){
+      ModelingActionsCreator.getModelSettings(Is.activeId);
+    }
+    return Is;
   },
   _onChange : function(){//when a subscription has been updated
     this.setState({//get the trip tables from the store
       model_runs : ModelRunStore.getModelRuns(),
-      trip_settings: TripTableStore.getCurrentSettings(),
+      model_settings: TripTableStore.getSettings(this.state.activeId),
       trip_table : TripTableStore.getCurrentTripTable(),
     });
     console.info('update',TripTableStore.getCurrentTripTable());
@@ -30,8 +36,8 @@ var ModelSummary = React.createClass({
     //if we receive new props and the user hasn't already chosen an id to view
     //set it blindly to the first model from the parent specified from the
     //parent component.
-    if(!this.state.activeId && (!this.props.modelIds || this.props.modelIds !== nextProps.modelIds))
-      this.setState({activeId:nextProps.modelIds[0]});
+      if(!this.state.activeId || (this.props.modelIds === nextProps.modelsIds))
+        this.setState({activeId:nextProps.modelIds[0]});
   },
   componentDidMount : function(){
     ModelRunStore.addChangeListener(this._onChange);
@@ -42,9 +48,22 @@ var ModelSummary = React.createClass({
     TripTableStore.removeChangeListener(this._onChange);
   },
   _setActiveModel : function(id){
-    this.setState({activeId:id});
+    this.setState({activeId:id,model_settings:TripTableStore.getSettings(id)});
+  },
+  renderExtraInfo : function(){
+    if(!this.state.model_settings)
+      return;
+    console.log(this.state.model_settings.trips.length);
+    return (
+       <tr>
+           <td> # Trips</td>
+           <td className="ng-binding">{this.state.model_settings.trips.length}</td>
+       </tr>
+     );
+
   },
   renderSummary : function(id){
+    // console.log('model runs',this.state.model_runs);
     if(!this.state.model_runs)
       return <span ></span>;
     if(this.props.modelIds.length === 0)
@@ -52,8 +71,8 @@ var ModelSummary = React.createClass({
     var currentSettings = this.state.model_runs[id].info;
     var currentTripTable = this.state.trip_table;
     // console.log('triptable',this.state.trip_table);
-    console.log('tripsettings',this.state.trip_settings);
-  
+    // console.log('tripsettings',this.state.model_settings);
+
     return (
       <div>
         <h4>Model Info</h4>
@@ -70,10 +89,6 @@ var ModelSummary = React.createClass({
                 <td>Forcast</td>
                 <td className="ng-binding">{currentSettings.forecast}</td>
             </tr>
-            <tr>
-               <td>Number of Trips</td>
-               <td className="ng-binding">{currentTripTable.tt.length}</td>
-           </tr>
            <tr>
              <td>Data</td>
              <td><ul>
@@ -82,9 +97,7 @@ var ModelSummary = React.createClass({
                })}
              </ul></td>
            </tr>
-           <tr>
-
-           </tr>
+           {this.renderExtraInfo()}
         </tbody></table>
       </div>
     );
@@ -107,7 +120,7 @@ var ModelSummary = React.createClass({
         {d}
       </div>);
     });
-
+    console.log('State',this.state);
     return  (<div className='row'>
                 <div className='col-lg-12'>
                   <header>
@@ -118,6 +131,11 @@ var ModelSummary = React.createClass({
                 </div>
                 {this.renderSummary(this.state.activeId || this.props.modelIds[0])}
             </div>);
+  },
+  componentDidUpdate : function(oldprops,oldState){
+    if(oldState.activeId !== this.state.activeId){
+        // ModelingActionsCreator.getModelSettings(this.state.activeId);
+    }
   }
 });
 

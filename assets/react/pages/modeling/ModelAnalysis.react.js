@@ -124,8 +124,7 @@ var MarketAreaIndex = React.createClass({
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-      console.log('Model Runs',this.state.model_runs);
-      console.log('models',this.props.loadedModels);
+
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -170,7 +169,6 @@ var MarketAreaIndex = React.createClass({
                     <div className="col-lg-3">
                         <section className="widget">
                             <div className="body no-margin">
-                    //model summaries
                             <ModelSummary
                                 modelIds={this.props.loadedModels.loadedModels}
                                 />
