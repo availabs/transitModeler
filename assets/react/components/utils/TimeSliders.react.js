@@ -60,12 +60,13 @@ var Sliders = React.createClass({
     });
     var sliders = displayData.map(function(d,i){
       var isLast = scope.props.datasets.length-1 === i;
-
+      var height = scope.props.height - ((isLast)?0:scope.props.margin.bottom);
+      //(d.id === scope.state.selected)
       return (<tr>
                 <td>
                   <TimeSlider
                     width={scope.props.width}
-                    height={scope.props.height - ((isLast)?0:scope.props.margin.bottom) }
+                    height={height }
                     title={d.id}
                     data={d.data}
                     onSet={scope.slideAction}
@@ -79,8 +80,12 @@ var Sliders = React.createClass({
                     />
                 </td>
                 <td>
+                  <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
+                </td>
+                <td>
                   <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
                 </td>
+
             </tr>);
     });
     return sliders;

@@ -32,34 +32,39 @@ var _currentSettings = {
       },
       forecastType:'mpo',
       regressionId:null,
-      datasources:{ 
+      datasources:{
         // datasources get loaded and set
         // in Datasource Store
         acs:null,
         ctpp:null,
         gtfs:null
       },
-      marketarea: MarketareaStore.getCurrentMarketArea()  
+      marketarea: MarketareaStore.getCurrentMarketArea()
     },
     _currentTripTable = {tt:[],failed:[]},
     _finishedList = {},
+    tableStore = {},
     _mode = 'Origin';
 
 function addModelRuns(rawData){
 
   //console.log('GTFS STORE/_addDatasets',rawData);
-  
+
   rawData.forEach(function(ds){
       _modelRuns[ds.id] = ds;
   });
 };
+
+function addTable(data){
+
+}
 
 var TripTableStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
     this.emit(CHANGE_EVENT);
   },
-  
+
   /**
    * @param {function} callback
    */
@@ -67,11 +72,11 @@ var TripTableStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
-  
+
   setDatasource:function(type,id){
     _currentSettings.datasources[type] = id;
     TripTableStore.emitChange();
@@ -93,11 +98,9 @@ var TripTableStore = assign({}, EventEmitter.prototype, {
     return _mode;
   }
 
-
-
-  
-
 });
+
+
 
 TripTableStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;

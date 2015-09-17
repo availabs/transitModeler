@@ -9,9 +9,9 @@ acs_data = require('./utils/acsData.js');
 
 var models = require('../../config/models'),
 	connections = require('../../config/connections');
-	var connection = connections.connections[models.models.connection]; 
+	var connection = connections.connections[models.models.connection];
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
-	
+
 var database = {
 	host: connection.host ? connection.host : 'lor.availabs.org' ,
 	port: connection.port ? connection.port : '5432',
@@ -23,14 +23,14 @@ var database = {
 function spawnModelRun(job,triptable_id){
 	var terminal = require('child_process').spawn('bash');
 	var current_progress = 0;
-	
+
 	terminal.stdout.on('data', function (data) {
 	    data = data+'';
 	    if(data.indexOf('status') !== -1){
 	    	Job.update({id:job.id},{status:data.split(":")[1],progress:0})
     		.exec(function(err,updated_job){
     			if(err){ console.log('job update error',error); }
-    			sails.sockets.blast('job_updated',updated_job);		
+    			sails.sockets.blast('job_updated',updated_job);
     		});
 	    	current_progress =0;
 	    }
@@ -41,7 +41,7 @@ function spawnModelRun(job,triptable_id){
 	    		Job.update({id:job.id},{progress:current_progress})
     			.exec(function(err,updated_job){
     				if(err){ console.log('job update error',error); }
-    				sails.sockets.blast('job_updated',updated_job);		
+    				sails.sockets.blast('job_updated',updated_job);
     			});
 	    	}
 	    }
@@ -54,30 +54,30 @@ function spawnModelRun(job,triptable_id){
 		code = code*1;
 	    console.log('child process exited with code ' + code);
 	    if(code == 0){
-	    	
+
 	    	Job.findOne(job.id).exec(function(err,newJob){
 	    		if(err){ console.log('Job check err',err);}
-	    		
+
 
 	    		if(newJob.status != 'Cancelled'){
 
 				    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
 					.exec(function(err,updated_job){
 						if(err){ console.log('job update error',error); }
-						sails.sockets.blast('job_updated',updated_job);		
+						sails.sockets.blast('job_updated',updated_job);
 					});
 
 				}else{
 					console.log('Exit from Job Cancel');
 				}
-			
+
 			});
 
 		}else{
 			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Failure'})
 			.exec(function(err,updated_job){
 				if(err){ console.log('job update error',error); }
-				sails.sockets.blast('job_updated',updated_job);		
+				sails.sockets.blast('job_updated',updated_job);
 			});
 		}
 	});
@@ -91,7 +91,7 @@ function spawnModelRun(job,triptable_id){
 
 	    Job.update({id:job.id},{pid:terminal.pid}).exec(function(err,updated_job){
 	    	if(err){ console.log('job update error',error); }
-			sails.sockets.blast('job_updated',updated_job);		
+			sails.sockets.blast('job_updated',updated_job);
 	    });
 
 	    terminal.stdin.end();
@@ -119,7 +119,7 @@ module.exports = {
 			console.log('model Data no id passed');
 			res.json({responseText:'Must pass model run ID'},500)
 		}
-		
+
 		//farebox data is cached
 		var farebox_sets = ['acam','acammin','acammax','princeam','princeammin','princeammax','princepm','princepmmin','princepmmax','princefull','princefullmin','princefullmax','acpm','acpmmin','acpmmax'];
 		var id = req.param('id');
@@ -140,9 +140,9 @@ module.exports = {
 			}
 			var info = JSON.parse(data.rows[0].info);
 			var routes = JSON.stringify(info.marketarea.routes).replace('[','(').replace(']',')').replace(/\"/g, "'").replace(/\\/g, "").replace("'(", "(").replace(")'", ")");;
-			
+
 			//console.log(routes);
-			
+
 			var gtfs_table = 'njtransit_bus_07-12-2013';//info.datasources.gtfs;
 			var sql ="SELECT a.run_id,a.trip_id,a.duration,a.distance,a.route,a.on_stop_code,a.gtfs_trip_id,a.off_stop_code,b.start_time,b.waiting_time,b.walk_distance,b.walking_time,	c.arrival_time,	d.arrival_time as trip_start_time,f.fare_zone as on_fare_zone,	g.fare_zone as off_fare_zone,e.geoid as on_tract, h.geoid as off_tract"
 			 		+" from model_legs a "
@@ -182,7 +182,7 @@ module.exports = {
 		var settings = JSON.parse(model.info)
 		Triptable.create(model).exec(function(err,tt){
 			if(err){console.log('tt create error',err)
-					
+
 					res.json({message:'Create tt Errer',error:err});
 					return;
 				}
@@ -195,45 +195,54 @@ module.exports = {
 			})
 			.exec(function(err,job){
 				if(err){console.log('create job error',err)
-					
+
 					res.json({message:'Create Job Error',error:err});
 					return;
 				}
 				sails.sockets.blast('job_created',job);
 
-			
+
 				spawnModelRun(job,tt.id);
 
 				res.json({message:'model run started',ttId:tt.id});
 				return;
-				
+
 			})
 		})
 
 	},
 
 	calculateTripTable:function(req,res){
-		var triptable = req.param('triptable_settings');
+		var triptable = req.param('triptable_settings'); //get the current settings from the client
+		//get the zone tract ids from the settings
 		var tracts = JSON.stringify(triptable.marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+		//set default output
 		var output = {tt:[],failed:[]};
+		//set the id of the regressionModel
 		var regressionModel = triptable.regressionId;
+		//accumulators for total trip count and tract pairs count
 		var numTripsTotal = 0,
 			tractPairCount  = 0;
-		console.log('settings:',req.param('triptable_settings').time,req.param('triptable_settings').type,'total_zones',triptable.marketarea.zones.length);
+
+		console.log('settings:',triptable.time,triptable.type,'total_zones',triptable.marketarea.zones.length);
+		//get the acs tracts
 		getCensusData(tracts,triptable.datasources.acs,function(acs_tracts){
+			//update the acs_tracts with the known data
 			acs_data.update_data(acs_tracts);
 			switch(triptable.type) {
-				case 'ctpp':
-					triptable.marketarea.id = -1
+				case 'ctpp': //if our model type is ctpp disregard the marketarea id
+					triptable.marketarea.id = -1;
 				case 'regression':
 					//regression model
 					getCTTPTracts(triptable.datasources.ctpp,tracts,function(tractTrips){
 						getODPoints(triptable.od,triptable.datasources.gtfs,tracts,function(ODPoints){
 							console.log('tract Trips',tractTrips.length);
+							//for each tract pairing
 							tractTrips.forEach(function(tractPair){
 								if(typeof acs_data.acs[tractPair.home_tract] == 'undefined'){
 									//console.log(tractPair.home_tract)
 								}else{
+	
 									var emp_growth = 1,
 										pop_growth = 1;
 									if(triptable.forecast != 'current'){
@@ -273,7 +282,7 @@ module.exports = {
 										}
 
 									}else if(triptable.time =='am'){
-										
+
 										//console.log('am riders');
 										//am riders
 										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
@@ -286,16 +295,16 @@ module.exports = {
 										if(numTrips){
 											numTripsTotal+=numTrips;
 										}
-										
+
 									}
 									else if(triptable.time =='pm'){
-										
+
 										//console.log('pm riders');
-										
+
 										//pm return trip riders
 										var numTrips = parseInt(getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId));
-										numTrips = Math.round((numTrips*pop_growth)*emp_growth);										
-										
+										numTrips = Math.round((numTrips*pop_growth)*emp_growth);
+
 										for(var i = 0; i < numTrips;i++){
 											planTrip(tractPair,time.timeMatrix,ODPoints,'pm',output)
 										}
@@ -308,17 +317,17 @@ module.exports = {
 									}
 								}
 								//done send output
-									
+
 							});
 							console.log('triptable done',output.tt.length,req.session.User.username,numTripsTotal,tractPairCount);
 
 							userTT[req.session.User.username] = output.tt; // Multiple people logged on to same account could confuse this.
-							
+
 							res.json(output);
 						})
 					});
 					break;
-				
+
 				case 'lehd':
 					//code block
 					break;
@@ -330,14 +339,14 @@ module.exports = {
 			}
 		})
 	}
-	
+
 };//end module.exports
 
 function planTrip(tractPair,timeMatrix,stop_points,timeOfDay,output){
 
 	var trip = {};
 	trip.id = output.tt.length;
-	
+
 	trip.from_geoid = tractPair.home_tract;
 	trip.to_geoid = tractPair.work_tract;
 
@@ -356,7 +365,7 @@ function planTrip(tractPair,timeMatrix,stop_points,timeOfDay,output){
 		}
 		trip.from_coords[0] += pointVariation();
 		trip.from_coords[1] += pointVariation();
-		
+
 		if(timeOfDay == 'am'){
 			trip.to_coords = stop_points[tractPair.work_tract][random(0,stop_points[tractPair.work_tract].length-1)];
 		}else if(timeOfDay == 'pm'){
@@ -364,37 +373,37 @@ function planTrip(tractPair,timeMatrix,stop_points,timeOfDay,output){
 		}
 		trip.to_coords[0] += pointVariation();
 		trip.to_coords[1] += pointVariation();
-		
+
 		trip.time = getTime(timeMatrix,timeOfDay);
 		//trip.source = mode+version;
 		output.tt.push(trip);
 	}else{
 		output.failed.push(trip);
-	}	
+	}
 }
 
 function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model){
-	
+
 	var regressionRiders = 0;
 
 	var regRatio = 1;
 	if(type === 'regression' && model){
-		
+
 		regressionRiders = +model.constant;
 		model.censusVariables.forEach(function(cv){
-			console.log(tractPair.home_tract,cv.name , 
+			console.log(tractPair.home_tract,cv.name ,
 				acs_data.acs[tractPair.home_tract][cv.name],'*',cv.coef,'=',
 				acs_data.acs[tractPair.home_tract][cv.name]*cv.coef
 			)
 			regressionRiders += acs_data.acs[tractPair.home_tract][cv.name]*cv.coef;
 
 		})
-		
+
 		regRatio= regressionRiders / acs_data.acs[tractPair.home_tract].bus_to_work;
 		console.log(tractPair.home_tract,regressionRiders,'/', acs_data.acs[tractPair.home_tract].bus_to_work,'=',regRatio)
 	}
-	
-	
+
+
 	var output = tractPair.bus_total*(time.intime['am']/acs_data.acs[tractPair.home_tract].public_transportation_to_work)*Math.abs(regRatio);
 	return Math.round(output*1);
 }
@@ -495,7 +504,7 @@ function getCTTPTracts(table,tracts,cb){
 	Triptable.query(sql,{},function(err,tracts_data){
 		if (err) { return console.log('216',err);}
 		cb(tracts_data.rows);
-	});	
+	});
 }
 
 function getODPoints(type,table,tracts,cb){
@@ -508,19 +517,19 @@ function getODPoints(type,table,tracts,cb){
 			Triptable.query(sql,{},function(err,points_data){
 
 				if (err) {  return console.log('231',err);}
-				
+
 				var stop_points = {};
-				
+
 				points_data.rows.forEach(function(trip){
-					
+
 					if(trip.geoid11 in stop_points){
 						stop_points[trip.geoid].push([trip.stop_lat*1,trip.stop_lon*1]);
 					}else{
-						
+
 						stop_points[trip.geoid] = [];
 						stop_points[trip.geoid].push([trip.stop_lat*1,trip.stop_lon*1]);
 					}
-					
+
 				});
 				cb(stop_points);
 				return;
@@ -532,11 +541,11 @@ function getODPoints(type,table,tracts,cb){
 			Triptable.query(sql,{},function(err,points_data){
 
 				if (err) { return console.log('255',err);}
-				
+
 				var stop_points = {};
 
 				points_data.rows.forEach(function(trip){
-					
+
 					if(trip.o_geoid10 in stop_points){
 						stop_points[trip.o_geoid10].push([trip.o_lat*1,trip.o_lng*1]);
 					}else{
@@ -549,7 +558,7 @@ function getODPoints(type,table,tracts,cb){
 						stop_points[trip.d_geoid10] = [];
 						stop_points[trip.d_geoid10].push([trip.d_lat*1,trip.d_lng*1]);
 					}
-					
+
 				});
 				cb(stop_points);
 			});

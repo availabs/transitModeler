@@ -34,7 +34,6 @@ var RouteTotalGraph = React.createClass({
           cols.push({'key':'colorkey',name:'Color Key'});
         }
         var values = [];
-        console.log('starting data',startData);
         var tableData = startData.map(function(d){
             //console.log('tableData Map',d)
             cols.push({'key':d.key,'name':'Run '+d.key,summed:true});
@@ -48,7 +47,6 @@ var RouteTotalGraph = React.createClass({
             });
 
         });
-        console.log('table Data',tableData);
         //console.log('render data tabke',tableData,cols)
         //take the zeroth entry of the array
         var data = tableData[0];
@@ -66,13 +64,11 @@ var RouteTotalGraph = React.createClass({
                         var newRow = data.filter(function(d){
                             return d.route === row.route;
                         })[0];
-                        console.log(row);
                         if(newRow){
                             newRow[cols[+i+2].key] = row[cols[+i+2].key];
                             newData.push(newRow);
                         }
                     });
-                    console.log(newData);
                     data = newData;
                 }
             });

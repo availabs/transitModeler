@@ -218,6 +218,7 @@ module.exports = {
   //Modeling
   //-----------------------------------------------
   getTriptable:function(settings){
+    console.info('TripTable Post',settings);
     d3.json('/triptable')
       .post(JSON.stringify({triptable_settings:settings}),function(err,data){
         ServerActionCreators.receiveData('triptable_list',data);

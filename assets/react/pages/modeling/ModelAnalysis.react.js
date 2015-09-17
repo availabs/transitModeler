@@ -12,11 +12,12 @@ var React = require('react'),
     RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
     ModelRunContainer = require('../../components/modelAnalysis/modelRunContainer.react'),
     TimeSliders = require('../../components/utils/TimeSliders.react'),
-    lastAction,
+    ModelSummary= require('../../components/modelAnalysis/ModelSummary.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // -- Stores
+    TripTableStore = require('../../stores/TripTableStore.js'),
     ModelRunStore = require('../../stores/ModelRunStore.js');
 
 var i18n = {
@@ -44,21 +45,27 @@ var MarketAreaIndex = React.createClass({
     getInitialState: function(){
         return {
             //get the models that have been run
-            model_runs:ModelRunStore.getModelRuns()
+            model_runs:ModelRunStore.getModelRuns(),
+            model_id:null,
         };
     },
 
     componentDidMount: function() { //after initial rendering subscribe to the ModelRunStore
         ModelRunStore.addChangeListener(this._onChange);
+        TripTableStore.addChangeListener(this._onChange);
+
     },
 
     componentWillUnmount: function() { //if component will be destroy kill subscription to the store
         ModelRunStore.removeChangeListener(this._onChange);
+        TripTableStore.removeChangeListener(this._onChange);
     },
 
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
-            model_runs:ModelRunStore.getModelRuns()
+            model_runs:ModelRunStore.getModelRuns(),
+            trip_settings : TripTableStore.getCurrentSettings(),
+            trip_table    : TripTableStore.getCurrentTripTable(),
         });
     },
     _renderModelRuns:function(){
@@ -69,52 +76,26 @@ var MarketAreaIndex = React.createClass({
                 <span />
             );
         }
-        //if there is only one model run map
-        if(this.props.loadedModels.loadedModels.length === 1){
-            //display 1 model run
-            return (
-                <div className="col-lg-12">
-                    <ModelRunContainer
-                        marketarea={this.props.currentMarketarea}
-                        tracts={this.props.tracts}
-                        routesGeo={this.props.routesGeo}
-                        stopsGeo={this.props.stopsGeo}
-                        data={this.props.loadedModels}
-                        modelId={this.props.loadedModels.loadedModels[0]} />
-                </div>
-            );
-        }
-        //otherwise display 2 model run maps
+        //display 1 model run
         return (
-            <div>
-                <div className="col-lg-6">
-                    <ModelRunContainer
-                        marketarea={this.props.currentMarketarea}
-                        tracts={this.props.tracts}
-                        routesGeo={this.props.routesGeo}
-                        stopsGeo={this.props.stopsGeo}
-                        data={this.props.loadedModels}
-                        mapId='map1'
-                        modelId={this.props.loadedModels.loadedModels[0]} />
-                </div>
-                <div className="col-lg-6">
-                    <ModelRunContainer
-                        marketarea={this.props.currentMarketarea}
-                        tracts={this.props.tracts}
-                        routesGeo={this.props.routesGeo}
-                        stopsGeo={this.props.stopsGeo}
-                        data={this.props.loadedModels}
-                        mapId='map2'
-                        modelId={this.props.loadedModels.loadedModels[1]} />
-                </div>
+            <div className="col-lg-10">
+                <ModelRunContainer
+                    marketarea={this.props.currentMarketarea}
+                    tracts={this.props.tracts}
+                    routesGeo={this.props.routesGeo}
+                    stopsGeo={this.props.stopsGeo}
+                    data={this.props.loadedModels}
+                    modelId={this.state.model_id || this.props.loadedModels.loadedModels[0]} />
             </div>
         );
-
     },
     _onTimeChange : function(range){
       var scope = this;
       console.log(range);
       scope.setState({timeRange:range});
+    },
+    selectModel : function(id){
+      this.setState({model_id:id});
     },
     _getTimeData : function(){
       var scope = this;
@@ -140,10 +121,11 @@ var MarketAreaIndex = React.createClass({
     },
     render: function() {
       var hourRange;
-      if(this.state.timeRange){
+      if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-      console.log('models',this.props.loadedModels.loadedModels.length);
+      console.log('Model Runs',this.state.model_runs);
+      console.log('models',this.props.loadedModels);
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -162,18 +144,19 @@ var MarketAreaIndex = React.createClass({
                     <div className="col-lg-9">
                         <section className="widget">
                             <div className="body no-margin">
-
                                 <ModelRunSelector marketarea={this.props.marketarea} model_runs={this.state.model_runs} />
-
                             </div>
                         </section>
+                        {this._renderModelRuns()}
                         <div style={{width:'100%'}}>
                             <TimeSliders
                               datasets={this._getTimeData()}
                               height={100}
-                              width={700}
+                              width={500}
                               onChange={this._onTimeChange}
                               delete ={this.deleteModel}
+                              selection={this.selectModel}
+                              actionText={'Activate'}
                               />
                         </div>
                         <div style={{width:'100%'}}>
@@ -187,7 +170,10 @@ var MarketAreaIndex = React.createClass({
                     <div className="col-lg-3">
                         <section className="widget">
                             <div className="body no-margin">
-
+                    //model summaries
+                            <ModelSummary
+                                modelIds={this.props.loadedModels.loadedModels}
+                                />
                             </div>
                         </section>
                         <section className="widget">
@@ -199,7 +185,7 @@ var MarketAreaIndex = React.createClass({
                 </div>
 
                 <div className='row'>
-                    {this._renderModelRuns()}
+
                 </div>
 
             </div>
