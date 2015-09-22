@@ -41,7 +41,7 @@ var ModelRunSelector = React.createClass({
 
 				return {
 	  			"id" : scope.state.model_runs[key].id ,
-	  			"text" : name
+	  			"text" : key + ' ' +name
 	  		};
 	  	});
 			//create a select box from the generated names

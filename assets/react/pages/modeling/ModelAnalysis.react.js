@@ -76,6 +76,7 @@ var MarketAreaIndex = React.createClass({
             );
         }
         //display 1 model run
+        console.log('Current Tracts',this.props.tracts);
         return (
             <div className="col-lg-10">
                 <ModelRunContainer
@@ -98,19 +99,23 @@ var MarketAreaIndex = React.createClass({
     },
     _getTimeData : function(){
       var scope = this;
+
       if(scope.props.loadedModels.initialized){
       var datasets =   scope.props.loadedModels.loadedModels.map(function(d){ //for each model loaded
+          console.log('Current Model',d);
           //consider only the current run only
           scope.props.loadedModels.dimensions.run_id.filter(d);
+          console.log(scope.props.loadedModels.groups.hours.top(Infinity).length);
           //get the hour groupings for that particular dataset
           var data = scope.props.loadedModels.groups.hours.top(Infinity).map(function(d){
             var key = d.key.split(';'); //key[0] = hour of day,key[1] = route id
             var color = scope.props.marketarea.routecolors[key[1]]; //get the routes color from the market area
             return {x:key[0]+':00',y:d.value,color:color,group:key[1]}; //build the record for the timeslider
           });
+          scope.props.loadedModels.dimensions.run_id.filterAll();
           return {id:d,data:data};
         });
-        scope.props.loadedModels.dimensions.run_id.filterAll();
+        console.log(datasets);
         return datasets;
       }
       return [];
@@ -166,18 +171,9 @@ var MarketAreaIndex = React.createClass({
                     </div>
 
                     <div className="col-lg-3">
-                        <section className="widget">
-                            <div className="body no-margin">
                             <ModelSummary
                                 modelIds={this.props.loadedModels.loadedModels}
                                 />
-                            </div>
-                        </section>
-                        <section className="widget">
-                            <div className="body no-margin">
-
-                            </div>
-                        </section>
                     </div>
                 </div>
 

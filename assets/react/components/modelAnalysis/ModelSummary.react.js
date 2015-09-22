@@ -90,6 +90,29 @@ var ModelSummary = React.createClass({
       </div>
     );
   },
+  _variableSummary : function(id){
+    if( !this.state.model_runs[id] || !this.state.model_runs[id].info.regressionId )
+      return <span></span>;
+    var regression = this.state.model_runs[id].info.regressionId;
+    var modelName = regression.name;
+    var censusVars= regression.censusVariables;
+    censusVars = censusVars.map(function(cv){
+      return (<tr><td style={{padding:'5px'}}>{cv.name}</td><td style={{padding:'5px'}}>{cv.coef}</td></tr>);
+    });
+    return (
+      <div>
+        <h4>{modelName}</h4>
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            {censusVars}
+          </tbody>
+        </table>
+      </div>
+    );
+  },
   render : function(){
     var scope = this;
     var headers = this.props.modelIds.map(function(d,i){
@@ -109,16 +132,28 @@ var ModelSummary = React.createClass({
       </div>);
     });
     console.log('State',this.state);
-    return  (<div className='row'>
-                <div className='col-lg-12'>
-                  <header>
-                    <ul className='nav nav-tabs' >
-                      {headers}
-                    </ul>
-                  </header>
-                </div>
-                {this.renderSummary(this.state.activeId || this.props.modelIds[0])}
-            </div>);
+    var id = this.state.activeId || this.props.modelIds[0];
+    return  (
+      <div>
+      <section className="widget">
+          <div className="body no-margin">
+            <div className='row'>
+                      <div className='col-lg-12'>
+                        <header>
+                          <ul className='nav nav-tabs' >
+                            {headers}
+                          </ul>
+                        </header>
+                      </div>
+                      {this.renderSummary(id)}
+            </div>
+          </div>
+        </section>
+        <section className='widget'>
+            {this._variableSummary(id)}
+        </section>
+      </div>
+    );
   },
 });
 

@@ -1,3 +1,4 @@
+/*globals require,process, console*/
 /**
  * TriptableController
  *
@@ -46,7 +47,7 @@ function spawnModelRun(job,triptable_id){
 	    	}
 	    }
 	    else{
-	    	console.log('error probably',data)
+	    	console.log('error probably',data);
 	    }
 	});
 
@@ -83,9 +84,9 @@ function spawnModelRun(job,triptable_id){
 	});
 
 	setTimeout(function() {
-		var cmd = 'php -f php/runModel.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
-	    	+triptable_id
-	    	+'\n';
+		console.log('Current directory :', process.cwd());
+		var cmd = 'php -f php/runModel.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '+
+	    	triptable_id + '\n';
 	    console.log('run Command',cmd);
 	    terminal.stdin.write(cmd);
 
