@@ -1,4 +1,6 @@
 var React = require('react'),
+		//helpers
+		_ = require('lodash'),
 
 	// -- Components
 	Select2Component = require('../utils/Select2.react'),
@@ -13,23 +15,32 @@ var ModelRunSelector = React.createClass({
   		console.log('Analyze Model',id);
   		ModelingActionsCreator.addActiveModelRun(id);
   	},
-
+	getInitialState : function(){
+		return {
+			model_runs : this.props.model_runs,
+		};
+	},
+	compentWillReceiveProps : function(nextProps){
+		if(!this.props.model_runs || !_.isEqual(this.props.model_runs, nextProps.model_runs) ){
+			this.setState({model_runs:nextProps.model_runs});
+		}
+	},
 	render: function() {
 	  	var scope = this;
 		//	console.log('r',ix++,'data',scope.props.model_runs);
 	  	//console.log('ModelRunSelector / Render ',Object.keys(this.props.model_runs),scope.props.marketarea)
 			//filter models that are available for the current market area
-	  	var marketModelKeys = Object.keys(this.props.model_runs).filter(function(key){
-	  		return scope.props.model_runs[key].info.marketarea.id === scope.props.marketarea.id;
+	  	var marketModelKeys = Object.keys(this.state.model_runs).filter(function(key){
+	  		return scope.state.model_runs[key].info.marketarea.id === scope.props.marketarea.id;
 	  	});
 			//take each of those model keys
 	  	var names = marketModelKeys.map(function(key){//create a list consisting of
 				//compose a name from its time,type,and acs datasource
 
-	  		var name =  scope.props.model_runs[key].info.time+' '+scope.props.model_runs[key].info.type+' '+(scope.props.model_runs[key].info.datasources.acs || scope.props.model_runs[key].info.datasources.acs_source);
+	  		var name =  scope.state.model_runs[key].info.time+' '+scope.state.model_runs[key].info.type+' '+(scope.state.model_runs[key].info.datasources.acs || scope.state.model_runs[key].info.datasources.acs_source);
 
 				return {
-	  			"id" : scope.props.model_runs[key].id ,
+	  			"id" : scope.state.model_runs[key].id ,
 	  			"text" : name
 	  		};
 	  	});

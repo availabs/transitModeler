@@ -30,9 +30,10 @@ function addModelRuns(rawData){
 
   rawData.forEach(function(ds){
       ds.info = JSON.parse(ds.info);
+      ds.trips = JSON.parse(ds.trips);
       _modelRuns[ds.id] = ds;
   });
-};
+}
 
 var ModelRunStore = assign({}, EventEmitter.prototype, {
 

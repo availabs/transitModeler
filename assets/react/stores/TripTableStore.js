@@ -91,13 +91,13 @@ var TripTableStore = assign({}, EventEmitter.prototype, {
   getCurrentSettings: function() {
     return _currentSettings;
   },
-  getSettings : function(id){
-    if(_tableStore[id])
-      return _tableStore[id];
-    else{
-      sailsWebApi.get('triptable',id);
-    }
-  },
+  // getSettings : function(id){
+  //   if(_tableStore[id])
+  //     return _tableStore[id];
+  //   else{
+  //     sailsWebApi.get('triptable',id);
+  //   }
+  // },
   getOptions:function(){
     return newModelOptions;
   },
@@ -131,11 +131,11 @@ TripTableStore.dispatchToken = AppDispatcher.register(function(payload) {
       TripTableStore.emitChange();
     break;
 
-    case ActionTypes.RECEIVE_TRIPTABLES:
-      action.data.info = JSON.parse(action.data.info);
-      addTable(action.data,action.Id);
-      TripTableStore.emitChange();
-    break;
+    // case ActionTypes.RECEIVE_TRIPTABLES:
+    //   action.data.info = JSON.parse(action.data.info);
+    //   addTable(action.data,action.Id);
+    //   TripTableStore.emitChange();
+    // break;
 
 
     default:

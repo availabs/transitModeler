@@ -64,7 +64,6 @@ var MarketAreaIndex = React.createClass({
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
             model_runs:ModelRunStore.getModelRuns(),
-            trip_settings : TripTableStore.getCurrentSettings(),
             trip_table    : TripTableStore.getCurrentTripTable(),
         });
     },

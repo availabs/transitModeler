@@ -101,7 +101,7 @@ function spawnModelRun(job,triptable_id){
 module.exports = {
 
 	finishedModels: function(req,res){
-		var sql = 'SELECT id,user,info FROM triptable where  "isFinished" = true';
+		var sql = 'SELECT id,user,info,trips FROM triptable where  "isFinished" = true';
 		///console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
@@ -242,7 +242,7 @@ module.exports = {
 								if(typeof acs_data.acs[tractPair.home_tract] == 'undefined'){
 									//console.log(tractPair.home_tract)
 								}else{
-	
+
 									var emp_growth = 1,
 										pop_growth = 1;
 									if(triptable.forecast != 'current'){

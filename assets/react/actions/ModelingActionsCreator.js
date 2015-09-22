@@ -20,9 +20,6 @@ module.exports = {
     });
 
   },
-	getModelSettings: function(modelid){
-		SailsWebApi.get('triptable',modelid);
-	},
   loadTripTable:function(settings){
   	//console.log('MAC / Load Trip Table',settings)
   	SailsWebApi.getTriptable(settings);

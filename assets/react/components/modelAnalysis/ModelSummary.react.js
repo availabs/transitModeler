@@ -16,18 +16,13 @@ var ModelSummary = React.createClass({
     var Is =  {
       activeId : id,
       model_runs: ModelRunStore.getModelRuns(),
-      model_settings:TripTableStore.getSettings(id),
       trip_table:TripTableStore.getCurrentTripTable(),
     };
-    if(Is.activeId){
-      ModelingActionsCreator.getModelSettings(Is.activeId);
-    }
     return Is;
   },
   _onChange : function(){//when a subscription has been updated
     this.setState({//get the trip tables from the store
       model_runs : ModelRunStore.getModelRuns(),
-      model_settings: TripTableStore.getSettings(this.state.activeId),
       trip_table : TripTableStore.getCurrentTripTable(),
     });
     console.info('update',TripTableStore.getCurrentTripTable());
@@ -48,18 +43,9 @@ var ModelSummary = React.createClass({
     TripTableStore.removeChangeListener(this._onChange);
   },
   _setActiveModel : function(id){
-    this.setState({activeId:id,model_settings:TripTableStore.getSettings(id)});
+    this.setState({activeId:id});
   },
   renderExtraInfo : function(){
-    if(!this.state.model_settings)
-      return;
-    console.log(this.state.model_settings.trips.length);
-    return (
-       <tr>
-           <td> # Trips</td>
-           <td className="ng-binding">{this.state.model_settings.trips.length}</td>
-       </tr>
-     );
 
   },
   renderSummary : function(id){
@@ -68,32 +54,34 @@ var ModelSummary = React.createClass({
       return <span ></span>;
     if(this.props.modelIds.length === 0)
       return <span></span>;
-    var currentSettings = this.state.model_runs[id].info;
-    var currentTripTable = this.state.trip_table;
+    var currentModel = this.state.model_runs[id];
     // console.log('triptable',this.state.trip_table);
     // console.log('tripsettings',this.state.model_settings);
-
     return (
       <div>
         <h4>Model Info</h4>
         <table className="table table-hover">
             <tbody><tr>
                 <td>Model Type</td>
-                <td className="ng-binding">{currentSettings.type}</td>
+                <td className="ng-binding">{currentModel.info.type}</td>
             </tr>
             <tr>
                 <td>Model Time</td>
-                <td className="ng-binding">{currentSettings.time}</td>
+                <td className="ng-binding">{currentModel.info.time}</td>
             </tr>
             <tr>
-                <td>Forcast</td>
-                <td className="ng-binding">{currentSettings.forecast}</td>
+                <td>Forecast</td>
+                <td className="ng-binding">{currentModel.info.forecast}</td>
+            </tr>
+            <tr>
+              <td># Trips</td>
+              <td className="ng-binding">{currentModel.trips.length}</td>
             </tr>
            <tr>
              <td>Data</td>
              <td><ul>
-               {Object.keys(currentSettings.datasources).map(function(d){
-                 return (<li >{currentSettings.datasources[d]}</li>);
+               {Object.keys(currentModel.info.datasources).map(function(d){
+                 return (<li >{currentModel.info.datasources[d]}</li>);
                })}
              </ul></td>
            </tr>
@@ -132,11 +120,6 @@ var ModelSummary = React.createClass({
                 {this.renderSummary(this.state.activeId || this.props.modelIds[0])}
             </div>);
   },
-  componentDidUpdate : function(oldprops,oldState){
-    if(oldState.activeId !== this.state.activeId){
-        // ModelingActionsCreator.getModelSettings(this.state.activeId);
-    }
-  }
 });
 
 module.exports = ModelSummary;
