@@ -203,16 +203,16 @@ var TimeGraph = React.createClass({
           }); //use as its x value its time filed
     }
     function draw(){
-      if(d3.event && d3.event.translate && domainLock){
-        var t = d3.event.translate,flag = false,
-            v1 = formatDate.parse(min),v2 = formatDate.parse(max),
-            extra = [x(v1),width - x(v2)],
-            d = x.domain();
-            d = [Math.max(d[0],v1),Math.min(d[1],v2)];
+      if(d3.event && d3.event.translate && domainLock){ //if ther is zoom event
+        var t = d3.event.translate,flag = false, //store event translate,keep a temp flag
+            v1 = formatDate.parse(min),v2 = formatDate.parse(max),//get the date of the min and max points on graph (X)
+            extra = [x(v1),width - x(v2)], //assistence vector
+            d = x.domain();                //get the domain of x
+            d = [Math.max(d[0],v1),Math.min(d[1],v2)];//set the new domain for the zoomed graph
             x.domain(d);
-            var temp;
-            if(extra[0] > 0)
-              temp = [t[0] - extra[0],0];
+            var temp; //define temporary storage
+            if(extra[0] > 0) //if it went before the biginning
+              temp = [t[0] - extra[0],0]; //adjust x direction
             else if(extra[1] > 0){
               temp = [t[0] + extra[1],0];
             }
@@ -220,6 +220,7 @@ var TimeGraph = React.createClass({
               temp = t;
             }
           zoom.translate(temp);
+          zoom.center([d3.mouse(this)[0]-margin.left,0]);
       }
       var xxs = svg.select('g.x.axis').call(xAxis);
       if(scope.props.rotateXLabels)
