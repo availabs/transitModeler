@@ -60,14 +60,12 @@ var MarketAreaIndex = React.createClass({
 
     componentWillUnmount: function() { //if component will be destroy kill subscription to the store
         ModelRunStore.removeChangeListener(this._onChange);
-        TripTableStore.removeChangeListener(this._onChange);
         FareboxStore.removeChangeListener(this._onChange);
     },
 
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
             model_runs:ModelRunStore.getModelRuns(),
-            trip_table    : TripTableStore.getCurrentTripTable(),
             farebox : FareboxStore.getFarebox(this.props.marketarea.id),
         });
     },

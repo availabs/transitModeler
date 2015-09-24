@@ -8,12 +8,13 @@ var Sliders = React.createClass({
   getDefaultProps : function(){
     return {
       margin:{bottom:60},
+      buttons:true,
     };
   },
   getInitialState : function(){
     return {
         range : [],
-        focusModel:null,
+        focusModels:[],
     };
   },
   slideAction : function(range){
@@ -53,16 +54,26 @@ var Sliders = React.createClass({
   },
 
   _focus : function(id){
-    if(!this.state.focusModel)
-      this.setState({focusModel:id});
-    else
-      this.setState({focusModel:null});
+    var ix,models;
+    if(this._isFocusedModel(id,ix)){
+      models = this.state.focusModels.splice(ix,1);
+      this.setState({focusModels:models});
+    }
+    else{
+      models = this.state.focusModels;
+      models.push(id);
+      this.setState({focusModels:models});
+    }
   },
   _focusString : function(id){
     if(this.state.focusModel !== id)
       return 'Focus';
     else
       return 'Neglect';
+  },
+  _isFocusedModel : function(id,ix){
+    ix = this.state.focusModels.indexOf(id);
+    return ix >=0;
   },
   buildSliders : function(){
     var scope = this,max = 0;
@@ -77,6 +88,20 @@ var Sliders = React.createClass({
       var height = scope.props.height - ((isLast)?0:scope.props.margin.bottom);
       var width  = (scope.state.focusModel === d.id)?scope.props.maxWidth:scope.props.width;
           height = (scope.state.focusModel === d.id)?scope.props.maxHeight:height;
+
+      var buttons = scope.props.buttons? undefined:(
+        <div>
+        <div className='col-sm-1'>
+            <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
+          </div>
+          <div className='col-sm-1'>
+            <a className='btn btn-small btn-default' onClick={scope._focus.bind(null,d.id)}>{scope._focusString(d.id)}</a>
+          </div>
+          <div className='col-sm-1'>
+            <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
+        </div>
+      </div>
+      );
       return (
         <div className='row' style={{'table-layout':'fixed','vertical-align':'middle'}}>
                 <div className='col-lg-9'>
@@ -95,15 +120,7 @@ var Sliders = React.createClass({
                     rangeTicks = {0}
                     />
                 </div>
-                  <div className='col-sm-1'>
-                      <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
-                    </div>
-                    <div className='col-sm-1'>
-                      <a className='btn btn-small btn-default' onClick={scope._focus.bind(null,d.id)}>{scope._focusString(d.id)}</a>
-                    </div>
-                    <div className='col-sm-1'>
-                      <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
-                  </div>
+                  {buttons}
             </div>);
     });
     return sliders;
