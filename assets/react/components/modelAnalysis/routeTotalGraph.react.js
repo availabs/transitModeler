@@ -24,7 +24,6 @@ var RouteTotalGraph = React.createClass({
         var scope = this;
         //process the data for easy display format
         var startData = odata || this.processData();
-
         //if nothing is worth plotting, display nothing
         if(!startData || startData[0].key === 'none'){
             return ( <span /> );
@@ -78,36 +77,62 @@ var RouteTotalGraph = React.createClass({
             <DataTable data={data} columns={cols} />
         );
     },
-
+    processFarebox : function(){
+      var scope=this;
+      if(scope.props.timeFilter){
+        scope.props.fareboxData.dimensions.hours.filter(function(d){
+          var h = parseInt(d.split(';')[0]);
+          return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
+        });
+      }
+      var numdays = scope.props.fareboxData.groups.run_date.top(Infinity).length;
+      return {
+        key:'Fbox',
+        color:'#000',
+        values: scope.props.fareboxData.groups.line.top(Infinity).map(function(d){
+          return {
+            key:d.key,
+            value:Math.floor(d.value/numdays),
+          };
+        }),
+      };
+    },
+    processRoutes : function(){
+      var scope=this;
+      //map the current of list of runIds
+      var data =  scope.props.routeData.loadedModels.map(function(runId,i){
+          //where each element maps to an element
+          //filter the crossfilter object's run data by the current runId
+          scope.props.routeData.dimensions.run_id.filter(runId);
+          if(scope.props.timeFilter){
+            scope.props.routeData.dimensions.hours.filter(function(d){
+              var h = parseInt(d.split(';')[0]);
+              return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
+            });
+          }
+          //create a plottable object for the nvd3 multibar plot
+          return {
+              key:runId,
+              color:d3.scale.category20().range()[i%20],
+              values: scope.props.routeData.groups.route.top(Infinity),
+          };
+      });
+      return data;
+    },
     processData:function() {
 
-        var scope = this;
+        var scope = this,data;
         //if the route data is initialized
         if(scope.props.routeData.initialized){
             //return a list by doing the following
-            //map the current of list of runIds
-            return scope.props.routeData.loadedModels.map(function(runId,i){
-                //where each element maps to an element
-                //filter the crossfilter object's run data by the current runId
-                scope.props.routeData.dimensions['run_id'].filter(runId);
-                if(scope.props.timeFilter){
-                  scope.props.routeData.dimensions.hours.filter(function(d){
-                    var h = parseInt(d.split(';')[0]);
-                    return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
-                  });
-                }
-                //create a plottable object for the nvd3 multibar plot
-                return {
-                    key:runId,
-                    color:d3.scale.category20().range()[i%20],
-                    values: scope.props.routeData.groups['route'].top(Infinity).map(function(route){
-                        return {
-                            key:route.key,
-                            value:route.value,
-                        };
-                    })
-                };
-            });
+            data= scope.processRoutes();
+
+            if(scope.props.fareboxInit){//if we can use the farebox data
+              var fbox = scope.processFarebox();
+              data.push(fbox);
+            }
+            console.log('Model Graph Data',data);
+            return data;
         }
         //if it's not initialized then just give a list without any data
         return [{key:'none',values:[]}];

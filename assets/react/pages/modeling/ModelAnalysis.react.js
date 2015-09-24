@@ -17,6 +17,7 @@ var React = require('react'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // -- Stores
+    FareboxStore =  require('../../stores/FareboxStore.js'),
     TripTableStore = require('../../stores/TripTableStore.js'),
     ModelRunStore = require('../../stores/ModelRunStore.js');
 
@@ -47,24 +48,27 @@ var MarketAreaIndex = React.createClass({
             //get the models that have been run
             model_runs:ModelRunStore.getModelRuns(),
             model_id:null,
+            farebox:FareboxStore.getFarebox(this.props.marketarea.id),
         };
     },
 
     componentDidMount: function() { //after initial rendering subscribe to the ModelRunStore
         ModelRunStore.addChangeListener(this._onChange);
         TripTableStore.addChangeListener(this._onChange);
-
+        FareboxStore.addChangeListener(this._onChange);
     },
 
     componentWillUnmount: function() { //if component will be destroy kill subscription to the store
         ModelRunStore.removeChangeListener(this._onChange);
         TripTableStore.removeChangeListener(this._onChange);
+        FareboxStore.removeChangeListener(this._onChange);
     },
 
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
             model_runs:ModelRunStore.getModelRuns(),
             trip_table    : TripTableStore.getCurrentTripTable(),
+            farebox : FareboxStore.getFarebox(this.props.marketarea.id),
         });
     },
     _renderModelRuns:function(){
@@ -97,15 +101,27 @@ var MarketAreaIndex = React.createClass({
     selectModel : function(id){
       this.setState({model_id:id});
     },
+    _getFareboxTimes : function(){
+      var scope =this;
+      if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
+        scope.state.farebox.clearFilter(); //clear all filters
+        var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
+        var data = scope.state.farebox.groups.hours.top(Infinity).map(function(d){//get hour records
+          var key = d.key.split(';'); //split the sort key
+          //return the hour, the average value, the color, and the group.
+          return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
+        });
+        return {id:'farebox',data:data};
+      }
+      return [];
+    },
     _getTimeData : function(){
       var scope = this;
-
       if(scope.props.loadedModels.initialized){
       var datasets =   scope.props.loadedModels.loadedModels.map(function(d){ //for each model loaded
           console.log('Current Model',d);
           //consider only the current run only
           scope.props.loadedModels.dimensions.run_id.filter(d);
-          console.log(scope.props.loadedModels.groups.hours.top(Infinity).length);
           //get the hour groupings for that particular dataset
           var data = scope.props.loadedModels.groups.hours.top(Infinity).map(function(d){
             var key = d.key.split(';'); //key[0] = hour of day,key[1] = route id
@@ -115,7 +131,9 @@ var MarketAreaIndex = React.createClass({
           scope.props.loadedModels.dimensions.run_id.filterAll();
           return {id:d,data:data};
         });
-        console.log(datasets);
+        var fbTimes = scope._getFareboxTimes();
+        datasets = datasets.concat(fbTimes);
+        console.log('datasets',datasets);
         return datasets;
       }
       return [];
@@ -123,12 +141,25 @@ var MarketAreaIndex = React.createClass({
     deleteModel : function(id){
       ModelingActionsCreator.removeActiveModelRun(id);
     },
+    _fareboxButton : function(){
+      if(this.state.farebox && Object.keys(this.state.farebox.groups).length >0){
+        return <a className='btn btn-lg btn-warning btn-block' onClick={this._addFarebox}>Toggle Farebox</a>;
+      }
+    },
+    _addFarebox : function(){
+      if(this.state.useFarebox)
+        this.setState({useFarebox:false});
+      else
+        this.setState({useFarebox:true});
+    },
     render: function() {
       var hourRange;
+      console.log('FareBox',this.state.farebox);
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-
+      //!!!!!!!!!!!!!will need to add a different data input for the RouteTotalGraph for farebox!!!!!
+      console.log('models',this.props.loadedModels);
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -156,6 +187,8 @@ var MarketAreaIndex = React.createClass({
                               datasets={this._getTimeData()}
                               height={100}
                               width={500}
+                              maxHeight={300}
+                              maxWidth={600}
                               onChange={this._onTimeChange}
                               delete ={this.deleteModel}
                               selection={this.selectModel}
@@ -166,11 +199,20 @@ var MarketAreaIndex = React.createClass({
                             <RouteTotalGraph
                               colors={this.props.marketarea.routecolors}
                               timeFilter={hourRange}
-                              routeData={this.props.loadedModels}  />
+                              routeData={this.props.loadedModels}
+                              fareboxInit={this.state.useFarebox}
+                              fareboxData={this.state.farebox}
+                              />
                         </div>
                     </div>
 
                     <div className="col-lg-3">
+                            <section className='widget'>
+                                <div>
+                                  {this._fareboxButton()}
+                                </div>
+                            </section>
+
                             <ModelSummary
                                 modelIds={this.props.loadedModels.loadedModels}
                                 />

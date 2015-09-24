@@ -80,9 +80,12 @@ var TimeSlider = React.createClass({
             ix1= groups.indexOf(g1), ix2 = groups.indexOf(g2);
         return ix1 - ix2;
       });
-      table[key].forEach(function(d,i){ //assign each of them a range to span
-          d.y0 = y0;
-          d.y1 = y0 += d.y;
+      table[key] = table[key].map(function(d,i){ //assign each of them a range to span
+          var obj = {};
+          Object.keys(d).forEach(function(k){obj[k] = d[k];}); //assign all the datapoints of d to obj;
+          obj.y0 = y0;
+          obj.y1 = y0 += d.y;
+          return obj;
       });
       retval.data = retval.data.concat(table[key]);
       var tval = table[key].map(function(d){return d.y;}).reduce(function(p,c){return p+c;});
@@ -198,79 +201,79 @@ var TimeSlider = React.createClass({
         .style('text-anchor','middle')
         .text(this.props.domainLabel);
       }
-  var yxsSvg =   svg.append('g')
-       .attr('class','y axis')
-       .attr('transform','translate('+margin.left+','+margin.top+')')
-       .style({
-         fill:null,
-         stroke:'black',
-         shapeRendering:'crispEdges',
-       });
-       yxsSvg.append('text')
-       .attr('transform','rotate('+270+')')
-       .attr('x',-width/2)
-       .attr('y',-margin.left+this.props.yLabelOffset)
-       .attr('dy','.35em')
-       .style('text-anchor','start')
-       .text(this.props.rangeLabel);
-       yxsSvg.append('text')
-       .attr('y','0')
-       .attr('x',-margin.left/2)
-       .style('text-anchor','start')
-       .text(maxRange);
-    var gBrush = group.append('g')
-                    .attr('class','brush')
-                    .style({
-                      stroke:'black',
-                      'fill-opacity':0.185,
-                      'shape-rendering':'crispEdges'
-                    })
-                    .call(brush);
-        gBrush.selectAll('rect')
-              .attr('height',height);
-    var bwidth = scope.getBarWidth(width);
-    var bars = group.selectAll('.bar').data(dataObj.data);
-    bars.exit().remove();
-    bars.enter().append('rect')
-        .attr('class','bar')
-        .attr('x',function(d){return x(tFormat.parse(d.x));})
-        .attr('width',bwidth+'px')
-        .attr('y',function(d){return y(d.y1);})
-        .attr('height',function(d){return y(d.y0) - y(d.y1);})
-        .style('fill-opacity',scope.props.opacity)
-        .style('fill',function(d){return d.color;});
-    draw();
-    if(this.props.title){
-      d3.select('#__TimeSlider__Title__'+this.props.id +' span')
-        .style({'margin-left': margin.left + width/2 +'px',
-                'font-color':scope.props.fontColor,
-                'font-size': '20px',
-                padding:'0px',
-                color:'#000'
+    var yxsSvg =   svg.append('g')
+         .attr('class','y axis')
+         .attr('transform','translate('+margin.left+','+margin.top+')')
+         .style({
+           fill:null,
+           stroke:'black',
+           shapeRendering:'crispEdges',
+         });
+         yxsSvg.append('text')
+         .attr('transform','rotate('+270+')')
+         .attr('x',-width/2)
+         .attr('y',-margin.left+this.props.yLabelOffset)
+         .attr('dy','.35em')
+         .style('text-anchor','start')
+         .text(this.props.rangeLabel);
+         yxsSvg.append('text')
+         .attr('y','0')
+         .attr('x',-margin.left/2)
+         .style('text-anchor','start')
+         .text(maxRange);
+      var gBrush = group.append('g')
+                      .attr('class','brush')
+                      .style({
+                        stroke:'black',
+                        'fill-opacity':0.185,
+                        'shape-rendering':'crispEdges'
+                      })
+                      .call(brush);
+          gBrush.selectAll('rect')
+                .attr('height',height);
+      var bwidth = scope.getBarWidth(width);
+      var bars = group.selectAll('.bar').data(dataObj.data);
+      bars.exit().remove();
+      bars.enter().append('rect')
+          .attr('class','bar')
+          .attr('x',function(d){return x(tFormat.parse(d.x));})
+          .attr('width',bwidth+'px')
+          .attr('y',function(d){return y(d.y1);})
+          .attr('height',function(d){return y(d.y0) - y(d.y1);})
+          .style('fill-opacity',scope.props.opacity)
+          .style('fill',function(d){return d.color;});
+      draw();
+      if(this.props.title){
+        d3.select('#__TimeSlider__Title__'+this.props.id +' span')
+          .style({'margin-left': margin.left + width/2 +'px',
+                  'font-color':scope.props.fontColor,
+                  'font-size': '20px',
+                  padding:'0px',
+                  color:'#000'
 
-                })
-        .text(this.props.title);
-    }
-    function draw(){
-      var yxs = svg.select('g.y.axis').call(yAxis);
-      if(scope.props.putXAxis){
-        var xxs = svg.select('g.x.axis').call(xAxis);
-        xxs.selectAll('text:not(.xlabel)') //select all the text elements
-        .attr('y',0) //set its y att to 0
-        .attr('x',9)
-        .attr('dy','.35em')
-        .attr('class','ticks')
-        .attr('transform','rotate('+scope.props.rotateXLabels+')') //rotate the text labels 90 degrees to display vertically
-        .style('text-anchor','start');
+                  })
+          .text(this.props.title);
       }
-      updateBars();
-    }
-    function updateBars(){
-      group.selectAll('.bar') //select all the bars
-          .attr('x',function(d) {
-            return x(tFormat.parse(d.x));
-          }); //use as its x value its time filed
-    }
+      function draw(){
+        var yxs = svg.select('g.y.axis').call(yAxis);
+        if(scope.props.putXAxis){
+          var xxs = svg.select('g.x.axis').call(xAxis);
+          xxs.selectAll('text:not(.xlabel)') //select all the text elements
+          .attr('y',0) //set its y att to 0
+          .attr('x',9)
+          .attr('dy','.35em')
+          .attr('class','ticks')
+          .attr('transform','rotate('+scope.props.rotateXLabels+')') //rotate the text labels 90 degrees to display vertically
+          .style('text-anchor','start');
+        }
+        updateBars();
+      }
+      function updateBars(){
+        group.selectAll('.bar') //select all the bars
+            .attr('x',function(d) {
+              return x(tFormat.parse(d.x));
+            }); //use as its x value its time filed
+      }
   },
 
   render: function(){
@@ -284,7 +287,7 @@ var TimeSlider = React.createClass({
     this.renderSelector();
   },
   componentDidUpdate : function(oldProps,oldState){
-    if((this.props.data && this.props.data.length !== oldProps.data.length) || this.props.forceRender){
+    if((this.props.data && !_.isEqual(this.props.data, oldProps.data) ) || this.props.forceRender){
         this.renderSelector();
     }
   }
