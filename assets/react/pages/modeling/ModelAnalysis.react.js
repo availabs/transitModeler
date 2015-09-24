@@ -161,7 +161,6 @@ var MarketAreaIndex = React.createClass({
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-      //!!!!!!!!!!!!!will need to add a different data input for the RouteTotalGraph for farebox!!!!!
       console.log('models',this.props.loadedModels);
         return (
         	<div className="content container">

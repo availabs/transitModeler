@@ -104,6 +104,7 @@ var RouteTotalGraph = React.createClass({
       var data =  scope.props.routeData.loadedModels.map(function(runId,i){
           //where each element maps to an element
           //filter the crossfilter object's run data by the current runId
+          scope.props.routeData.clearFilter();
           scope.props.routeData.dimensions.run_id.filter(runId);
           if(scope.props.timeFilter){
             scope.props.routeData.dimensions.hours.filter(function(d){
@@ -115,7 +116,10 @@ var RouteTotalGraph = React.createClass({
           return {
               key:runId,
               color:d3.scale.category20().range()[i%20],
-              values: scope.props.routeData.groups.route.top(Infinity),
+              values: scope.props.routeData.groups.route.top(Infinity).map(function(d){
+                return {key:d.key,value:d.value};
+              }),//The above seems redundant but this prevents overwrite from
+                //crossfilter filters, removes object reverences from the data
           };
       });
       return data;
