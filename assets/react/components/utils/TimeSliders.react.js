@@ -54,9 +54,10 @@ var Sliders = React.createClass({
   },
 
   _focus : function(id){
-    var ix,models;
+    var ix={i:-1},models;
     if(this._isFocusedModel(id,ix)){
-      models = this.state.focusModels.splice(ix,1);
+      models = this.state.focusModels;
+      models.splice(ix.i,1);
       this.setState({focusModels:models});
     }
     else{
@@ -66,14 +67,16 @@ var Sliders = React.createClass({
     }
   },
   _focusString : function(id){
-    if(this.state.focusModel !== id)
+    if(!this._isFocusedModel(id) )
       return 'Focus';
     else
       return 'Neglect';
   },
   _isFocusedModel : function(id,ix){
-    ix = this.state.focusModels.indexOf(id);
-    return ix >=0;
+    var i =this.state.focusModels.indexOf(id);
+    if(ix && ix.i)
+      ix.i = i;
+    return i >=0;
   },
   buildSliders : function(){
     var scope = this,max = 0;
@@ -81,27 +84,31 @@ var Sliders = React.createClass({
       var formatedData = scope.parseData(d.data);
       max = (max <= formatedData.max)?formatedData.max:max;
       formatedData.id = d.id;
+      formatedData.options = d.options;
       return formatedData;
     });
     var sliders = displayData.map(function(d,i){
       var isLast = scope.props.datasets.length-1 === i;
       var height = scope.props.height - ((isLast)?0:scope.props.margin.bottom);
-      var width  = (scope.state.focusModel === d.id)?scope.props.maxWidth:scope.props.width;
-          height = (scope.state.focusModel === d.id)?scope.props.maxHeight:height;
-
-      var buttons = scope.props.buttons? undefined:(
-        <div>
+      var width  = (scope._isFocusedModel(d.id))?scope.props.maxWidth:scope.props.width;
+          height = (scope._isFocusedModel(d.id))?scope.props.maxHeight:height;
+          //Use the props to determine whether or not to include buttons
+          //Default to adding them
+      var actionbutton = !d.options.action? undefined:(
         <div className='col-sm-1'>
             <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
           </div>
-          <div className='col-sm-1'>
-            <a className='btn btn-small btn-default' onClick={scope._focus.bind(null,d.id)}>{scope._focusString(d.id)}</a>
-          </div>
-          <div className='col-sm-1'>
-            <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
-        </div>
-      </div>
       );
+      var focusbutton = !d.options.focus ? undefined:(
+        <div className='col-sm-1'>
+          <a className='btn btn-small btn-default' onClick={scope._focus.bind(null,d.id)}>{scope._focusString(d.id)}</a>
+        </div>
+      );
+      var deletebutton = !d.options.delete ? undefined:(
+        <div className='col-sm-1'>
+          <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
+      </div>
+    );
       return (
         <div className='row' style={{'table-layout':'fixed','vertical-align':'middle'}}>
                 <div className='col-lg-9'>
@@ -120,7 +127,11 @@ var Sliders = React.createClass({
                     rangeTicks = {0}
                     />
                 </div>
-                  {buttons}
+                <div>
+                  {actionbutton}
+                  {focusbutton}
+                  {deletebutton}
+                </div>
             </div>);
     });
     return sliders;

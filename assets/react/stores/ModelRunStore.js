@@ -1,3 +1,4 @@
+/*globals require,console.module*/
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -81,24 +82,32 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
       console.log('getActiveModelRuns, new data',runId,_runData[runId],crossTrips.loadedModels.indexOf(runId));
       if(crossTrips.loadedModels.indexOf(runId) === -1 && _runData[runId] !== 'loading'){
         if(!crossTrips.initialized){
-          console.log('init crosstrips',runId)
-          crossTrips.init(_runData[runId],runId)
+          console.log('init crosstrips',runId);
+          crossTrips.init(_runData[runId],runId);
         }else{
-          console.log('add crosstrips',runId)
-          crossTrips.addRun(_runData[runId],runId)
+          console.log('add crosstrips',runId);
+          crossTrips.addRun(_runData[runId],runId);
         }
       }
-    })
+    });
 
     crossTrips.loadedModels.forEach(function(runId){
       if(_activeRuns.indexOf(runId) === -1){
-        console.log('remove crosstrips',runId)
+        console.log('remove crosstrips',runId);
         crossTrips.removeRun(runId);
       }
-    })
+    });
     crossTrips.loading = loading;
     return crossTrips;
-  }
+  },
+
+  delActiveModels : function(){
+      _activeRuns.forEach(function(id){ //set all the run data to null
+        _runData[id] = null;
+      });
+      _activeRuns = []; //get rid of all the known ids;
+      ModelRunStore.emitChange();
+  },
 
 
 });
@@ -124,6 +133,10 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.DEL_ACTIVE_MODEL_RUN:
       ModelRunStore.delActiveModelRun(action.id);
+    break;
+
+    case ActionTypes.DEL_ACTIVE_MODEL_RUNS:
+      ModelRunStore.delActiveModels();
     break;
 
     case ActionTypes.ADD_ACTIVE_MODEL_RUN:

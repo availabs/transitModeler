@@ -45,7 +45,12 @@ module.exports = {
       id: id
     });
   },
-
+	removeActiveModels : function(){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.DEL_ACTIVE_MODEL_RUNS
+		});
+	},
+	
 	removeActiveModelRun : function(id){
 		AppDispatcher.handleViewAction({
 			type: ActionTypes.DEL_ACTIVE_MODEL_RUN,

@@ -79,6 +79,7 @@ var RouteTotalGraph = React.createClass({
     },
     processFarebox : function(){
       var scope=this;
+      scope.props.fareboxData.clearFilter();
       if(scope.props.timeFilter){
         scope.props.fareboxData.dimensions.hours.filter(function(d){
           var h = parseInt(d.split(';')[0]);

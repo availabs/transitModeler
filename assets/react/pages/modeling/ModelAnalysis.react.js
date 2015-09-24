@@ -62,7 +62,11 @@ var MarketAreaIndex = React.createClass({
         ModelRunStore.removeChangeListener(this._onChange);
         FareboxStore.removeChangeListener(this._onChange);
     },
-
+    componentWillUpdate : function(nextProps){
+      if(this.props.marketarea.id !== nextProps.marketarea.id){
+        this.setState(this.getInitialState());
+      }
+    },
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
             model_runs:ModelRunStore.getModelRuns(),
@@ -109,13 +113,14 @@ var MarketAreaIndex = React.createClass({
           //return the hour, the average value, the color, and the group.
           return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
         });
-        return {id:'farebox',data:data};
+        return {id:'farebox',data:data,options:{focus:true}};
       }
       return [];
     },
     _getTimeData : function(){
       var scope = this;
       if(scope.props.loadedModels.initialized){
+      var buttonOptions = {action:true,focus:true,delete:true};
       var datasets =   scope.props.loadedModels.loadedModels.map(function(d){ //for each model loaded
           console.log('Current Model',d);
           //consider only the current run only
@@ -127,7 +132,7 @@ var MarketAreaIndex = React.createClass({
             return {x:key[0]+':00',y:d.value,color:color,group:key[1]}; //build the record for the timeslider
           });
           scope.props.loadedModels.dimensions.run_id.filterAll();
-          return {id:d,data:data};
+          return {id:d,data:data,options:buttonOptions};
         });
         var fbTimes = scope._getFareboxTimes();
         datasets = datasets.concat(fbTimes);
@@ -152,7 +157,7 @@ var MarketAreaIndex = React.createClass({
     },
     render: function() {
       var hourRange;
-      console.log('FareBox',this.state.farebox);
+      console.log('Analysis State',this.state);
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
@@ -224,7 +229,8 @@ var MarketAreaIndex = React.createClass({
             </div>
 
         );
-    }
+    },
+
 });
 
 module.exports = MarketAreaIndex;

@@ -25,6 +25,7 @@ module.exports = {
     SET_TRIPTABLE_MODE:null,
     ADD_ACTIVE_MODEL_RUN:null,
     DEL_ACTIVE_MODEL_RUN:null,
+    DEL_ACTIVE_MODEL_RUNS:null,
     //-------------------------------------------------------
     //SERVER actions
     //-------------------------------------------------------
