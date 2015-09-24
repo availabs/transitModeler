@@ -219,8 +219,10 @@ var TimeGraph = React.createClass({
             else {
               temp = t;
             }
-          zoom.translate(temp);
-          zoom.center([d3.mouse(this)[0]-margin.left,0]);
+          zoom.translate(temp); //translate the zoom back to a legal range
+          zoom.center([d3.mouse(this)[0]-margin.left,0]); //set the zoom center to be
+          //offset from the mouse by the left margin because zoom listener is in outer
+          //svg
       }
       var xxs = svg.select('g.x.axis').call(xAxis);
       if(scope.props.rotateXLabels)

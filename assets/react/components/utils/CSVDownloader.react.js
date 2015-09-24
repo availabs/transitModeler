@@ -48,14 +48,14 @@ var CsvLink = React.createClass({
     }else
       return {data:null};
   },
-  componentWillReceiveProps : function(nextProps){
-    if(this.props.data !== nextProps.data){
-      this.setState({data:this.processData(nextProps.data)});
-    }
-  },
+
   clickAction : function(id){
     var fname = this.props.filename + extension;
-    downloadFile(type,this.state.data,fname,id);
+    if(this.props.data){
+      var formattedData = this.processData(this.props.data);
+      downloadFile(type,formattedData,fname,id);
+    }
+
   },
 
 	render: function() {
