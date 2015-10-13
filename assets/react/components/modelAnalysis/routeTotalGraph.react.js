@@ -2,7 +2,7 @@
 'use strict';
 
 var React = require('react'),
-
+    _ = require('lodash'),
     // -- Stores
     // d3 = require('d3'),
 
@@ -33,44 +33,43 @@ var RouteTotalGraph = React.createClass({
           cols.push({'key':'colorkey',name:'Color Key'});
         }
         var values = [];
+        var keyset = [];
         var tableData = startData.map(function(d){
             //console.log('tableData Map',d)
             cols.push({'key':d.key,'name':'Run '+d.key,summed:true});
 
-            return d.values.map(function(count){
-
+             var rows = d.values.map(function(count){
+               keyset.push(count.key);
                 var row  = {'route':count.key};
                 row[d.key]=count.value;
                 row.colorkey = (<div style={{height:'15px',width:'15px',backgroundColor:scope.props.colors[count.key]}}></div>);
                 return row;
             });
+          return rows;
 
         });
+        keyset = _.uniq(keyset);
+        console.log('keyset',keyset);
         //console.log('render data tabke',tableData,cols)
-        //take the zeroth entry of the array
+        //take the first data set
         var data = tableData[0];
         //if there are more rows than the titles
         if(tableData.length > 1){
-          //for each row of the data
-            tableData.forEach(function(dataset,i){
-                //if we are not looking at the headers
-                if(i > 0){
-                    //instantiate new list
-                     var newData = [];
-                     //for every element of the dataset
-                     dataset.forEach(function(row){
-
-                        var newRow = data.filter(function(d){
-                            return d.route === row.route;
-                        })[0];
-                        if(newRow){
-                            newRow[cols[+i+2].key] = row[cols[+i+2].key];
-                            newData.push(newRow);
-                        }
-                    });
-                    data = newData;
-                }
+            //for each dataset or column
+            var newData = [];
+            keyset.forEach(function(route){
+              var newRecord = {};
+              tableData.forEach(function(set,i){ //for each data set
+                var newItem = set.filter(function(d){return d.route === route;})[0];
+                //find the current route if it resides in that set
+                newRecord[cols[0].key] = (newItem)?newItem[cols[0].key] : newRecord[cols[0].key]; //get its route
+                newRecord[cols[1].key] = (newItem)?newItem[cols[1].key] : newRecord[cols[1].key]; //get its color
+                newRecord[cols[i+2].key] = (newItem)?newItem[cols[i+2].key] : 0;  //get its count
+              });
+              newData.push(newRecord);//add the row to the final table
             });
+            data = newData;
+            console.log("TotalRouteGraph",data);
         }
         //return the vdom table
         return (
@@ -90,7 +89,7 @@ var RouteTotalGraph = React.createClass({
       return {
         key:'Fbox',
         color:'#000',
-        values: scope.props.fareboxData.groups.line.top(Infinity).map(function(d){
+        values: scope.props.fareboxData.groups.route.top(Infinity).map(function(d){
           return {
             key:d.key,
             value:Math.floor(d.value/numdays),
