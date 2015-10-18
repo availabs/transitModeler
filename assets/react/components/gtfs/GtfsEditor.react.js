@@ -222,6 +222,10 @@ var MarketAreaNew = React.createClass({
             }
 
         });
+        var noStops = !waypoints.reduce(function(a,b){ return a && b;});
+        if( noStops ){ //if all the stops are falsy then the stops didn't loaded
+          return; //to avoid failure;
+        }
         GtfsActionsCreator.setWaypoints(waypoints);
     },
     _movedStop:function(feat){//if the stop is moved, assume its already on the map
