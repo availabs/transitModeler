@@ -8,22 +8,22 @@ var fs=require('fs')
  */
 
 module.exports = {
-	
+
 	getFarebox:function(req,res){
 
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
 			var sql = 'SELECT line,run,trip,pattern,boarding_zone,alighting_zone,run_date,total_transactions '+
-					  'FROM farebox_data '+
+					  'FROM farebox_data_distinct '+
 					  'where line in '+JSON.stringify(ma.routes).replace(/\"/g,"'").replace("[","(").replace("]",")")+
 					  ' order by run_date';
 
 			Farebox.query(sql,{},function(err,data){
 				if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
-				
+
 				res.json(data.rows)
-			
+
 			})
 		});
 	},
@@ -42,14 +42,14 @@ module.exports = {
 			    console.log('file uploaded. Creating Job',files);
 			    var dateArray = files[0].filename.split('.')[0];
 			    dateArray = dateArray.split('_');
-			   	
+
 			   	if( dateArray.length === 3){
-				   	
-				   	
+
+
 				    var year = dateArray[2],
 				   		month = dateArray[0]-1,
 				   		day = dateArray[1];
-				   		
+
 			 		fs.readFile(files[0].fd, "utf8", function(error, data) {
 				    	var lines = data.split('\n');
 				    	var names = ['line','run','trip','pattern','time_period','boarding_zone','alighting_zone','total_transactions'];
@@ -57,10 +57,10 @@ module.exports = {
 				    	lines.forEach(function(d,i){
 				    		//console.log(d);
 				    		var row = {};
-				    		
+
 				    			var cols = d.split(',');
 
-				    			
+
 				    			names.forEach(function(d,i){
 				    				row[d] = cols[i];
 				    			});
@@ -93,11 +93,10 @@ module.exports = {
 				    	Farebox.query(sql,{},function(err,data){
 				    		console.log('got something back',err,data)
 				    	})
-				    
+
 			 		}) // end file open
 			 	}else{ console.log('invalid filename must be month_day_year.csv',files[0].filename.split('.')[0].split['_'])}
 			}//end callback
 		)//end upload
 	}
 };
-
