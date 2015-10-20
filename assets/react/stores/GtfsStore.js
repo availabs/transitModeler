@@ -206,7 +206,11 @@ function _loadRouteSchedule(gtfsId,routes,maId){
   function setGtfsRoutes(id,routes){
     var colors = MarketAreaStore.getCurrentMarketArea().routecolors;
     routes.features.forEach(function(d){
-      d.properties.color = colors[d.properties.short_name];
+      if(colors)
+        d.properties.color = colors[d.properties.color];
+      else {
+        d.properties.color = '#fff';
+      }
     });
     _gtfsRoutesGeo[id] = routes;
   }

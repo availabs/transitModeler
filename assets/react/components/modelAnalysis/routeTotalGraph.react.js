@@ -43,7 +43,13 @@ var RouteTotalGraph = React.createClass({
                keyset.push(count.key);
                 var row  = {'route':count.key};
                 row[d.key]=count.value;
-                row.colorkey = (<div style={{height:'15px',width:'15px',backgroundColor:scope.props.colors[count.key]}}></div>);
+                var colors;
+                if(scope.props.colors)
+                  colors = scope.props.colors;
+                else {
+                  colors = {};
+                }
+                row.colorkey = (<div style={{height:'15px',width:'15px',backgroundColor:colors[count.key]}}></div>);
                 return row;
             });
           return rows;

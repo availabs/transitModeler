@@ -152,7 +152,7 @@ var MarketAreaIndex = React.createClass({
           //get the hour groupings for that particular dataset
           var data = scope.props.loadedModels.groups.hours.top(Infinity).map(function(d){
             var key = d.key.split(';'); //key[0] = hour of day,key[1] = route id
-            var color = scope.props.marketarea.routecolors[key[1]]; //get the routes color from the market area
+            var color = (scope.props.marketarea.routecolors)?scope.props.marketarea.routecolors[key[1]]:'#fff'; //get the routes color from the market area
             return {x:key[0]+':00',y:d.value,color:color,group:key[1]}; //build the record for the timeslider
           });
           scope.props.loadedModels.dimensions.run_id.filterAll();
