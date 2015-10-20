@@ -37,7 +37,10 @@ module.exports = {
 		// findOneByusername() is a dynamic finder in that it searches the model by a particular attribute.
 		// User.findOneByusername(req.param('username')).done(function(err, user) {
 		User.findOneByUsername(req.param('username'), function foundUser(err, user) {
-			if (err) return next(err);
+			//if (err) return next(err);
+			if(err){
+				console.log('err',err)
+			}
 
 			// If no user is found...
 			if (!user) {
