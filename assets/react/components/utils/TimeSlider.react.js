@@ -158,7 +158,7 @@ var TimeSlider = React.createClass({
       else{
         extent1 = extent0.map(d3.time.hour.round);
         if(extent1[0].getHours() >= extent1[1].getHours()){
-          extent1[0] = d3.time.minute.floor(extent0[0]);
+          extent1[0] = d3.time.hour.floor(extent0[0]);
           extent1[1].setTime(extent1[0].getTime());
           extent1[1].setHours(23);
           extent1[1].setMinutes(59);

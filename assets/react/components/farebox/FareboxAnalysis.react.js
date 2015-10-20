@@ -26,7 +26,15 @@ var React = require('react'),
 
 var renderCount = 0;
 var emptyGeojson = {type:'FeatureCollection',features:[]};
-
+var numrexp = /[0-9]+/g;
+var firstNum = function(str){
+  if(str){
+    var rez = str.match(numrexp);
+    if(rez)
+      return rez[0];
+  }
+  return null;
+};
 var timer;
 var zoneCompareIndex = 2;
 var FareboxRoutes = React.createClass({
@@ -46,20 +54,28 @@ var FareboxRoutes = React.createClass({
     }
     console.info('args',arguments);
   },
+  removeRoute : function(){
+    this.setState({selection:[]});
+    this.props.removeRoute();
+  },
   render : function(){
     var FareZones = {};
     this.props.stopsGeo.features.forEach(function(d){
-        if(!FareZones[d.properties.line]){ FareZones[d.properties.line] = []; }
+        FareZones[d.properties.line] = FareZones[d.properties.line] || [];
         if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
-            FareZones[d.properties.line].push(d.properties.fare_zone);
+            var zones = d.properties.fare_zone.split(',').map(function(fz){
+              return firstNum(fz);
+            });
+            FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
         }
     });
 
     var selects = Object.keys(FareZones).map(function(d,i){
       return {id:d,text:d};
     });
-
-
+    var clearbtn = null;
+    if(this.state.selection.length === 1)
+      clearbtn = <a className='btn btn-danger' onClick={this.removeRoute}>clear</a>;
     return (
       <div>
       <Select2Component
@@ -71,6 +87,7 @@ var FareboxRoutes = React.createClass({
             onSelection={this.update.bind(null,FareZones)}
             val={this.state.selection}
             />
+          {clearbtn}
         </div>);
   }
 
@@ -113,80 +130,95 @@ var FareboxAnalysis = React.createClass({
     componentDidMount: function() {
         FareboxStore.addChangeListener(this._onChange);
     },
-
+    componentWillUpdate : function(nextProps,nextState){
+      if( !_.isEqual(this.state.zones,nextState.zones)) //if the zones change
+        this.calcData(true);
+    },
     componentWillUnmount: function() {
         FareboxStore.removeChangeListener(this._onChange);
     },
+    filterByZones : function(){
+      var scope = this;
+      var farezones = Object.keys(scope.state.zones)
+                            .map(function(d){return scope.state.zones[d].zone;});
+      return function(d){
+        var zones = d.split(';'); //get the route, boarding , and alightings
+        var route = zones[0];     //get the route
+        var boarding = zones[1], alighting = zones[2]; //get the b and as
+        var eZones = scope.state.zfilter;//get the zones to exclude
+                        //it's a valid record if the boarding is not there
+        var validZone = eZones.indexOf(boarding) === -1;
+                        //and alighting is not there
+            validZone = validZone && eZones.indexOf(alighting) === -1;
+                        //and boarding is in the list of farezones
+            validZone = validZone && farezones.indexOf(boarding) >= 0;
+                        //and alighting is in the list of farezones
+            validZone = validZone && farezones.indexOf(alighting) >= 0;
+                        //or there are no excluded zones in which
+                        //allow all
+            validZone = validZone || eZones.length === 0;
+        return validZone;
+      };
+    },
+    filterByRoute : function(id){
+      var scope = this;
+      return function(d){
+        var route = d.split(',')[0];
+        return route === id;
+      };
+    },
 
+    filterByTime : function(timeRange){
+      var scope = this;
+      return function(d){
+        var addhour = (timeRange && timeRange[1].getMinutes() > 0)? 1:0;
+        if(scope.state.timeRange){
+          var above = d.getHours() >= timeRange[0].getHours();
+          var below = d.getHours() < timeRange[1].getHours() + addhour;
+          return above && below;
+        }
+        return true;
+      };
+    },
     _onChange:function(){
         this.calcData(true);
         this.setState(this._getStateFromStore());
     },
-    _processData:function(peak) {
+    _processData:function(peak,range) {
 
         var scope = this;
         console.log('calculating ' + peak);
         if(this.state.farebox.initialized){
-            timer = new Date();
             //this problem wants the average number of transactions  per line via the given date(s);
-            scope.state.farebox.dimensions.zone.filterAll();
-            scope.state.farebox.dimensions.run_time.filterAll();
-            scope.state.farebox.dimensions.zone.filter(function(d){
-              var zones = d.split(';');
-               //return true if it matches any of the zones in the filter
-                      //the filter is empty                    its boarding_zone is not in the filter    and   its alighting_zone is not in the filter
-              return (scope.state.zfilter.length ===0) || ((scope.state.zfilter.indexOf(zones[0]) == -1) && (scope.state.zfilter.indexOf(zones[1]) == -1));
-            });
-            console.log('time range',scope.state.timeRange);
-             scope.state.farebox.dimensions.run_time.filter(function(d){
-               if(scope.state.timeRange){
-                 var above = d.getHours() >= scope.state.timeRange[0].getHours();
-                 var below = d.getHours() <= scope.state.timeRange[1].getHours();
-                 return above && below;
-               }
-               return true;
-             });
-            scope.state.farebox.dimensions.run_date.filter(scope._validDate);
-            var data = scope.state.farebox.groups.line.top(Infinity).map(function(line){
+            var timeRange = range || scope.state.timeRange;
+            var fareboxFilter = {};
+            console.log('time range',timeRange);
+            fareboxFilter.zone = scope.filterByZones();
+            fareboxFilter.run_time = scope.filterByTime(timeRange);
+            fareboxFilter.run_date = scope._validDate;
+            var data = FareboxStore.queryFarebox('line',fareboxFilter);
+            var finalData = data.filter(
+              function(d){
+                if(scope.state.route)
+                  return scope.state.route === d.key;
+                return true;
+              }
+            ).map(function(line){
               //need to filter by farezones
-
-                //for each line
-                // if(peak){//if peak is defined
-                //     var lower = peak === 'am' ? 6 : 16,
-                //         upper = peak === 'am' ? 10 : 20;
-                //
-                //     scope.state.farebox.dimensions.run_time.filter(function(d,i){ //filter run times by the peak hours
-                //         return d.getHours() > lower && d.getHours() < upper;
-                //     });
-                //
-                // }else{
-                  //otherwise just filter by the date
-
-                // }
+                var run_dates = FareboxStore.queryFarebox('run_date',{'line':scope.filterByRoute(line.key)},true);
                 //filtering by Line
-                scope.state.farebox.dimensions.line.filter(line.key);
-
-                var daySum = scope.state.farebox.groups.run_date.top(Infinity)
+                var daySum = run_dates
                 .map(function(d){
-                  if(scope._validDate(d.key)){
                     return {key:d.key,value:d.value};
-                  }else{
-                    return {key:d.key,value:0};
-                  }
                 })
                 .reduce(function(a,b){
                       return {value:(a.value + b.value)};
                 });
                 //return the route and the average fares collected
-
                 var numdays = scope._getNumDays();
-                console.log('Numdays',numdays,Object.keys(scope.state.filters).length);
-                scope.state.farebox.dimensions.run_date.filterAll();
                 return {key:line.key,value:(daySum.value/numdays)};
-
             });
-            console.log('Render Time', ((new Date()) - timer)/1000);
-            return [{key:'Time Peak',values:data}];
+            return [{key:'Time Peak',values:finalData}];
         }
         return [{key:'none',values:[]}];
 
@@ -196,14 +228,18 @@ var FareboxAnalysis = React.createClass({
     },
     _getHours : function(colors) {
       var scope = this;
-      if(scope.state.farebox.dimensions.hours){
-        scope.state.farebox.clearFilter();
-        if(scope.state.routeFilter){
-          scope.state.farebox.dimensions.line.filter(scope.state.routeFilter);
+      if(scope.state.farebox.dimensions.hours){ //if hours have been specified
+        var fareboxFilters = {};
+        if(scope.state.route){ //if there is a route filter
+          //filter the routes to only contain elements from the filter list
+          fareboxFilters.line = scope.filterByRoute(scope.state.route);
         }
-        scope.state.farebox.dimensions.run_date.filter(scope._validDate);
+        //filter the data by the date it was collected
+        // scope.filterByTime();
+        //get the number of days that farebox corresponds to.
+        fareboxFilters.zone = scope.filterByZones();
         var totalDays = scope._getNumDays();
-        var data = scope.state.farebox.groups.hours.top(Infinity).map(function(d){
+        var data = FareboxStore.queryFarebox('hours',fareboxFilters).map(function(d){
           var key = d.key.split(';');
           return {x:key[0]+':00',y:(d.value/totalDays), color:colors[key[1]], group:key[1]};
         });
@@ -245,24 +281,17 @@ var FareboxAnalysis = React.createClass({
         var rows= <span />;
         if(this.state.farebox.initialized){
              var yearsArray = {};
-
-            //console.log('Day data',this.props.agencyOverviewDay[type])
-             this.state.farebox.groups.run_year.top(Infinity).forEach(function(year){
+             FareboxStore.queryFarebox('run_year',{}).forEach(function(year){
                 var currYear = year.key.getFullYear(),
                     yearData = {},
-                    yearDays = scope.state.farebox.groups.run_date.top(Infinity).filter(function(d){
+                    yearDays = FareboxStore.queryFarebox('run_date',{}).filter(function(d){
                         return d.key.getFullYear() === currYear;
                     });
-
                     yearDays.forEach(function(day){
                         var month = day.key.getMonth().length < 9 ? '0'+(day.key.getMonth()+1) : (day.key.getMonth()+1);
-                        //console.log(day.key.getFullYear()+'-0'+month+'-'+day.key.getDate())
                         yearData[day.key.getFullYear()+'-0'+month+'-'+day.key.getDate()] = parseInt(day.value);
                     });
-
                 yearsArray[currYear] = yearData;
-
-
             });
             console.log('yearData',yearsArray);
             rows = Object.keys(yearsArray).map(function(key){
@@ -270,13 +299,9 @@ var FareboxAnalysis = React.createClass({
                 var graphId = 'cg_'+key;
                 var year = key;
                 return (
-
                     <CalendarGraph onClick={scope.calendarClick} filters={scope.state.filters} year={parseInt(year)} data={ yearsArray[key] }/>
-
                 );
-
             });
-
         }
         return rows;
 
@@ -297,11 +322,11 @@ var FareboxAnalysis = React.createClass({
         this.setState({filters:filters,filter:Object.keys(filters),colors:colors});
       }
     },
-    calcData : function(reset){
+    calcData : function(reset,range){
       var scope = this;
       if(reset){
         scope.processor = _.memoize(function(string){
-          return scope._processData(string);
+          return scope._processData(string,range);
         });
       }
     },
@@ -312,6 +337,9 @@ var FareboxAnalysis = React.createClass({
         return p;
       },{});
       this.setState({route:id,zones:zones});
+    },
+    delRoute : function(){
+      this.setState({route:null,zones:{}});
     },
     zoneFilter : function(id){
 
@@ -334,14 +362,16 @@ var FareboxAnalysis = React.createClass({
     routeData : function(){
       var scope = this;
       if(this.state.route){
-        scope.state.farebox.clearFilter();
+        var fareboxFilter = {};
         var parts = {};
-        scope.state.farebox.dimensions.run_date.filter(scope._validDate);
-        var stopZones = Object.keys(scope.state.zones).map(function(d){return d.substring(zoneCompareIndex);});
-        scope.state.farebox.groups.trip.top(Infinity).forEach(function(d){
+        //apply filters to the farebox data
+        fareboxFilter.zone = scope.filterByZones(); //filter by the current zones if any
+        fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
+        // scope.filterByRoute(this.state.route); //filter by current route if selected.
+        console.log(scope.state.route);
+        FareboxStore.queryFarebox('trip',fareboxFilter).top(Infinity).forEach(function(d){
           var keys = d.key.split(',');
-          //This filters based on the known stop data ignoring other data
-          if(keys[0] === scope.state.route ){
+          if(scope.state.route === keys[0]){
             console.log(keys,scope.state.route);
             parts[keys[1]] = parts[keys[1]] || [];
             parts[keys[1]].push({x:keys[2],y:d.value});
@@ -380,8 +410,10 @@ var FareboxAnalysis = React.createClass({
       return (<span></span>);
     },
     onSet : function(range){
-      this.calcData(true);
+      var scope = this;
+      scope.calcData(true);
       this.setState({timeRange:range});
+
     },
     rowClick : function(e){
       var scope = this;
@@ -432,11 +464,12 @@ var FareboxAnalysis = React.createClass({
           return scope.state.route === d.properties.line;
         });
         stops.features.forEach(function(d,i){
-          if(d.properties.fare_zone && scope.state.zones[d.properties.fare_zone])
-            d.properties.color = scope.state.zones[d.properties.fare_zone].color;
+          var temp = firstNum(d.properties.fare_zone);
+          if(temp && scope.state.zones[temp])
+            d.properties.color = scope.state.zones[temp].color;
         });
         var zones =( <div className={'row'}> {Object.keys(this.state.zones).map(function(d,i){
-          var name = d.substring(zoneCompareIndex);
+          var name = d;
           return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
         })} </div>);
         var totalHours = scope._getHours(colors);
@@ -456,6 +489,7 @@ var FareboxAnalysis = React.createClass({
           return retval;
         });
         console.log('filters',this.state.filters);
+        console.info('TIME RANGE',this.state.timeRange);
         return (
     	   <div>
                 <div className="row">
@@ -470,6 +504,7 @@ var FareboxAnalysis = React.createClass({
                            <FareboxRoutes
                               stopsGeo={this.props.stopsGeo}
                               setRoute={this.setRoute}
+                              removeRoute={this.delRoute}
                              />
                            {zones}
                            {timeGraph}
@@ -486,6 +521,7 @@ var FareboxAnalysis = React.createClass({
                                   data={totalHours}
                                   forceRender={scope.forceRender}
                                   putXAxis={true}
+                                  range={scope.state.timeRange}
                                   />
                                 <div className='col-lg-12'>
                                     <DataTable

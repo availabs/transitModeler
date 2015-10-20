@@ -4,7 +4,7 @@
 var React = require('react'),
     Router = require('react-router'),
     Link = require('react-router').Link,
-
+    _ = require('lodash'),
 
     // -- Components
     WidgetHeader = require('../../components/WidgetHeader.react'),
@@ -82,7 +82,7 @@ var MarketAreaIndex = React.createClass({
             );
         }
         //display 1 model run
-        console.log('Current Tracts',this.props.tracts);
+        // console.log('Current Tracts',this.props.tracts);
         return (
             <div className="col-lg-10">
                 <ModelRunContainer
@@ -97,18 +97,42 @@ var MarketAreaIndex = React.createClass({
     },
     _onTimeChange : function(range){
       var scope = this;
-      console.log(range);
+      // console.log(range);
       scope.setState({timeRange:range});
     },
     selectModel : function(id){
       this.setState({model_id:id});
     },
+    _getFareZones : function(){
+      var scope = this;
+      var zones = scope.props.stopsGeo.features.filter(function(d){
+        return d.properties.fare_zone;
+      }).map(function(d){return parseInt(d.properties.fare_zone.split(' ')[1]);});
+      zones = _.uniq(zones);
+      return (zones.length !== 0)?zones:null;
+    },
     _getFareboxTimes : function(){
       var scope =this;
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
-        scope.state.farebox.clearFilter(); //clear all filters
         var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
-        var data = scope.state.farebox.groups.hours.top(Infinity).map(function(d){//get hour records
+        var fareZones = this._getFareZones();
+        var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
+        if(fareZones){
+          scope.state.farebox.dimensions.zone.filter(function(d){
+            var zones = d.split(';'); //get the route, boarding , and alightings
+            var route = zones[0];     //get the route
+            var boarding = parseInt(zones[1]), alighting = parseInt(zones[2]); //get the b and as
+
+            var validZone = fareZones.indexOf(boarding) >= 0;
+                            //and alighting is in the list of farezones
+                validZone = validZone && fareZones.indexOf(alighting) >= 0;
+                            //or there are no excluded zones in which
+                            //allow all
+                validZone = validZone && routes.indexOf(route) >= 0;
+            return validZone;
+          });
+        }
+        var data = FareboxStore.queryFarebox('hours',{}).map(function(d){//get hour records
           var key = d.key.split(';'); //split the sort key
           //return the hour, the average value, the color, and the group.
           return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
@@ -122,7 +146,7 @@ var MarketAreaIndex = React.createClass({
       if(scope.props.loadedModels.initialized){
       var buttonOptions = {action:true,focus:true,delete:true};
       var datasets =   scope.props.loadedModels.loadedModels.map(function(d){ //for each model loaded
-          console.log('Current Model',d);
+          // console.log('Current Model',d);
           //consider only the current run only
           scope.props.loadedModels.dimensions.run_id.filter(d);
           //get the hour groupings for that particular dataset
@@ -136,7 +160,7 @@ var MarketAreaIndex = React.createClass({
         });
         var fbTimes = scope._getFareboxTimes();
         datasets = datasets.concat(fbTimes);
-        console.log('datasets',datasets);
+        // console.log('datasets',datasets);
         return datasets;
       }
       return [];
@@ -157,11 +181,11 @@ var MarketAreaIndex = React.createClass({
     },
     render: function() {
       var hourRange;
-      console.log('Analysis State',this.state);
+      // console.log('Analysis State',this.state);
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-      console.log('models',this.props.loadedModels);
+      // console.log('models',this.props.loadedModels);
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
@@ -194,7 +218,7 @@ var MarketAreaIndex = React.createClass({
                               onChange={this._onTimeChange}
                               delete ={this.deleteModel}
                               selection={this.selectModel}
-                              actionText={'Activate'}
+                              actionText={'Map'}
                               />
                         </div>
                         <div style={{width:'100%'}}>

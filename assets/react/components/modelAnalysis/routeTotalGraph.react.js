@@ -4,6 +4,7 @@
 var React = require('react'),
     _ = require('lodash'),
     // -- Stores
+    FareboxStore = require('../../stores/FareboxStore'),
     // d3 = require('d3'),
 
     // -- Utils
@@ -49,7 +50,7 @@ var RouteTotalGraph = React.createClass({
 
         });
         keyset = _.uniq(keyset);
-        console.log('keyset',keyset);
+        // console.log('keyset',keyset);
         //console.log('render data tabke',tableData,cols)
         //take the first data set
         var data = tableData[0];
@@ -69,7 +70,7 @@ var RouteTotalGraph = React.createClass({
               newData.push(newRecord);//add the row to the final table
             });
             data = newData;
-            console.log("TotalRouteGraph",data);
+            // console.log("TotalRouteGraph",data);
         }
         //return the vdom table
         return (
@@ -78,21 +79,21 @@ var RouteTotalGraph = React.createClass({
     },
     processFarebox : function(){
       var scope=this;
-      scope.props.fareboxData.clearFilter();
-      if(scope.props.timeFilter){
-        scope.props.fareboxData.dimensions.hours.filter(function(d){
+      var fareFilter ={}; //define a filter for the query
+      if(scope.props.timeFilter){ //if we will filter by time
+        fareFilter.hours = function(d){ //define time filter function
           var h = parseInt(d.split(';')[0]);
           return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
-        });
+        };
       }
-      var numdays = scope.props.fareboxData.groups.run_date.top(Infinity).length;
+      var numdays = scope.props.fareboxData.groups.run_date.size();
       return {
         key:'Fbox',
         color:'#000',
-        values: scope.props.fareboxData.groups.route.top(Infinity).map(function(d){
+        values: FareboxStore.queryFarebox('route',fareFilter).map(function(d){ //then query
           return {
             key:d.key,
-            value:Math.floor(d.value/numdays),
+            value:Math.round(d.value/numdays),
           };
         }),
       };
@@ -135,7 +136,7 @@ var RouteTotalGraph = React.createClass({
               var fbox = scope.processFarebox();
               data.push(fbox);
             }
-            console.log('Model Graph Data',data);
+            // console.log('Model Graph Data',data);
             return data;
         }
         //if it's not initialized then just give a list without any data

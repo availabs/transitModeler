@@ -1,7 +1,8 @@
+/*globals console,require,module*/
 'use strict'
 /**
  * Survey Store
- * 
+ *
  *
  */
 
@@ -19,7 +20,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     //--Store Globals--------------------
     _farebox = {},
     _crossFares = require('../utils/src/crossFares');
-    
+
 
 
 
@@ -35,32 +36,41 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
 
   getFarebox: function(maId) {
-    console.log('FareboxStore get',maId)
+    console.log('FareboxStore get',maId);
     if(maId){
       if(!_farebox[maId] ){
-        console.log('loading farebox')
+        console.log('loading farebox');
         sailsWebApi.loadFarebox(maId);
         _farebox[maId] = 'loading';
       }
     }
-    
+
     if(!_farebox[maId] || _farebox[maId] === 'loading'){ //if current data isn't loaded
-      _crossFares.initialized = false
+      _crossFares.initialized = false;
     }
-    
+
     return _crossFares;
-   
-  }
+  },
 
-  
+  queryFarebox : function(queryField,filters,keepPrev){
+    if(_crossFares.initialized){
+      if(!keepPrev) //if not explicitly told to keep previous filters
+        _crossFares.clearFilter();  //clear any previous filters
+      Object.keys(filters).forEach(function(filtKey){
+        if(filtKey in _crossFares.dimensions) //run all filters over the spec ds
+        _crossFares.dimensions[filtKey].filter(filters[filtKey]);
+      });
+      return _crossFares.groups[queryField].top(Infinity);
+    }
+    return [];
+  },
 
-  
 
 });
 
@@ -71,7 +81,7 @@ FareboxStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch(action.type) {
 
     case ActionTypes.RECEIVE_FAREBOXS:
-      console.log('RECEIVE_FAREBOXS ',action)   
+      console.log('RECEIVE_FAREBOXS ',action);
       _farebox[action.Id] = action.data;
       _crossFares.init( action.data );
       FareboxStore.emitChange();

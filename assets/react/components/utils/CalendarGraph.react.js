@@ -8,7 +8,7 @@ var React = require('react'),
 
     //-- Utils
     colorRange = colorbrewer.YlGn[8],
-    DataScale = d3.scale.quantile().domain([0,70000]).range(colorRange);
+    DataScale = d3.scale.quantile().domain([0,40000]).range(colorRange);
     var lastColors = {};
     var rendered = false;
 
@@ -142,6 +142,8 @@ var GraphContainer = React.createClass({
                 if(scope.props.filters[d]){
                   return '#f33';
                 }
+                if(scope.props.data[d])
+                  console.log(d);
                 return DataScale(scope.props.data[d]) || '#fff';
               })
             .attr('stroke','#ccc')

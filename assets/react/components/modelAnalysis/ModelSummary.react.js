@@ -131,7 +131,7 @@ var ModelSummary = React.createClass({
         {d}
       </div>);
     });
-    console.log('State',this.state);
+    // console.log('State',this.state);
     var id = this.state.activeId || this.props.modelIds[0];
     return  (
       <div>

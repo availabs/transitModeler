@@ -70,7 +70,7 @@ var Sliders = React.createClass({
     if(!this._isFocusedModel(id) )
       return 'Focus';
     else
-      return 'Neglect';
+      return 'Forget';
   },
   _isFocusedModel : function(id,ix){
     var i =this.state.focusModels.indexOf(id);
@@ -95,19 +95,13 @@ var Sliders = React.createClass({
           //Use the props to determine whether or not to include buttons
           //Default to adding them
       var actionbutton = !d.options.action? undefined:(
-        <div className='col-sm-1'>
             <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
-          </div>
       );
       var focusbutton = !d.options.focus ? undefined:(
-        <div className='col-sm-1'>
           <a className='btn btn-small btn-default' onClick={scope._focus.bind(null,d.id)}>{scope._focusString(d.id)}</a>
-        </div>
       );
       var deletebutton = !d.options.delete ? undefined:(
-        <div className='col-sm-1'>
           <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
-      </div>
     );
       return (
         <div className='row' style={{'table-layout':'fixed','vertical-align':'middle'}}>
@@ -127,7 +121,7 @@ var Sliders = React.createClass({
                     rangeTicks = {0}
                     />
                 </div>
-                <div>
+                <div className='btn-group'>
                   {actionbutton}
                   {focusbutton}
                   {deletebutton}
