@@ -214,6 +214,11 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     });
     _gtfsRoutesGeo[id] = routes;
   }
+  function setStopColors(colormap){
+    _gtfsStopsGeo.features.forEach(function(d){
+      d.farecolor = colormap[parseInt(d.fare_zone).toString()] || '#fff';
+    });
+  }
 //======================================================
 var GtfsStore = assign({}, EventEmitter.prototype, {
 
@@ -564,6 +569,10 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     //when marketares are retreived reset the routes and stops
         _resetRoutesAndStops();
         GtfsStore.emitChange();
+    break;
+
+    case ActionTypes.SET_FARESTOPCOLORS:
+      setStopColors(action.data);
     break;
     default:
       // do nothing

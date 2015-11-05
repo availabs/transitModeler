@@ -70,6 +70,9 @@ module.exports = {
     RECEIVE_REGRESSIONS:null,
     DELETE_REGRESSION:null,
 
+    SET_FAREZONEFILTER:null,
+    RECEIVE_FAREZONEFILTERS:null,
+    SAVE_FAREZONEFILTER:null,
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,

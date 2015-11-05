@@ -272,7 +272,7 @@ var MarketAreaMap = React.createClass({
 
                             color: "#00a" ,
                             weight: 3,
-                            opacity: 1,
+                            opacity: 0.8,
                             fillOpacity: 0.9,
                             stroke:false,
                             className:'busStop',
@@ -285,6 +285,29 @@ var MarketAreaMap = React.createClass({
                       layer.on({
                         click : function(e){
                           console.log(feature.properties);
+                        },
+                        mouseover : function(e){
+                          var classColor = (feature.properties.color)?feature.properties.color:(scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00');
+                          var label = feature.properties.stop_id + ' ';
+                          if(scope.props.stopsData && scope.props.stopsData.data[feature.properties.stop_code])
+                              label += scope.props.stopsData.data[feature.properties.stop_code];
+
+                            d3.select('.ToolTip').style({
+                              left:e.originalEvent.clientX+'px',
+                              top:e.originalEvent.clientY+'px',
+                              display:'block',
+                              opacity:1.0,
+                              'boarder-top':'5px solid '+classColor
+                            }).select('h4')
+                              .attr('class','TT_Title')
+                              .style({
+                                color:classColor
+                              })
+                              .html(label);
+                        },
+                        mouseout : function(e){
+                          d3.select('.ToolTip').style({opacity:0});
+                          e.target.setStyle({opacity:0.8});
                         }
                       });
                     },

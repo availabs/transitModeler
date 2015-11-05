@@ -91,7 +91,6 @@ var MarketAreaNew = React.createClass({
         return (
             <section className="widget">
                 <div className="body no-margin" >
-
                     <Select2Component
                       id="gtfsSelector"
                       dataSet={selectRouteData}

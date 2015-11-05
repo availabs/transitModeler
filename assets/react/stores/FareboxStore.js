@@ -70,7 +70,7 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     }
     return [];
   },
-
+  
 
 });
 

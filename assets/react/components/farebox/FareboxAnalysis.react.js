@@ -14,6 +14,7 @@ var React = require('react'),
     Select2Component = require('../utils/Select2.react'),
     TimeGraph = require('../utils/TimeGraph.react'),
     TimeSlider = require('../utils/TimeSlider.react'),
+    ZoneFilter = require('./zonefilter.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
 
@@ -75,7 +76,7 @@ var FareboxRoutes = React.createClass({
     });
     var clearbtn = null;
     if(this.state.selection.length === 1)
-      clearbtn = <a className='btn btn-danger' onClick={this.removeRoute}>clear</a>;
+      clearbtn = <a className='btn btn-danger' onClick={this.removeRoute}>Clear Route</a>;
     return (
       <div>
       <Select2Component
@@ -139,22 +140,16 @@ var FareboxAnalysis = React.createClass({
     },
     filterByZones : function(){
       var scope = this;
-      var farezones = Object.keys(scope.state.zones)
-                            .map(function(d){return scope.state.zones[d].zone;});
       return function(d){
         var zones = d.split(';'); //get the route, boarding , and alightings
         var route = zones[0];     //get the route
         var boarding = zones[1], alighting = zones[2]; //get the b and as
-        var eZones = scope.state.zfilter;//get the zones to exclude
+        var eZones = scope.state.zfilter;//get the valid zones
                         //it's a valid record if the boarding is not there
-        var validZone = eZones.indexOf(boarding) === -1;
+        var validZone = eZones.indexOf(boarding) > -1;
                         //and alighting is not there
-            validZone = validZone && eZones.indexOf(alighting) === -1;
+            validZone = validZone || eZones.indexOf(alighting) > -1;
                         //and boarding is in the list of farezones
-            validZone = validZone && farezones.indexOf(boarding) >= 0;
-                        //and alighting is in the list of farezones
-            validZone = validZone && farezones.indexOf(alighting) >= 0;
-                        //or there are no excluded zones in which
                         //allow all
             validZone = validZone || eZones.length === 0;
         return validZone;
@@ -341,19 +336,8 @@ var FareboxAnalysis = React.createClass({
     delRoute : function(){
       this.setState({route:null,zones:{}});
     },
-    zoneFilter : function(id){
+    zoneFilter : function(zonefilter){
 
-      var target = d3.select('#fare_zone'+id);
-      var zonefilter = this.state.zfilter;
-      var ix = zonefilter.indexOf(id);
-      if(ix > -1){
-        zonefilter.splice(ix,1);
-        target.style('background-color','white');
-      }
-      else{
-        zonefilter.push(id);
-        target.style('background-color','gray');
-      }
       console.log('zonefilter',zonefilter);
       this.calcData(true);
       this.setState({zfilter:zonefilter});
@@ -369,7 +353,7 @@ var FareboxAnalysis = React.createClass({
         fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
         // scope.filterByRoute(this.state.route); //filter by current route if selected.
         console.log(scope.state.route);
-        FareboxStore.queryFarebox('trip',fareboxFilter).top(Infinity).forEach(function(d){
+        FareboxStore.queryFarebox('trip',fareboxFilter).forEach(function(d){
           var keys = d.key.split(',');
           if(scope.state.route === keys[0]){
             console.log(keys,scope.state.route);
@@ -427,12 +411,43 @@ var FareboxAnalysis = React.createClass({
           this.setState({routeFilter:rid});
       }
     },
+    setStopColors : function(colormap){
+      var scope = this;
+      scope.props.stopsGeo.features.forEach(function(d){
+        d.properties.color = colormap[firstNum(d.properties.fare_zone)] || '#fff';
+      });
+    },
+    getZones : function(stops){
+      var scope = this;
+      var FareZones = {};
+      stops.features.forEach(function(d){// for each stop in the geo
+        FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
+        //if there is a farezone that hasn't been seen
+        if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
+          //get farezones removing those that have been excluded
+          var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
+          //add the zones to the list for that stops route
+          FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
+        }
+      });
+      var zoneMap = {}; //define a color map for the different zones.
+      var zonei = 0; //and an index to avoid double colors
+      Object.keys(FareZones).forEach(function(d){//for each route in the farezone
+        FareZones[d] = FareZones[d].reduce(function(p,c){//reduce to single object
+          if(!zoneMap[c]){//if color is not defined for the current zone
+            zoneMap[c] = d3.scale.category20().range()[zonei%20];//add a color
+            zonei = zonei + 1; //increment zone index
+          }
+          p[c] = {zone:c,color:zoneMap[c]}; //add to the object and entry for the zone
+          return p; //return that object
+        },{});//use reduce as an accumulator by starting with empty object, add to it
+      });
+      return {zones:FareZones,colors:zoneMap};
+    },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
         var processData;
         var scope = this,
-            //amPeak = scope.processor('am'),
-            //pmPeak = scope.processor('pm'),
             fullDay = scope.processor();
         var colors = this.props.marketarea.routecolors;
         var TableData = fullDay[0].values.map(function(d,i){
@@ -445,16 +460,9 @@ var FareboxAnalysis = React.createClass({
         cols = [
             {name:'Bus Line',key:'line'},
             {name:'Color Key',key:'color'},
-            //{name:'AM Peak',key:'am',summed:true},
-            //{name:'PM Peak',key:'pm',summed:true},
             {name:'Full Day',key:'fullDay',summed:true}
         ];
         var calendars = this._renderCalendars();
-        this.props.routesGeo.features.forEach(function(d){
-           if(colors && colors[d.properties.short_name]){
-             d.properties.color = colors[d.properties.short_name];
-           }
-        });
         var routes = emptyGeojson;
         var stops = {type:"FeatureCollection",features:[]};
         routes.features = this.props.routesGeo.features.filter(function(d){
@@ -463,23 +471,14 @@ var FareboxAnalysis = React.createClass({
         stops.features = this.props.stopsGeo.features.filter(function(d){
           return scope.state.route === d.properties.line;
         });
-        stops.features.forEach(function(d,i){
-          var temp = firstNum(d.properties.fare_zone);
-          if(temp && scope.state.zones[temp])
-            d.properties.color = scope.state.zones[temp].color;
-        });
-        var zones =( <div className={'row'}> {Object.keys(this.state.zones).map(function(d,i){
-          var name = d;
-          return (<div onClick={scope.zoneFilter.bind(null,name)} id={'fare_zone'+name} className={'col-md-3'}><div className={'col-md-1'} style={{backgroundColor:scope.state.zones[d].color,width:'15px',height:'15px'}}></div><p>{scope.state.zones[d].zone}</p></div>);
-        })} </div>);
+        var zoneInfo = scope.getZones(this.props.stopsGeo); //get zone information
+        scope.setStopColors(zoneInfo.colors); //set the color of the stops with the colormap
         var totalHours = scope._getHours(colors);
         console.log('totals',totalHours);
         var timeGraph = this.routeData();
 
         var graphs =[
-          //{type:FareboxGraph,data:amPeak,groupName:'am',peak:'am',height:'250',colors:colors,label:'AM Peak (6am - 10am)'},
-          //{type:FareboxGraph,data:pmPeak,groupName:'pm',peak:'pm',height:'250',colors:colors,label:'PM Peak (4pm - 8pm)'},
-          {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
+                    {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
         ];
         graphs = graphs.map(function(d){
           var retval = function(){
@@ -489,7 +488,6 @@ var FareboxAnalysis = React.createClass({
           return retval;
         });
         console.log('filters',this.state.filters);
-        console.info('TIME RANGE',this.state.timeRange);
         return (
     	   <div>
                 <div className="row">
@@ -506,7 +504,12 @@ var FareboxAnalysis = React.createClass({
                               setRoute={this.setRoute}
                               removeRoute={this.delRoute}
                              />
-                           {zones}
+                           <ZoneFilter
+                             route = {this.state.route}
+                             zoneFilter={this.zoneFilter}
+                             zones = {zoneInfo.zones}
+                             colors = {zoneInfo.colors}
+                             />
                            {timeGraph}
                         </section>
                     </div>

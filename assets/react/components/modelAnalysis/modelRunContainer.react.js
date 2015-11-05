@@ -1,10 +1,10 @@
 'use strict';
 
 var React = require('react'),
-   
+
     // -- Stores
     d3 = require('d3'),
-    
+
     // -- Utils
     nv = require('../../utils/dependencies/nvd3.js'),
     DataTable = require('../utils/DataTable.react'),
@@ -15,40 +15,40 @@ var React = require('react'),
 
 
 var RouteTotalGraph = React.createClass({
-	
+
     getDefaultProps:function(){
       return {
           height:400,
           mapId:'map'
-      }
+      };
     },
 
     getInitialState:function(){
         return {
             mode:'stop_boarding'
-        }
+        };
     },
     setMode:function(data){
-        console.log('setMode',data)
+        console.log('setMode',data);
         this.setState({mode:data});
     },
-    
+
     render:function(){
-        console.log('render container')
+        console.log('render container');
     	var scope = this;
 
         this.props.data.dimensions['run_id'].filter(this.props.modelId);
-        var stopData = {}
+        var stopData = {};
         stopScale.domain(
             this.props.data.groups[scope.state.mode].top(Infinity).map(function(stop){
-                stopData[stop.key]  = stop.value; 
-                return stop.value
+                stopData[stop.key]  = stop.value;
+                return stop.value;
             }).filter(function(d){
-                return d > 0
+                return d > 0;
             }).sort(function(a,b){
                 return  b-a;
             })
-        )
+        );
 
         var legendLayers = {
             od:{
@@ -65,25 +65,24 @@ var RouteTotalGraph = React.createClass({
                 scale:stopScale,
                 data:stopData
             }
-            
-        }
+        };
 
 
         return(
             <div style={{color:'#000'}}>
         		  <h4>Model Run {this.props.modelId}</h4>
-              <MarketAreaMap 
+              <MarketAreaMap
                 mapId={this.props.mapId}
-                tracts={this.props.tracts} 
+                tracts={this.props.tracts}
                 routes={this.props.routesGeo}
                 stops={this.props.stopsGeo}
                 displayTracts={false}
                 mode={this.state.mode}
                 stopsData = {{scale:stopScale,data:stopData}}
                 legendLayers ={legendLayers} />
-               
+
             </div>
-    	)
+    	);
     }
 
 });
