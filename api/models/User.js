@@ -29,7 +29,7 @@ module.exports = {
 
   	email: {
   		type: 'string',
-  		email: true,
+  		email: false,
   		required: false,
   		unique: true
   	},

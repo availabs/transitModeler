@@ -238,7 +238,7 @@ var FareboxAnalysis = React.createClass({
           var key = d.key.split(';');
           return {x:key[0]+':00',y:(d.value/totalDays), color:colors[key[1]], group:key[1]};
         });
-        console.log(data.map(function(d){return d.y;}).reduce(function(p,c){return p+c;}));
+       // console.log(data.map(function(d){return d.y;}).reduce(function(p,c){return p+c;}));
         return data;
       }
       return [];
@@ -352,7 +352,7 @@ var FareboxAnalysis = React.createClass({
         fareboxFilter.zone = scope.filterByZones(); //filter by the current zones if any
         fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
         // scope.filterByRoute(this.state.route); //filter by current route if selected.
-        console.log(scope.state.route);
+        console.log(scope.state.route,FareboxStore.queryFarebox('trip',fareboxFilter));
         FareboxStore.queryFarebox('trip',fareboxFilter).forEach(function(d){
           var keys = d.key.split(',');
           if(scope.state.route === keys[0]){
