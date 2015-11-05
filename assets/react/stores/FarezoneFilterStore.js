@@ -51,7 +51,7 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
     }else if(!waiting){
       waiting = true;
       requireFilters();
-      return {};
+      return [];
     }
   },
 

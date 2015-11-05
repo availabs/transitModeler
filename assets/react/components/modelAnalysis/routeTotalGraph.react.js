@@ -92,6 +92,22 @@ var RouteTotalGraph = React.createClass({
           return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
         };
       }
+      if(scope.props.zoneFilter){
+        var fareZones = this.props.zoneFilter;
+        console.log('routetgraphfil',fareZones)
+        fareFilter.zone = function(d){//define  zone filter
+          var zones = d.split(';'); //get the route, boarding , and alightings
+          var route = zones[0];     //get the route
+          var boarding = zones[1], alighting = zones[2]; //get the b and as
+
+          var validZone = fareZones.indexOf(boarding) >= 0;
+                          //and alighting is in the list of farezones
+              validZone = validZone && fareZones.indexOf(alighting) >= 0;
+                          //or there are no excluded zones in which
+                          //allow all
+          return validZone;
+        };
+      }
       var numdays = scope.props.fareboxData.groups.run_date.size();
       return {
         key:'Fbox',

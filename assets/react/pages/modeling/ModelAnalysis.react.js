@@ -19,12 +19,22 @@ var React = require('react'),
     // -- Stores
     FareboxStore =  require('../../stores/FareboxStore.js'),
     TripTableStore = require('../../stores/TripTableStore.js'),
-    ModelRunStore = require('../../stores/ModelRunStore.js');
+    ModelRunStore = require('../../stores/ModelRunStore.js'),
+    FarezoneFilterSelection = require('../../components/utils/FarezoneFilterSelection.react');
 
 var i18n = {
     locales: ['en-US']
 };
 
+var numrexp = /[0-9]+/g;
+var firstNum = function(str){
+  if(str){
+    var rez = str.match(numrexp);
+    if(rez)
+      return rez[0];
+  }
+  return null;
+};
 
 
 var MarketAreaIndex = React.createClass({
@@ -103,25 +113,27 @@ var MarketAreaIndex = React.createClass({
     selectModel : function(id){
       this.setState({model_id:id});
     },
-    _getFareZones : function(){
-      var scope = this;
-      var zones = scope.props.stopsGeo.features.filter(function(d){
-        return d.properties.fare_zone;
-      }).map(function(d){return parseInt(d.properties.fare_zone.split(' ')[1]);});
-      zones = _.uniq(zones);
-      return (zones.length !== 0)?zones:null;
-    },
+    // _getFilteredFareZones : function(){
+    //   var scope = this;
+    //   var zones = scope.props.stopsGeo.features.filter(function(d){
+    //     return d.properties.fare_zone;
+    //   }).map(function(d){return parseInt(d.properties.fare_zone.split(' ')[1]);});
+    //   zones = _.uniq(zones);
+    //   return (zones.length !== 0)?zones:null;
+    // },
     _getFareboxTimes : function(){
       var scope =this;
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
         var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
-        var fareZones = this._getFareZones();
+        var fareZones = scope.state.fareFilter;
+        console.log(fareZones);
         var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
+        var zonefilter;
         if(fareZones){
-          scope.state.farebox.dimensions.zone.filter(function(d){
+          zonefilter = function(d){
             var zones = d.split(';'); //get the route, boarding , and alightings
             var route = zones[0];     //get the route
-            var boarding = parseInt(zones[1]), alighting = parseInt(zones[2]); //get the b and as
+            var boarding = zones[1], alighting = zones[2]; //get the b and as
 
             var validZone = fareZones.indexOf(boarding) >= 0;
                             //and alighting is in the list of farezones
@@ -130,9 +142,9 @@ var MarketAreaIndex = React.createClass({
                             //allow all
                 validZone = validZone && routes.indexOf(route) >= 0;
             return validZone;
-          });
+          };
         }
-        var data = FareboxStore.queryFarebox('hours',{}).map(function(d){//get hour records
+        var data = FareboxStore.queryFarebox('hours',{zone:zonefilter}).map(function(d){//get hour records
           var key = d.key.split(';'); //split the sort key
           //return the hour, the average value, the color, and the group.
           return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
@@ -140,6 +152,36 @@ var MarketAreaIndex = React.createClass({
         return {id:'farebox',data:data,options:{focus:true}};
       }
       return [];
+    },
+    _getFareZones : function(stops){
+      var scope = this;
+      var FareZones = {};
+      stops.features.forEach(function(d){// for each stop in the geo
+        FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
+        //if there is a farezone that hasn't been seen
+        if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
+          //get farezones removing those that have been excluded
+          var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
+          //add the zones to the list for that stops route
+          FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
+        }
+      });
+      var zoneMap = {}; //define a color map for the different zones.
+      var zonei = 0; //and an index to avoid double colors
+      Object.keys(FareZones).forEach(function(d){//for each route in the farezone
+        FareZones[d] = FareZones[d].reduce(function(p,c){//reduce to single object
+          if(!zoneMap[c]){//if color is not defined for the current zone
+            zoneMap[c] = d3.scale.category20().range()[zonei%20];//add a color
+            zonei = zonei + 1; //increment zone index
+          }
+          p[c] = {zone:c,color:zoneMap[c]}; //add to the object and entry for the zone
+          return p; //return that object
+        },{});//use reduce as an accumulator by starting with empty object, add to it
+      });
+      return {zones:FareZones,colors:zoneMap};
+    },
+    setFarezoneFilter : function(filter){
+      this.setState({fareFilter:filter});
     },
     _getTimeData : function(){
       var scope = this;
@@ -228,6 +270,7 @@ var MarketAreaIndex = React.createClass({
                               routeData={this.props.loadedModels}
                               fareboxInit={this.state.useFarebox}
                               fareboxData={this.state.farebox}
+                              zoneFilter = {this.state.fareFilter}
                               />
                         </div>
                     </div>
@@ -236,6 +279,10 @@ var MarketAreaIndex = React.createClass({
                             <section className='widget'>
                                 <div>
                                   {this._fareboxButton()}
+                                  <FarezoneFilterSelection
+                                    zones={this._getFareZones(this.props.stopsGeo).zones}
+                                    onSelection ={this.setFarezoneFilter}
+                                    />
                                 </div>
                             </section>
 

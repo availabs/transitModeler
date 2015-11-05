@@ -26,6 +26,9 @@ var ZoneFilter = React.createClass({
   componentDidMount : function(){
     FareZoneFilterStore.addChangeListener(this._onChange);
   },
+  componentWillUnmount : function(){
+    FareZoneFilterStore.removeChangeListener(this._onChange);
+  },
   _onChange : function(){
     this.setState({filters:FareZoneFilterStore.getFarezoneFilters()});
   },
