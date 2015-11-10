@@ -20,8 +20,14 @@ var MarketAreaNew = React.createClass({
     },
     _handleChange : function(e){
       var partial_state = {};
-      partial_state[e.target.id] = e.target.value;
-      this.setState(partial_state);
+      var canUpdate = true;
+      if(this.props.handleChange){
+        canUpdate = this.props.handleChange(e.target.value);
+      }
+      if(canUpdate){
+        partial_state[e.target.id] = e.target.value;
+        this.setState(partial_state);
+      }
     },
     _saveChange : function(e){
       var err = this.props.saveAction(this.state);

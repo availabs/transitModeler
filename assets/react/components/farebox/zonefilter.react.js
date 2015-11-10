@@ -11,7 +11,8 @@ var React = require('react'),
     _ = require('lodash'),
     Select2Component = require('../utils/Select2.react'),
     FareZoneFilterStore = require('../../stores/FarezoneFilterStore'),
-    FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator');
+    FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator'),
+    CreationForm = require('../gtfs/CreationForm.react');
 
 var numrexp = /[0-9]+/g;
 var firstNum = function(str){
@@ -21,6 +22,10 @@ var firstNum = function(str){
       return rez[0];
   }
   return null;
+};
+var validStringRegex = new RegExp('^[A-Za-z0-9\\.\\_\\-]*$');
+var validInput = function(str){
+  return (str.length < 1000) && validStringRegex.test(str);
 };
 var ZoneFilter = React.createClass({
   componentDidMount : function(){
@@ -68,9 +73,13 @@ var ZoneFilter = React.createClass({
       return excludes.indexOf(d) < 0;
     }).sort(function(a,b){return parseInt(a)-parseInt(b);});
   },
-  saveFilter : function(){
-    var data = {filtername:'notimportant',filter:this.state.exclusions};
-    FarezoneActionsCreator.saveFilter(data);
+  saveFilterAction : function(d){
+
+    var data = {filtername:d.filter_name,filter:this.state.exclusions};
+    if(data.filtername && data.filtername.length >= 1)
+      FarezoneActionsCreator.saveFilter(data);
+    else
+      console.log('Fail to save');
   },
   onSelect : function(e,selection){
     var scope = this;
@@ -91,6 +100,9 @@ var ZoneFilter = React.createClass({
     else {
       return 'gray';
     }
+  },
+  filterNameInputChange : function(d){
+    return validInput(d);
   },
   render : function(){
     var scope = this;
@@ -125,6 +137,13 @@ var ZoneFilter = React.createClass({
           onSelection={scope.onSelect}
           placeholder={'Previous filters'}
           val={scope.state.selection}
+        />
+      <CreationForm
+        buttonText={'Save Filter'}
+        id={'filterForm'}
+        values={{'filter_name':'filtername'}}
+        handleChange={this.filterNameInputChange}
+        saveAction={this.saveFilterAction}
         />
         <div>
         <p>Excluded</p>
