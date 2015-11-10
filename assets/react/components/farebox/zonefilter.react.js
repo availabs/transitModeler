@@ -120,10 +120,8 @@ var ZoneFilter = React.createClass({
     }</div>);
     var allowable = [];
     var currentZones = this.currentFilter(scope.props.zones);
-    var zonelist = (<ul>{currentZones.map(function(d){
-        return <li>{d}</li>;
-      })}
-    </ul>);
+    var zonelist = currentZones.toString();
+
     var filterSelect = scope.state.filters.map(function(d){
       return {id:d.id,'text':d.filtername};
     });
@@ -151,8 +149,8 @@ var ZoneFilter = React.createClass({
         </div>
         <p>Current Route Zones</p>
         {rzones}
-        <p>Farezone Filter</p>
-        {zonelist}
+        <p>Included</p>
+          <div style={{'word-wrap':'break-word'}}>{zonelist}</div>
       </div>
     );
   },

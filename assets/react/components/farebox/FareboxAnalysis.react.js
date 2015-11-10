@@ -491,7 +491,7 @@ var FareboxAnalysis = React.createClass({
         return (
     	   <div>
                 <div className="row">
-                	<div className="col-lg-5">
+                	<div className="col-lg-5" style={{overflow:'hidden'}}>
                         <MarketAreaMap
                             stops={stops}
                             routes={routes}
