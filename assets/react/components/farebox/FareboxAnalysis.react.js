@@ -419,21 +419,32 @@ var FareboxAnalysis = React.createClass({
     },
     getZones : function(stops){
       var scope = this;
-      var FareZones = {};
-      stops.features.forEach(function(d){// for each stop in the geo
-        FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
-        //if there is a farezone that hasn't been seen
-        if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
-          //get farezones removing those that have been excluded
-          var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
-          //add the zones to the list for that stops route
-          FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
+      var Farezones = {};
+      // stops.features.forEach(function(d){// for each stop in the geo
+      //   FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
+      //   //if there is a farezone that hasn't been seen
+      //   if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
+      //     //get farezones removing those that have been excluded
+      //     var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
+      //     //add the zones to the list for that stops route
+      //     FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
+      //   }
+      // });
+      FareboxStore.queryFarebox('zone',{},true).forEach(function(d){
+        var keys = d.key.split(';');
+        var line = keys[0], boarding = keys[1], alighting = keys[2];
+        Farezones[line] = Farezones[line] || [];
+        if(Farezones[line].indexOf(boarding) === -1){
+          Farezones[line].push(boarding);
+        }
+        if(Farezones[line].indexOf(alighting) === -1){
+          Farezones[line].push(alighting);
         }
       });
       var zoneMap = {}; //define a color map for the different zones.
       var zonei = 0; //and an index to avoid double colors
-      Object.keys(FareZones).forEach(function(d){//for each route in the farezone
-        FareZones[d] = FareZones[d].reduce(function(p,c){//reduce to single object
+      Object.keys(Farezones).forEach(function(d){//for each route in the farezone
+        Farezones[d] = Farezones[d].reduce(function(p,c){//reduce to single object
           if(!zoneMap[c]){//if color is not defined for the current zone
             zoneMap[c] = d3.scale.category20().range()[zonei%20];//add a color
             zonei = zonei + 1; //increment zone index
@@ -442,7 +453,7 @@ var FareboxAnalysis = React.createClass({
           return p; //return that object
         },{});//use reduce as an accumulator by starting with empty object, add to it
       });
-      return {zones:FareZones,colors:zoneMap};
+      return {zones:Farezones,colors:zoneMap};
     },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
