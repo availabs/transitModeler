@@ -27,7 +27,18 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 function requireFilters(){
   SailsWebApi.read('farezonefilter');
 }
-
+function deleteLocalFilter(filter){
+  var ix = -1;
+  _filterSets.forEach(function(d,i){
+    if(d.id === filter.id)
+      ix = i;
+  });
+  if(ix >= 0)
+    _filterSets.splice(ix,1); //remove filter
+}
+function deleteRemoteFilter(filter){
+  SailsWebApi.delete('farezonefilter',filter.id);
+}
 var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
@@ -84,6 +95,17 @@ FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
       FarezoneFilterStore.emitChange();
     break;
 
+    case ActionTypes.DELETE_FAREZONEFILTER:
+      console.log('Delete Message',action.data);
+      FarezoneFilterStore.emitChange();
+    break;
+
+    case ActionTypes.DELETE_THIS_FAREZONEFILTER:
+      console.log('Deleting Farezone Filter',action.data);
+      deleteLocalFilter(action.data);
+      deleteRemoteFilter(action.data);
+      FarezoneFilterStore.emitChange();
+    break;
     default:
       // do nothing
   }

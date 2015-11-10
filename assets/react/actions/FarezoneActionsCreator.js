@@ -23,6 +23,12 @@ module.exports = {
       data : data,
     });
   },
+  deleteFilter : function(data){
+    AppDispatcher.handleViewAction({
+      type : ActionTypes.DELETE_THIS_FAREZONEFILTER,
+      data : data,
+    });
+  },
   setStopColors : function(colorMap){
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_FARESTOPCOLORS,
