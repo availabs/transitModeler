@@ -25,6 +25,7 @@ var TimeGraph = React.createClass({
     };
   },
   getInitialState : function(){
+    console.log('timeG, DataLog',this.props.data);
     return {
       data: this.props.data,
       gid : 0,
@@ -54,14 +55,14 @@ var TimeGraph = React.createClass({
       this.setState({filters:filters});
     }else{
       filters.splice(ix,1);
-      d3.select('#TGKey_'+id).style('background-color','white');
+      d3.select('#TGKey_'+id).style('background-color','transparent');
       this.setState({filters:filters});
     }
   },
   clearFilters : function(){
     if(this.state.filters.length > 0){
       this.setState({filters:[]});
-      d3.selectAll('.TGKey').style('background-color','white');
+      d3.selectAll('.TGKey').style('background-color','transparent');
     }
 
   },
@@ -250,7 +251,7 @@ var TimeGraph = React.createClass({
     });
     return (
       <div>
-        <h4>Trip Key</h4>
+        <h4>{this.props.keyTitle}</h4>
         <div className='row'>{rows}</div>
         {clearBtn}
       </div>

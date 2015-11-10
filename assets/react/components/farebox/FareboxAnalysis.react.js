@@ -498,7 +498,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-        console.log('filters',this.state.filters);
+        // console.log('filters',this.state.filters);
         return (
     	   <div>
                 <div className="row">

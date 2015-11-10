@@ -12,6 +12,7 @@ var React = require('react'),
     RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
     ModelRunContainer = require('../../components/modelAnalysis/modelRunContainer.react'),
     TimeSliders = require('../../components/utils/TimeSliders.react'),
+    TimeGraph = require('../../components/utils/TimeGraph.react'),
     ModelSummary= require('../../components/modelAnalysis/ModelSummary.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
@@ -126,7 +127,7 @@ var MarketAreaIndex = React.createClass({
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
         var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
         var fareZones = scope.state.fareFilter;
-        console.log(fareZones);
+        // console.log(fareZones);
         var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
         var zonefilter;
         if(fareZones){
@@ -221,9 +222,50 @@ var MarketAreaIndex = React.createClass({
       else
         this.setState({useFarebox:true});
     },
+    _getModelTimeGraph : function(){
+      var keyMap = {};
+      if(!this.props.loadedModels.initialized)
+        return <div></div>;
+      var minutes = this.props.loadedModels.groups.minutes.top(Infinity);
+      minutes = minutes.map(function(d){
+        var key = d.key.split(';');
+        return {x:key[0],route:key[1],y:d.value};
+      });
+      var routes = minutes.reduce(function(a,b,i){
+        a[b.route]  = a[b.route] || [];
+        a[b.route].push(b);
+        return a;
+      },{});
+      var jx = 0;
+      Object.keys(routes).forEach(function(d,i){
+        keyMap[d] =  d3.scale.category20().range()[i%20];
+        routes[d].map(function(route){
+          route.color = keyMap[d];
+          route.id = d;
+        });
+      });
+
+      return (
+        <TimeGraph
+          width={800}
+          keyMap={keyMap}
+          keyTitle={'Route Key'}
+          height={500}
+          barWidth={10}
+          opacity={0.9}
+          rotateXLabels={90}
+          data={minutes}
+          filterable={true}
+          titleSize={'14pt'}
+          guides={5}
+          title={'Route Trips throughout the Day'}
+        />);
+
+
+    },
     render: function() {
       var hourRange;
-      // console.log('Analysis State',this.state);
+      console.log('Analysis State',this.state);
       if(this.state.timeRange){ //set the range of hours to filter the graph by
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
@@ -273,7 +315,11 @@ var MarketAreaIndex = React.createClass({
                               zoneFilter = {this.state.fareFilter}
                               />
                         </div>
-                    </div>
+                        <div style={{width:'100%'}}>
+                          {this._getModelTimeGraph()}
+                        </div>
+                  </div>
+
 
                     <div className="col-lg-3">
                             <section className='widget'>

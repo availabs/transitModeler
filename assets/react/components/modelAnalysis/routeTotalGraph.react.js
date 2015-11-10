@@ -94,7 +94,7 @@ var RouteTotalGraph = React.createClass({
       }
       if(scope.props.zoneFilter){
         var fareZones = this.props.zoneFilter;
-        console.log('routetgraphfil',fareZones)
+        // console.log('routetgraphfil',fareZones)
         fareFilter.zone = function(d){//define  zone filter
           var zones = d.split(';'); //get the route, boarding , and alightings
           var route = zones[0];     //get the route

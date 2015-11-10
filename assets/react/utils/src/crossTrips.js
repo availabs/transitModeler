@@ -31,6 +31,9 @@ var crossTrips = {
 		crossTrips.dimensions.hours = crossTrips.trips.dimension(function(d){ return (parseInt(d.trip_start_time.substr(0,2))%24)+';'+d.route;}),
 		crossTrips.groups.hours = crossTrips.dimensions.hours.group().reduceCount(),
 
+		crossTrips.dimensions.minutes = crossTrips.trips.dimension(function(d){return (d.trip_start_time.substr(0,5)) + ';'+d.route;}),
+		crossTrips.groups.minutes  = crossTrips.dimensions.minutes.group().reduceCount(),
+
 		crossTrips.initialized = true;
 	},
 	addRun:function(data,id){
