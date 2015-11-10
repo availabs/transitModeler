@@ -334,7 +334,7 @@ var FareboxAnalysis = React.createClass({
       this.setState({route:id,zones:zones});
     },
     delRoute : function(){
-      this.setState({route:null,zones:{}});
+      this.setState({route:null,zfilter:[],zones:{}});
     },
     zoneFilter : function(zonefilter){
 
