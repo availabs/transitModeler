@@ -63,6 +63,8 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
       waiting = true;
       requireFilters();
       return [];
+    }else{
+      return [];
     }
   },
 
@@ -91,7 +93,7 @@ FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
     case ActionTypes.RECEIVE_FAREZONEFILTERS:
       console.log('Receive farezone filters',action.data);
-      _filterSets = action.data;
+      _filterSets = action.data ;
       FarezoneFilterStore.emitChange();
     break;
 

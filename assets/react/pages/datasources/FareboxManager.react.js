@@ -97,9 +97,11 @@ var GtfsDisplay = React.createClass({
         var scope = this;
         var tableRows = data.map(function(d,i){
           return  (
-            <tr>
+            <tr >
               <td>{d.filtername}</td>
-              <td>{d.filter.toString()}</td>
+              <td><div className='col-md-3'
+                style={{width:'150px',display:'inline','word-wrap':'break-word'}}
+                >{d.filter.toString()}</div></td>
               <td>
                 <a className={'btn btn-danger'}
                   onClick={scope.deleteFilter.bind(null,i)}>
@@ -122,7 +124,6 @@ var GtfsDisplay = React.createClass({
                   <tr>
                     <td>Filter Name</td>
                     <td>Excluded Zones</td>
-                    <td/>
                     <td/>
                   </tr>
                 </thead>

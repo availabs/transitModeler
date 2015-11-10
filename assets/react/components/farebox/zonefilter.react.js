@@ -147,8 +147,7 @@ var ZoneFilter = React.createClass({
         />
         <div>
         <p>Excluded</p>
-        <a className='btn btn-danger' onClick={scope.saveFilter}>Save Filter</a>
-        {scope.state.exclusions}
+        {scope.state.exclusions.toString()}
         </div>
         <p>Current Route Zones</p>
         {rzones}
