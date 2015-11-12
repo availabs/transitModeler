@@ -229,11 +229,13 @@ var RouteTotalGraph = React.createClass({
 
     	return(
             <div className='row' style={{color:'#000'}}>
-        		<div className='col-md-8' id="routeTotalGraph">
+        		<div className='col-md-12' id="routeTotalGraph">
         			<svg style={svgStyle}/>
         		</div>
-                <div className='col-md-4'>
-                 { this.renderDataTable(data) }
+                <div className='row'>
+                  <div className='col-md-12'>
+                    { this.renderDataTable(data) }
+                  </div>
                 </div>
             </div>
     	);

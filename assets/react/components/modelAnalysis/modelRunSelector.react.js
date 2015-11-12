@@ -47,7 +47,8 @@ var ModelRunSelector = React.createClass({
 	  	});
 			//create a select box from the generated names
 	    return (
-	    	<div>
+	    	<div style={{width:this.props.width || '100%',
+										float:'left'}}>
 	    		<div className="form-group">
 	                <div className="input-group input-group">
 

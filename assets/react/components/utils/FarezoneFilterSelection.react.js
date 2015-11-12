@@ -57,8 +57,8 @@ var FarezoneSelector = React.createClass({
         return {id:d.id,'text':d.filtername};
       });
 	    return (
-	    	<div>
-	    		<div className="form-group">
+	    	<div style={{width:this.props.width || '100%',
+										float:'left'}}>
 	                <div className="input-group input-group">
 
                     <Select2Component
@@ -72,7 +72,6 @@ var FarezoneSelector = React.createClass({
                     />
 
 	                </div>
-	            </div>
 	    	</div>
 	    );
 	}

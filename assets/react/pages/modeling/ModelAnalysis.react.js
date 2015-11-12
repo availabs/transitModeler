@@ -95,7 +95,7 @@ var MarketAreaIndex = React.createClass({
         //display 1 model run
         // console.log('Current Tracts',this.props.tracts);
         return (
-            <div className="col-lg-10">
+            <div id='modelMap'>
                 <ModelRunContainer
                     marketarea={this.props.currentMarketarea}
                     tracts={this.props.tracts}
@@ -272,7 +272,7 @@ var MarketAreaIndex = React.createClass({
 
       return (
         <TimeGraph
-          width={800}
+          width={400}
           keyMap={keyMap}
           keyTitle={'Route Key'}
           height={500}
@@ -310,64 +310,68 @@ var MarketAreaIndex = React.createClass({
 
                 <div className="row">
 
-                    <div className="col-lg-9">
+                    <div className="col-lg-12" >
                         <section className="widget">
-                            <div className="body no-margin">
-                                <ModelRunSelector marketarea={this.props.marketarea} model_runs={this.state.model_runs} />
-                            </div>
-                        </section>
-                        {this._renderModelRuns()}
-                        <div style={{width:'100%'}}>
-                            <TimeSliders
-                              datasets={this._getTimeData()}
-                              height={100}
-                              width={500}
-                              maxHeight={300}
-                              maxWidth={600}
-                              onChange={this._onTimeChange}
-                              delete ={this.deleteModel}
-                              selection={this.selectModel}
-                              actionText={'Map'}
-                              />
-                        </div>
-                        <div style={{width:'100%'}}>
-                            <RouteTotalGraph
-                              colors={this.props.marketarea.routecolors}
-                              timeFilter={hourRange}
-                              routeData={this.props.loadedModels}
-                              fareboxInit={this.state.useFarebox}
-                              fareboxData={this.state.farebox}
-                              zoneFilter = {this.state.fareFilter}
-                              dateFilter = {this.state.fareboxDates}
-                              />
-                        </div>
-                        <div style={{width:'100%'}}>
-                          {this._getModelTimeGraph()}
-                        </div>
-                  </div>
-
-
-                    <div className="col-lg-3">
-                            <section className='widget'>
-                                <div>
-                                  {this._fareboxButton()}
+                            <div className="body no-margin" style={{overflow:'hidden'}}>
+                                <ModelRunSelector
+                                  marketarea={this.props.marketarea}
+                                  model_runs={this.state.model_runs}
+                                  width={'40%'}
+                                  />
                                   <FarezoneFilterSelection
                                     zones={this._getFareZones(this.props.stopsGeo).zones}
                                     onSelection ={this.setFarezoneFilter}
+                                    width={'40%'}
                                     />
-                                </div>
-                            </section>
-
-                            <ModelSummary
-                                modelIds={this.props.loadedModels.loadedModels}
-                                />
+                                  <div style={{float:'left',width:'20%'}}>
+                                      {this._fareboxButton()}
+                                    </div>
+                          </div>
+                        </section>
+                </div>
+                </div>
+                <div className='col-lg-6'>
+                  <div className='row'>
+                      {this._renderModelRuns()}
+                  </div>
+                  <div className='row'>
+                    <ModelSummary
+                        modelIds={this.props.loadedModels.loadedModels}
+                        />
                     </div>
                 </div>
-
-                <div className='row'>
+                <div className='col-lg-6'>
+                  <section className='widget'>
+                    <div style={{width:'100%'}}>
+                        <TimeSliders
+                          datasets={this._getTimeData()}
+                          height={100}
+                          width={400}
+                          maxHeight={300}
+                          maxWidth={450}
+                          onChange={this._onTimeChange}
+                          delete ={this.deleteModel}
+                          selection={this.selectModel}
+                          actionText={'Map'}
+                          />
+                    </div>
+                    <div style={{width:'100%'}}>
+                        <RouteTotalGraph
+                          colors={this.props.marketarea.routecolors}
+                          timeFilter={hourRange}
+                          routeData={this.props.loadedModels}
+                          fareboxInit={this.state.useFarebox}
+                          fareboxData={this.state.farebox}
+                          zoneFilter = {this.state.fareFilter}
+                          dateFilter = {this.state.fareboxDates}
+                          />
+                    </div>
+                    <div style={{width:'100%'}}>
+                      {this._getModelTimeGraph()}
+                    </div>
+                  </section>
 
                 </div>
-
             </div>
 
         );
