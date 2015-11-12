@@ -127,11 +127,10 @@ var MarketAreaIndex = React.createClass({
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
         var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
         var fareZones = scope.state.fareFilter;
-        // console.log(fareZones);
         var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
-        var zonefilter;
+        var fareboxfilter={};
         if(fareZones){
-          zonefilter = function(d){
+          fareboxfilter.zone = function(d){
             var zones = d.split(';'); //get the route, boarding , and alightings
             var route = zones[0];     //get the route
             var boarding = zones[1], alighting = zones[2]; //get the b and as
@@ -145,7 +144,23 @@ var MarketAreaIndex = React.createClass({
             return validZone;
           };
         }
-        var data = FareboxStore.queryFarebox('hours',{zone:zonefilter}).map(function(d){//get hour records
+        if(scope.state.fareboxDates){
+          //Get the date strings for valid dates
+          var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
+            return (new Date(scope.state.fareboxDates[d])).toDateString();
+          });
+          totalDays = validDates.length;
+          fareboxfilter.run_date = function(date){
+            if(validDates.length === 0)
+              return true;
+            var valid = validDates.map(function(d){
+                return date.toDateString() === d;
+              });
+
+            return valid.reduce(function(a,b){return a || b;});
+          };
+        }
+        var data = FareboxStore.queryFarebox('hours',fareboxfilter).map(function(d){//get hour records
           var key = d.key.split(';'); //split the sort key
           //return the hour, the average value, the color, and the group.
           return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
@@ -155,34 +170,38 @@ var MarketAreaIndex = React.createClass({
       return [];
     },
     _getFareZones : function(stops){
-      var scope = this;
-      var FareZones = {};
-      stops.features.forEach(function(d){// for each stop in the geo
-        FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
-        //if there is a farezone that hasn't been seen
-        if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
-          //get farezones removing those that have been excluded
-          var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
-          //add the zones to the list for that stops route
-          FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
-        }
-      });
-      var zoneMap = {}; //define a color map for the different zones.
-      var zonei = 0; //and an index to avoid double colors
-      Object.keys(FareZones).forEach(function(d){//for each route in the farezone
-        FareZones[d] = FareZones[d].reduce(function(p,c){//reduce to single object
-          if(!zoneMap[c]){//if color is not defined for the current zone
-            zoneMap[c] = d3.scale.category20().range()[zonei%20];//add a color
-            zonei = zonei + 1; //increment zone index
+
+        var scope = this;
+        var Farezones = {};
+
+        FareboxStore.queryFarebox('zone',{},true).forEach(function(d){
+          var keys = d.key.split(';');
+          var line = keys[0], boarding = keys[1], alighting = keys[2];
+          Farezones[line] = Farezones[line] || [];
+          if(Farezones[line].indexOf(boarding) === -1){
+            Farezones[line].push(boarding);
           }
-          p[c] = {zone:c,color:zoneMap[c]}; //add to the object and entry for the zone
-          return p; //return that object
-        },{});//use reduce as an accumulator by starting with empty object, add to it
-      });
-      return {zones:FareZones,colors:zoneMap};
+          if(Farezones[line].indexOf(alighting) === -1){
+            Farezones[line].push(alighting);
+          }
+        });
+        var zoneMap = {}; //define a color map for the different zones.
+        var zonei = 0; //and an index to avoid double colors
+        Object.keys(Farezones).forEach(function(d){//for each route in the farezone
+          Farezones[d] = Farezones[d].reduce(function(p,c){//reduce to single object
+            if(!zoneMap[c]){//if color is not defined for the current zone
+              zoneMap[c] = d3.scale.category20().range()[zonei%20];//add a color
+              zonei = zonei + 1; //increment zone index
+            }
+            p[c] = {zone:c,color:zoneMap[c]}; //add to the object and entry for the zone
+            return p; //return that object
+          },{});//use reduce as an accumulator by starting with empty object, add to it
+        });
+        return {zones:Farezones,colors:zoneMap};
+
     },
-    setFarezoneFilter : function(filter){
-      this.setState({fareFilter:filter});
+    setFarezoneFilter : function(filter,dates){
+      this.setState({fareFilter:filter,fareboxDates:dates});
     },
     _getTimeData : function(){
       var scope = this;
@@ -319,6 +338,7 @@ var MarketAreaIndex = React.createClass({
                               fareboxInit={this.state.useFarebox}
                               fareboxData={this.state.farebox}
                               zoneFilter = {this.state.fareFilter}
+                              dateFilter = {this.state.fareboxDates}
                               />
                         </div>
                         <div style={{width:'100%'}}>

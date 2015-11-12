@@ -85,6 +85,7 @@ var RouteTotalGraph = React.createClass({
     },
     processFarebox : function(){
       var scope=this;
+      var numdays = scope.props.fareboxData.groups.run_date.size();
       var fareFilter ={}; //define a filter for the query
       if(scope.props.timeFilter){ //if we will filter by time
         fareFilter.hours = function(d){ //define time filter function
@@ -108,7 +109,23 @@ var RouteTotalGraph = React.createClass({
           return validZone;
         };
       }
-      var numdays = scope.props.fareboxData.groups.run_date.size();
+      if(scope.props.dateFilter){
+        //Get the date strings for valid dates
+        var validDates = Object.keys(scope.props.dateFilter).map(function(d){
+          return (new Date(scope.props.dateFilter[d])).toDateString();
+        });
+        numdays = validDates.length;
+        fareFilter.run_date = function(date){
+          if(validDates.length === 0)
+            return true;
+          var valid = validDates.map(function(d){
+              return date.toDateString() === d;
+            });
+
+          return valid.reduce(function(a,b){return a || b;});
+        };
+      }
+
       return {
         key:'Fbox',
         color:'#000',

@@ -37,15 +37,18 @@ var FarezoneSelector = React.createClass({
   },
   onSelect : function(e,selection){
     var scope = this;
+		var dates = {};
     var currfilter = scope.state.filters.reduce(function(a,b){
-      if(b.id === selection.id)
+      if(b.id === selection.id){
+				dates = b.dates;
         return b.filter;
+			}
       else
         return a;
     },[]);
     var filteredZones = scope.currentFilter(scope.props.zones,currfilter);
     scope.setState({selection:[selection.id],exclusions:currfilter},function(){
-      scope.props.onSelection(filteredZones);
+      scope.props.onSelection(filteredZones,dates);
     });
   },
 	render: function() {
