@@ -1,3 +1,4 @@
+/*globals console,require,module,setTimeout*/
 'use strict';
 var React = require('react'),
     d3 = require('d3'),
@@ -11,7 +12,7 @@ var React = require('react'),
     DataScale = d3.scale.quantile().domain([0,40000]).range(colorRange);
     var lastColors = {};
     var rendered = false;
-
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var GraphContainer = React.createClass({
 
     getDefaultProps:function(){
@@ -19,7 +20,7 @@ var GraphContainer = React.createClass({
             height: 100,
             divId: 'calChart0',
             year:2015
-        }
+        };
     },
 
     componentDidMount:function(){
@@ -45,7 +46,7 @@ var GraphContainer = React.createClass({
 
     _updateData:function(newData){
         var scope = this;
-        var showData = this.props.data
+        var showData = this.props.data;
         if(newData){
             showData = newData;
         }
@@ -56,20 +57,11 @@ var GraphContainer = React.createClass({
 
             var values = Object.keys(showData).map(function(key){
                 return showData[key];
-            })
+            });
             var min = d3.min(values),
                 max = d3.max(values);
 
             DataScale.domain([d3.min(values),d3.max(values)]);
-
-            // console.log('scale stuff',
-            //     DataScale,
-            //     DataScale.domain(),
-            //     DataScale.range(),
-            //     DataScale(d3.max(values)/2),
-            //     values.length
-            // );
-
 
             var days = d3.select('#'+this.props.divId).selectAll("svg").selectAll(".day");
             //console.log('selection',days)
@@ -94,9 +86,9 @@ var GraphContainer = React.createClass({
         var scope = this;
         console.log('test123',this.props.divId,d3.select('#'+this.props.divId).node().getBoundingClientRect().width-40);
         var width = d3.select('#'+this.props.divId).node().getBoundingClientRect().width-60,
-            width = width < 0 ? 700 : width,
-            cellSize = Math.floor(width/52), //52 weeks in a year
-            height  = cellSize*8;
+            width = (width < 0) ? 700 : width,
+            cellSize = Math.floor(width/54), //52 weeks in a year
+            height  = cellSize*10;
              // cell size
 
         var day = d3.time.format("%w"), //dayformatter
@@ -105,7 +97,7 @@ var GraphContainer = React.createClass({
             format = d3.time.format("%Y-%m-%d");//yearmonthdayformat
 
         var color = d3.scale.quantize()
-            .domain([-.05, .05])
+            .domain([-0.05, 0.05])
             .range(d3.range(11).map(function(d) { return "q" + d + "-11"; }));
 
         var svg = d3.select('#'+this.props.divId).selectAll("svg")
@@ -115,7 +107,7 @@ var GraphContainer = React.createClass({
             .attr("height", height)
             .attr("class", "RdYlGn")
           .append("g")
-            .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
+            .attr("transform", "translate(" +((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
         svg.append("text")
             .attr("transform", "translate(-6," + cellSize * 3.5 + ")rotate(-90)")
@@ -139,17 +131,23 @@ var GraphContainer = React.createClass({
 
             })
             .attr('fill',function(d){
-                if(scope.props.filters[d]){
+                if(scope.props.filters[format(d)]){
                   return '#f33';
                 }
-                if(scope.props.data[d])
+                if(scope.props.data[format(d)]){
                   console.log(d);
-                return DataScale(scope.props.data[d]) || '#fff';
+                  return DataScale(scope.props.data[d]);
+                }
+                return '#fff';
               })
             .attr('stroke','#ccc')
             .attr("width", cellSize)
             .attr("height", cellSize)
-            .attr('id',function(d){return 'd'+d.getFullYear()+'-'+((d.getMonth() < 9)?'0':'')+(d.getMonth()+1)+'-'+d.getDate();})
+            .attr('id',function(d){
+              return 'd'+d.getFullYear()+'-'+
+              ((d.getMonth() < 9)?'0':'')+(d.getMonth()+1)+'-'+
+              ((d.getDate() < 10)?'0':'') +(d.getDate());
+            })
             .attr("x", function(d) { return week(d) * cellSize; })
             .attr("y", function(d) { return day(d) * cellSize; })
             .datum(format);
@@ -166,16 +164,22 @@ var GraphContainer = React.createClass({
             .attr('stroke-width', '2px')
             .attr("d", monthPath);
 
+        months.forEach(function(d,i){
+          svg.append("text")
+              .attr("transform", "translate("+  (cellSize +  cellSize * 4.5 * i) + ", -5 )")
+              .style("text-anchor", "middle")
+              .text( d );
+        });
 
         function monthPath(t0) {
           var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
               d0 = +day(t0), w0 = +week(t0),
               d1 = +day(t1), w1 = +week(t1);
-          return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize
-              + "H" + w0 * cellSize + "V" + 7 * cellSize
-              + "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize
-              + "H" + (w1 + 1) * cellSize + "V" + 0
-              + "H" + (w0 + 1) * cellSize + "Z";
+          return "M" + (w0 + 1) * cellSize + "," + d0 * cellSize +
+              "H" + w0 * cellSize + "V" + 7 * cellSize +
+              "H" + w1 * cellSize + "V" + (d1 + 1) * cellSize +
+              "H" + (w1 + 1) * cellSize + "V" + 0 +
+              "H" + (w0 + 1) * cellSize + "Z";
         }
 
 
@@ -185,7 +189,7 @@ var GraphContainer = React.createClass({
         var svgStyle = {
           height: this.props.height+'px',
           width: '100%'
-        }
+        };
 
 
         return (

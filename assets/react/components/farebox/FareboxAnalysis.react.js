@@ -283,8 +283,10 @@ var FareboxAnalysis = React.createClass({
                         return d.key.getFullYear() === currYear;
                     });
                     yearDays.forEach(function(day){
+                        var date = day.key.getDate();
+                        var dayofmonth = (date <10) ? '0'+(date) : date;
                         var month = day.key.getMonth().length < 9 ? '0'+(day.key.getMonth()+1) : (day.key.getMonth()+1);
-                        yearData[day.key.getFullYear()+'-0'+month+'-'+day.key.getDate()] = parseInt(day.value);
+                        yearData[day.key.getFullYear()+'-0'+month+'-'+dayofmonth] = parseInt(day.value);
                     });
                 yearsArray[currYear] = yearData;
             });
