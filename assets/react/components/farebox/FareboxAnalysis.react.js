@@ -190,7 +190,6 @@ var FareboxAnalysis = React.createClass({
             console.log('time range',timeRange);
             fareboxFilter.zone = scope.filterByZones();
             fareboxFilter.run_time = scope.filterByTime(timeRange);
-            fareboxFilter.run_date = scope._validDate;
             var data = FareboxStore.queryFarebox('line',fareboxFilter);
             var finalData = data.filter(
               function(d){
@@ -201,6 +200,7 @@ var FareboxAnalysis = React.createClass({
             ).map(function(line){
               //need to filter by farezones
                 var run_dates = FareboxStore.queryFarebox('run_date',{'line':scope.filterByRoute(line.key)},true);
+                run_dates = run_dates.filter(function(d){return scope._validDate(d.key);});
                 //filtering by Line
                 var daySum = run_dates
                 .map(function(d){
@@ -498,7 +498,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-        // console.log('filters',this.state.filters);
+        console.log('filters',this.state.filters);
         return (
     	   <div>
                 <div className="row">
@@ -520,6 +520,7 @@ var FareboxAnalysis = React.createClass({
                              zoneFilter={this.zoneFilter}
                              zones = {zoneInfo.zones}
                              colors = {zoneInfo.colors}
+                             dates = {this.state.filters}
                              />
                            {timeGraph}
                         </section>

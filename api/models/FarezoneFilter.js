@@ -10,5 +10,6 @@ module.exports = {
     filtername:'string',
     filter:'array',
     id:'integer',
+    dates:'json',
   }
 };

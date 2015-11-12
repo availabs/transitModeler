@@ -75,7 +75,11 @@ var ZoneFilter = React.createClass({
   },
   saveFilterAction : function(d){
 
-    var data = {filtername:d.filter_name,filter:this.state.exclusions};
+    var data = {
+                filtername:d.filter_name,
+                filter:this.state.exclusions,
+                dates: this.props.dates,
+              };
     if(data.filtername && data.filtername.length >= 1)
       FarezoneActionsCreator.saveFilter(data);
     else
