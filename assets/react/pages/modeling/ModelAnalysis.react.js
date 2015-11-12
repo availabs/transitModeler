@@ -229,6 +229,12 @@ var MarketAreaIndex = React.createClass({
       var minutes = this.props.loadedModels.groups.minutes.top(Infinity);
       minutes = minutes.map(function(d){
         var key = d.key.split(';');
+        key[0] = key[0].split(':').map(function(t,i){
+          if(i === 0){
+            t = (parseInt(t) % 24).toString();
+          }
+          return t;
+        }).join(':');
         return {x:key[0],route:key[1],y:d.value};
       });
       var routes = minutes.reduce(function(a,b,i){

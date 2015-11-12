@@ -40,7 +40,6 @@ var TimeGraph = React.createClass({
   getData : function(){
     var scope = this;
     return this.state.data.filter(function(d){
-      console.log(d.id);
       return scope.state.filters.indexOf(d.id) < 0;
     });
   },
@@ -69,7 +68,7 @@ var TimeGraph = React.createClass({
   renderGraph : function(){
     var scope = this;
     var margin = {top:this.props.margin.top || 20,
-       right:this.props.margin.right || 60,
+       right:this.props.margin.right || 100,
        bottom:this.props.margin.bottom || 60,
        left:this.props.margin.left || 60},
         width = this.props.width - margin.left - margin.right,
@@ -80,7 +79,7 @@ var TimeGraph = React.createClass({
       var parseDate = d3.time.format('%H:%M');
       var formatDate = d3.time.format(this.props.xFormat);
       var x = d3.time.scale()  //create x,y scales for display
-                .range([0,width]);
+                .range([0,width + margin.right]);
       var y = d3.scale.linear()
                 .range([height,0]);
       var xAxis = d3.svg.axis() //create x,y axis objects for the graph
@@ -118,7 +117,7 @@ var TimeGraph = React.createClass({
       svg.selectAll('svg').data([this.state.gid]).exit().remove();
       var innerSvg = svg.selectAll('svg').data([this.state.gid]).enter()
                         .append('svg')
-                        .attr('width',width)
+                        .attr('width',width + margin.right)
                         .attr('height',height)
                         .append('g');
           // innerSvg.append('g')
@@ -164,6 +163,7 @@ var TimeGraph = React.createClass({
              .text(this.props.domainLabel);
 
     var data = this.getData();
+    console.log('timeGraph data:',data);
         x.domain([formatDate.parse(min),formatDate.parse(max)]);
         console.log(d3.max(data,function(d){return d.y;}));
         y.domain([0,d3.max(data,function(d){return d.y;})]).nice();
@@ -178,7 +178,7 @@ var TimeGraph = React.createClass({
                 .data(d3.range(0,height,(height/range)*(step/this.props.guides) )).enter().append('line')
                 .attr('x1',0)
                 .attr('y1',function(d){return d;})
-                .attr('x2',width)
+                .attr('x2',width + margin.right)
                 .attr('y2',function(d){return d;})
                 .style({
                   stroke:'#999',
