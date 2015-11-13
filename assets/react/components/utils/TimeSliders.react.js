@@ -88,8 +88,8 @@ var Sliders = React.createClass({
       return formatedData;
     });
     var sliders = displayData.map(function(d,i){
-      var isLast = scope.props.datasets.length-1 === i;
-      var height = scope.props.height - ((isLast)?0:scope.props.margin.bottom);
+      var isFirst = 0 === i;
+      var height = scope.props.height - ((isFirst)?0:scope.props.margin.bottom);
       var width  = (scope._isFocusedModel(d.id))?scope.props.maxWidth:scope.props.width;
           height = (scope._isFocusedModel(d.id))?scope.props.maxHeight:height;
           //Use the props to determine whether or not to include buttons
@@ -103,8 +103,9 @@ var Sliders = React.createClass({
       var deletebutton = !d.options.delete ? undefined:(
           <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
     );
+      
       return (
-        <div className='row' style={{'table-layout':'fixed','vertical-align':'middle'}}>
+        <div style={{'table-layout':'fixed','vertical-align':'middle'}}>
                 <div className='col-lg-9'>
                   <TimeSlider
                     width={width}
@@ -112,9 +113,9 @@ var Sliders = React.createClass({
                     title={d.id}
                     data={d.data}
                     onSet={scope.slideAction}
-                    margin={{bottom:(isLast)?scope.props.margin.bottom:0}}
+                    margin={{bottom:(isFirst)?scope.props.margin.bottom:0}}
                     id={idgen('id')}
-                    putXAxis={isLast}
+                    putXAxis={isFirst}
                     range={scope.state.range}
                     forceRender={true}
                     maxRange={max}
@@ -132,13 +133,17 @@ var Sliders = React.createClass({
   },
   render : function(){
     var sliders = this.buildSliders();
-    console.log(sliders.length);
     if(!sliders.length)
       return <span></span>;
     return (
     <div id='Sliders' className='row'>
       <div className='col-lg-12'>
+        <div className='row'>
+          {sliders.splice(0,1)}
+        </div>
+        <div className='row'>
           {sliders}
+        </div>
       </div>
     </div>
     );

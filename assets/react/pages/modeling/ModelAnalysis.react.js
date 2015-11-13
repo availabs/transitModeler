@@ -229,6 +229,7 @@ var MarketAreaIndex = React.createClass({
     },
     deleteModel : function(id){
       ModelingActionsCreator.removeActiveModelRun(id);
+      this.setState({model_id:null});
     },
     _fareboxButton : function(){
       if(this.state.farebox && Object.keys(this.state.farebox.groups).length >0){
@@ -242,10 +243,17 @@ var MarketAreaIndex = React.createClass({
         this.setState({useFarebox:true});
     },
     _getModelTimeGraph : function(){
+      var scope = this;
       var keyMap = {};
       if(!this.props.loadedModels.initialized)
         return <div></div>;
+      console.log('Model Analysis 248: loaded Models data',this.props.loadedModels);
+      console.log('Current Model',this.state.model_id);
+      this.props.loadedModels.dimensions.run_id.filter(function(d){
+        return d === scope.state.model_id;
+      });
       var minutes = this.props.loadedModels.groups.minutes.top(Infinity);
+      this.props.loadedModels.dimensions.run_id.filterAll();
       minutes = minutes.map(function(d){
         var key = d.key.split(';');
         key[0] = key[0].split(':').map(function(t,i){
@@ -317,6 +325,7 @@ var MarketAreaIndex = React.createClass({
                                   marketarea={this.props.marketarea}
                                   model_runs={this.state.model_runs}
                                   width={'40%'}
+                                  onSelection={this.selectModel}
                                   />
                                   <FarezoneFilterSelection
                                     zones={this._getFareZones(this.props.stopsGeo).zones}
@@ -367,7 +376,7 @@ var MarketAreaIndex = React.createClass({
                           />
                     </div>
                     <div style={{width:'100%'}}>
-                      {this._getModelTimeGraph()}
+                      
                     </div>
                   </section>
 
