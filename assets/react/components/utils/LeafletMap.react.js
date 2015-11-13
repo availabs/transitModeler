@@ -76,7 +76,8 @@ var Map = React.createClass({
           }
         });
         //end priority check;
-        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0){
+        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0 &&
+            !this.props.neverReZoom){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
@@ -99,7 +100,7 @@ var Map = React.createClass({
     },
 
     render: function() {
-        if(map){    
+        if(map){
             map.invalidateSize();
         }
         return (

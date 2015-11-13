@@ -335,7 +335,8 @@ var MarketAreaMap = React.createClass({
                     ToolTip={this.state.tooltip}
                     mapId={this.props.mapId}
                     legendLayers={this.props.legendLayers}
-                    height="500px" />
+                    height="500px"
+                    neverReZoom={this.props.neverReZoom} />
             </div>
 
         );
