@@ -182,7 +182,29 @@ var RouteTotalGraph = React.createClass({
         return [{key:'none',values:[]}];
 
 	},
+    _renderDataSummary : function(){
+      if(!this.props.summaryData || Object.keys(this.props.summaryData).length ===0)
+        return <span></span>;
+      var scope = this;
+      var data = this.props.summaryData;
+      var sdata = [{d:data.am,dt:((data.am/data.amfb)*100).toFixed(2),label:'AM'},
+                    {d:data.pm,dt:((data.pm/data.pmfb)*100).toFixed(2),label:'PM'},
+                    {d:data.full,dt:((data.pm/data.pmfb)*100).toFixed(2),label:'Full'}];
+      var retobj = sdata.map(function(obj){
+        return(
+          <div className='col-md-2'>
+            <div className='box'>
+              <h3>{obj.label}</h3>
+              <div className='description'>{obj.d}</div>
+              <div className='description'>{obj.dt}</div>
+            </div>
+          </div>
+      );
+      });
 
+      return retobj;
+
+    },
     _renderGraph:function(){
         var scope = this;
         if(scope.props.routeData.initialized){
@@ -232,6 +254,9 @@ var RouteTotalGraph = React.createClass({
         		<div className='col-md-12' id="routeTotalGraph">
         			<svg style={svgStyle}/>
         		</div>
+                <div className='row'>
+                  {this._renderDataSummary()}
+                </div>
                 <div className='row'>
                   <div className='col-md-12'>
                     { this.renderDataTable(data) }

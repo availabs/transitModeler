@@ -1,4 +1,4 @@
-/*globals confirm, console,module,require,$*/
+/*globals confirm, console,module,require,$,document*/
 /*jshint -W097*/
 'use strict';
 

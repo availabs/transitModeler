@@ -231,6 +231,52 @@ var MarketAreaIndex = React.createClass({
       ModelingActionsCreator.removeActiveModelRun(id);
       this.setState({model_id:null});
     },
+    peaksCalculator : function(){
+      var scope = this;
+                    //default 6am - 10am as am peak hours
+      var amPeak = this.props.marketarea.ampeak || [6,10];
+                    //default 3pm - 7pm as pm peak hours
+      var pmPeak = this.props.marketarea.pmpeak || [15,19];
+
+      if(!this.props.loadedModels.initialized)
+        return {};
+
+      if(this.state.model_id)
+        this.props.loadedModels.dimensions.run_id.filter(function(d){
+          return d === scope.state.model_id;
+        });
+      var amPeakTotalsFB=0, pmPeakTotalsFB=0, FullTotalsFB=0,FBData;
+      var amPeakTotals = 0, pmPeakTotals = 0, FullTotals = 0,FullData;
+      FullData = this.props.loadedModels.groups.hours.top(Infinity);
+
+      var hiFilter = function(d){
+        var hour = parseInt(d.key.split(';')[0]);
+        return (hour >= pmPeak[0]) && (hour <= pmPeak[1]);
+      };
+      var lowFilter = function(d){
+        var hour = parseInt(d.key.split(';')[0]);
+        return (hour >= amPeak[0]) && (hour <= amPeak[1]);
+      };
+
+      amPeakTotals = FullData.filter(lowFilter)
+                      .reduce(function(a,b){return a + b.value;},0);
+
+      pmPeakTotals = FullData.filter(hiFilter)
+                      .reduce(function(a,b){return a + b.value;},0);
+
+      FullTotals =   FullData.reduce(function(a,b){return a + b.value;},0);
+
+      FBData = FareboxStore.queryFarebox('hours',{});
+
+      amPeakTotalsFB  = FBData.filter(lowFilter)
+                        .reduce(function(a,b){return a + b.value;},0);
+      pmPeakTotalsFB  = FBData.filter(hiFilter)
+                        .reduce(function(a,b){return a + b.value;},0);
+      FullTotalsFB    = FBData.reduce(function(a,b){return a + b.value;},0);
+
+      return {am:amPeakTotals,pm:pmPeakTotals,full:FullTotals,
+              amfb:amPeakTotalsFB,pmfb:pmPeakTotalsFB,fullfb:FullTotalsFB};
+    },
     _fareboxButton : function(){
       if(this.state.farebox && Object.keys(this.state.farebox.groups).length >0){
         return <a className='btn btn-lg btn-warning btn-block' onClick={this._addFarebox}>Toggle Farebox</a>;
@@ -373,10 +419,11 @@ var MarketAreaIndex = React.createClass({
                           fareboxData={this.state.farebox}
                           zoneFilter = {this.state.fareFilter}
                           dateFilter = {this.state.fareboxDates}
+                          summaryData = {this.peaksCalculator()}
                           />
                     </div>
                     <div style={{width:'100%'}}>
-                      
+
                     </div>
                   </section>
 
