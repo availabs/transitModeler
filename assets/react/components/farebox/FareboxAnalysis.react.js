@@ -134,6 +134,9 @@ var FareboxAnalysis = React.createClass({
     componentWillUpdate : function(nextProps,nextState){
       if( !_.isEqual(this.state.zones,nextState.zones)) //if the zones change
         this.calcData(true);
+      if(!_.isEqual(this.state.farebox,nextState.farebox)){
+        this.calcData(true);
+      }
     },
     componentWillUnmount: function() {
         FareboxStore.removeChangeListener(this._onChange);
@@ -252,7 +255,6 @@ var FareboxAnalysis = React.createClass({
             });
         }
     },
-
     calendarClick : function(d){
       var scope = this,
           colors = this.state.colors;
