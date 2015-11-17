@@ -111,27 +111,38 @@ var Sliders = React.createClass({
 
       return (
         <div style={{'table-layout':'fixed','vertical-align':'middle'}}>
-                <div className='col-lg-9'>
-                  <TimeSlider
-                    width={width}
-                    height={height }
-                    title={d.id}
-                    data={d.data}
-                    onSet={scope.slideAction}
-                    margin={{bottom:(isFirst)?scope.props.margin.bottom:0}}
-                    id={idgen('id')}
-                    putXAxis={isFirst}
-                    range={scope.state.range}
-                    forceRender={true}
-                    maxRange={max}
-                    rangeTicks = {0}
-                    />
-                </div>
-                <div className='btn-group'>
-                  {actionbutton}
-                  {focusbutton}
-                  {deletebutton}
-                </div>
+
+          <div className='row'>
+            <div className='col-lg-3'></div>
+            <div className='btn-group col-lg-6'>
+              {actionbutton}
+              {focusbutton}
+              {deletebutton}
+            </div>
+            <div className='col-lg-3'></div>
+          </div>
+          <div className='row'>
+            
+            <div className='col-lg-8'>
+              <TimeSlider
+                width={width}
+                height={height }
+                title={d.id}
+                data={d.data}
+                onSet={scope.slideAction}
+                margin={{bottom:(isFirst)?scope.props.margin.bottom:0}}
+                id={idgen('id')}
+                putXAxis={isFirst}
+                range={scope.state.range}
+                forceRender={true}
+                maxRange={max}
+                rangeTicks = {0}
+                />
+            </div>
+            <div className='col-lg-2'></div>
+          </div>
+
+
             </div>);
     });
     return sliders;
