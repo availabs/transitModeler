@@ -182,7 +182,7 @@ var RouteTotalGraph = React.createClass({
         //if it's not initialized then just give a list without any data
         return [{key:'none',values:[]}];
 
-	},
+	  },
     setTime : function(hours){
       if(!hours)
         hours = [0,24];

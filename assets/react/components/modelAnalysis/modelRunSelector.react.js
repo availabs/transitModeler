@@ -16,6 +16,7 @@ var ModelRunSelector = React.createClass({
 			if(id){
 				ModelingActionsCreator.addActiveModelRun(id);
 				this.props.onSelection(id);
+				this.setState({selection:[]});
 			}
 
 
@@ -23,12 +24,17 @@ var ModelRunSelector = React.createClass({
 	getInitialState : function(){
 		return {
 			model_runs : this.props.model_runs,
+			selection:[],
 		};
 	},
-	compentWillReceiveProps : function(nextProps){
+	componentWillReceiveProps : function(nextProps){
 		if(!this.props.model_runs || !_.isEqual(this.props.model_runs, nextProps.model_runs) ){
 			this.setState({model_runs:nextProps.model_runs});
 		}
+	},
+	setSelection : function(e,selection){
+		console.log(e,selection);
+		this.setState({selection:[selection.id]});
 	},
 	render: function() {
 	  	var scope = this;
@@ -62,7 +68,8 @@ var ModelRunSelector = React.createClass({
 	                      multiple={false}
 	                      styleWidth="100%"
 	                      ref="modelRunId"
-	                      val={[]}
+												onSelection={scope.setSelection}
+	                      val={this.state.selection}
 	                      placeholder="Select a Model to Analyze" />
 
 	                    <div className="input-group-btn">
