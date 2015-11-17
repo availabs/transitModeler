@@ -54,7 +54,9 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     if(!_farebox[maId] || _farebox[maId] === 'loading'){ //if current data isn't loaded
       _crossFares.initialized = false;
     }
-
+    if(_farebox[maId] && _farebox[maId] !=='loading'){
+      _crossFares.init(_farebox[maId]);
+    }
     return _crossFares;
   },
 
@@ -70,7 +72,7 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     }
     return [];
   },
-  
+
 
 });
 
