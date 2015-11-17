@@ -110,7 +110,7 @@ var RouteTotalGraph = React.createClass({
           return validZone;
         };
       }
-      if(scope.props.dateFilter){
+      if(scope.props.dateFilter.length >0){
         //Get the date strings for valid dates
         var validDates = Object.keys(scope.props.dateFilter).map(function(d){
           return (new Date(scope.props.dateFilter[d])).toDateString();

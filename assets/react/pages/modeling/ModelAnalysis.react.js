@@ -156,7 +156,7 @@ var MarketAreaIndex = React.createClass({
             return validZone;
           };
         }
-        if(scope.state.fareboxDates){
+        if(scope.state.fareboxDates.length !== 0){
           //Get the date strings for valid dates
           var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
             return (new Date(scope.state.fareboxDates[d])).toDateString();
