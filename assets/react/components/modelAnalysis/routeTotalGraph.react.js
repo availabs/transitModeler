@@ -198,11 +198,17 @@ var RouteTotalGraph = React.createClass({
         return <span></span>;
       var scope = this;
       var data = this.props.summaryData;
-      var amTime = data.ampeak.toString().replace(',',' - '),
-          pmTime = data.pmpeak.toString().replace(',',' - ');
-      var sdata = [{d:data.am,dt:((data.am/data.amfb)*100).toFixed(2)+'%',label:'AM',note:amTime,range:data.ampeak},
-                    {d:data.pm,dt:((data.pm/data.pmfb)*100).toFixed(2)+'%',label:'PM',note:pmTime,range:data.pmpeak},
-                    {d:data.full,dt:((data.pm/data.pmfb)*100).toFixed(2)+'%',label:'Full',note:'0-24'}];
+      var amTime = data.ampeak.toString().replace(',' , ' - '),
+          pmTime = data.pmpeak.toString().replace(',' , ' - ');
+      var sdata = [{d:data.am,dt:((data.am/data.amfb)*100),label:'AM',note:amTime,range:data.ampeak},
+                    {d:data.pm,dt:((data.pm/data.pmfb)*100),label:'PM',note:pmTime,range:data.pmpeak},
+                    {d:data.full,dt:((data.pm/data.pmfb)*100),label:'Full',note:'0 - 24'}];
+      var fbsummary = function(obj){
+          if (isNaN(obj.dt) )
+            return <span></span>;
+          else
+            return (<div className='description'>{obj.dt.toFixed(2) + '%'}</div>);
+      };
       var retobj = sdata.map(function(obj){
         return(
           <div className='col-md-3'>
@@ -210,7 +216,7 @@ var RouteTotalGraph = React.createClass({
               <h3>{obj.label}</h3>
               <p>{obj.note}</p>
               <div className='description'>{obj.d}</div>
-              <div className='description'>{obj.dt}</div>
+              {fbsummary(obj)}
             </div>
           </div>
       );

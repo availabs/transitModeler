@@ -31,8 +31,11 @@ var ModelSummary = React.createClass({
     //if we receive new props and the user hasn't already chosen an id to view
     //set it blindly to the first model from the parent specified from the
     //parent component.
-      if(!this.state.activeId || (this.props.modelIds === nextProps.modelsIds))
+      if(!this.state.activeId || (this.props.modelIds === nextProps.modelIds))
         this.setState({activeId:nextProps.modelIds[0]});
+      if(nextProps.modelIds.length === 0){
+        this.setState({activeId:null});
+      }
   },
   componentDidMount : function(){
     ModelRunStore.addChangeListener(this._onChange);

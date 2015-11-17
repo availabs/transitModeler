@@ -41,7 +41,7 @@ var RouteTotalGraph = React.createClass({
   				<div className='col-md-4'>
   					<div className='col-md-2'>
   						<svg style={{width:'30px',height:'30px'}}>
-  							<circle cx='15' cy='15' r={parseInt(layer.scale(d))} style={{strokeWidth: '2px', fill: 'none',stroke: '#000'}}></circle>
+  							<circle cx='15' cy='15' r={parseInt(layer.scale(d)) || 0} style={{strokeWidth: '2px', fill: 'none',stroke: '#000'}}></circle>
   						</svg>
   					</div>
   					<div className='col-md-2'>{parseInt(d)}</div>
