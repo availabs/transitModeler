@@ -1,7 +1,8 @@
 /*globals require,console,module,d3,$*/
-'use strict'
+'use strict';
 var React = require('react'),
     idgen = require('./randomId'),
+    _ = require('lodash'),
     TimeSlider = require('./TimeSlider.react');
 
 var Sliders = React.createClass({
@@ -16,6 +17,10 @@ var Sliders = React.createClass({
         range : [],
         focusModels:[],
     };
+  },
+  componentWillReceiveProps : function(nextProps){
+    if(nextProps.range && nextProps.range.length > 0)
+      this.setState({range:nextProps.range});
   },
   slideAction : function(range){
     this.props.onChange(range);
@@ -103,7 +108,7 @@ var Sliders = React.createClass({
       var deletebutton = !d.options.delete ? undefined:(
           <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
     );
-      
+
       return (
         <div style={{'table-layout':'fixed','vertical-align':'middle'}}>
                 <div className='col-lg-9'>

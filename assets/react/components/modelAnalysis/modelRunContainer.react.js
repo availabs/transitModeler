@@ -109,7 +109,6 @@ var RouteTotalGraph = React.createClass({
                 data:stopData
             }
         };
-        console.log('modelRunContainer',stopData);
         var btnStyle = 'btn btn-primary ';
         var alightingStyle = btnStyle + ((this.state.mode==='stop_alighting')?'active':'');
         var boardingStyle = btnStyle + ((this.state.mode==='stop_boarding')?'active':'');

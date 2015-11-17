@@ -21,6 +21,7 @@ var React = require('react'),
     FareboxStore =  require('../../stores/FareboxStore.js'),
     TripTableStore = require('../../stores/TripTableStore.js'),
     ModelRunStore = require('../../stores/ModelRunStore.js'),
+    MailStore = require('../../stores/ComponentMailStore.js'),
     FarezoneFilterSelection = require('../../components/utils/FarezoneFilterSelection.react');
 
 var i18n = {
@@ -36,7 +37,7 @@ var firstNum = function(str){
   }
   return null;
 };
-
+var mailId = 'ModelAnalysis';
 
 var MarketAreaIndex = React.createClass({
 
@@ -60,6 +61,7 @@ var MarketAreaIndex = React.createClass({
             model_runs:ModelRunStore.getModelRuns(),
             model_id:null,
             farebox:FareboxStore.getFarebox(this.props.marketarea.id),
+            fareboxDates:[],
         };
     },
 
@@ -67,11 +69,13 @@ var MarketAreaIndex = React.createClass({
         ModelRunStore.addChangeListener(this._onChange);
         TripTableStore.addChangeListener(this._onChange);
         FareboxStore.addChangeListener(this._onChange);
+        MailStore.addChangeListener(this._onMail);
     },
 
     componentWillUnmount: function() { //if component will be destroy kill subscription to the store
         ModelRunStore.removeChangeListener(this._onChange);
         FareboxStore.removeChangeListener(this._onChange);
+        MailStore.removeChangeListener(this._onMail);
     },
     componentWillUpdate : function(nextProps){
       if(this.props.marketarea.id !== nextProps.marketarea.id){
@@ -83,6 +87,14 @@ var MarketAreaIndex = React.createClass({
             model_runs:ModelRunStore.getModelRuns(),
             farebox : FareboxStore.getFarebox(this.props.marketarea.id),
         });
+    },
+    _onMail : function(){
+      var scope = this;
+
+      var message = MailStore.getMail(mailId);
+      if(message && message.subject === 'updateTime'){
+        scope._onTimeChange(message.data);
+      }
     },
     _renderModelRuns:function(){
         //console.log('loaded Models',this.props.loadedModels)
@@ -108,7 +120,7 @@ var MarketAreaIndex = React.createClass({
     },
     _onTimeChange : function(range){
       var scope = this;
-      // console.log(range);
+      console.log(range);
       scope.setState({timeRange:range});
     },
     selectModel : function(id){
@@ -238,6 +250,8 @@ var MarketAreaIndex = React.createClass({
                     //default 3pm - 7pm as pm peak hours
       var pmPeak = this.props.marketarea.pmpeak || [15,19];
 
+      var totalDays = FareboxStore.queryFarebox('run_date',{}).length;
+      var fareFilter = {};
       if(!this.props.loadedModels.initialized)
         return {};
 
@@ -245,6 +259,7 @@ var MarketAreaIndex = React.createClass({
         this.props.loadedModels.dimensions.run_id.filter(function(d){
           return d === scope.state.model_id;
         });
+
       var amPeakTotalsFB=0, pmPeakTotalsFB=0, FullTotalsFB=0,FBData;
       var amPeakTotals = 0, pmPeakTotals = 0, FullTotals = 0,FullData;
       FullData = this.props.loadedModels.groups.hours.top(Infinity);
@@ -266,16 +281,34 @@ var MarketAreaIndex = React.createClass({
 
       FullTotals =   FullData.reduce(function(a,b){return a + b.value;},0);
 
-      FBData = FareboxStore.queryFarebox('hours',{});
+      if(this.state.fareboxDates.length !== 0){
+        var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
+          return (new Date(scope.state.fareboxDates[d])).toDateString();
+        });
+        totalDays = validDates.length;
+        fareFilter.run_date = function(date){
+          if(validDates.length === 0)
+            return true;
+          var valid = validDates.map(function(d){
+              return date.toDateString() === d;
+            });
+
+          return valid.reduce(function(a,b){return a || b;});
+        };
+      }
+
+      FBData = FareboxStore.queryFarebox('hours',fareFilter);
 
       amPeakTotalsFB  = FBData.filter(lowFilter)
-                        .reduce(function(a,b){return a + b.value;},0);
+                        .reduce(function(a,b){return a + b.value;},0)/totalDays;
       pmPeakTotalsFB  = FBData.filter(hiFilter)
-                        .reduce(function(a,b){return a + b.value;},0);
-      FullTotalsFB    = FBData.reduce(function(a,b){return a + b.value;},0);
+                        .reduce(function(a,b){return a + b.value;},0)/totalDays;
+      FullTotalsFB    = FBData.reduce(function(a,b){return a + b.value;},0)/totalDays;
 
       return {am:amPeakTotals,pm:pmPeakTotals,full:FullTotals,
-              amfb:amPeakTotalsFB,pmfb:pmPeakTotalsFB,fullfb:FullTotalsFB};
+              amfb:amPeakTotalsFB,pmfb:pmPeakTotalsFB,fullfb:FullTotalsFB,
+              ampeak:amPeak,pmpeak:pmPeak
+            };
     },
     _fareboxButton : function(){
       if(this.state.farebox && Object.keys(this.state.farebox.groups).length >0){
@@ -408,6 +441,7 @@ var MarketAreaIndex = React.createClass({
                           delete ={this.deleteModel}
                           selection={this.selectModel}
                           actionText={'Map'}
+                          range={this.state.timeRange}
                           />
                     </div>
                     <div style={{width:'100%'}}>
@@ -420,6 +454,7 @@ var MarketAreaIndex = React.createClass({
                           zoneFilter = {this.state.fareFilter}
                           dateFilter = {this.state.fareboxDates}
                           summaryData = {this.peaksCalculator()}
+                          mailId={'ModelAnalysis'}
                           />
                     </div>
                     <div style={{width:'100%'}}>

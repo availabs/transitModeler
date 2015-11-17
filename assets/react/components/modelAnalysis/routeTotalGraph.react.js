@@ -9,6 +9,7 @@ var React = require('react'),
 
     // -- Utils
     nv = require('../../utils/dependencies/nvd3.js'),
+    MailActionsCreator = require('../../actions/ComponentMailActionsCreator'),
     DataTable = require('../utils/DataTable.react');
 
 
@@ -182,19 +183,32 @@ var RouteTotalGraph = React.createClass({
         return [{key:'none',values:[]}];
 
 	},
+    setTime : function(hours){
+      if(!hours)
+        hours = [0,24];
+      var times = hours.map(function(d){
+        var m = ((d==24)?59:0);
+        d = (d==24)?d-1:d;
+        return new Date(0,0,1,d,m,0);});
+      if(this.props.mailId)
+        MailActionsCreator.sendMail(this.props.mailId,'updateTime',times);
+    },
     _renderDataSummary : function(){
       if(!this.props.summaryData || Object.keys(this.props.summaryData).length ===0)
         return <span></span>;
       var scope = this;
       var data = this.props.summaryData;
-      var sdata = [{d:data.am,dt:((data.am/data.amfb)*100).toFixed(2),label:'AM'},
-                    {d:data.pm,dt:((data.pm/data.pmfb)*100).toFixed(2),label:'PM'},
-                    {d:data.full,dt:((data.pm/data.pmfb)*100).toFixed(2),label:'Full'}];
+      var amTime = data.ampeak.toString().replace(',',' - '),
+          pmTime = data.pmpeak.toString().replace(',',' - ');
+      var sdata = [{d:data.am,dt:((data.am/data.amfb)*100).toFixed(2)+'%',label:'AM',note:amTime,range:data.ampeak},
+                    {d:data.pm,dt:((data.pm/data.pmfb)*100).toFixed(2)+'%',label:'PM',note:pmTime,range:data.pmpeak},
+                    {d:data.full,dt:((data.pm/data.pmfb)*100).toFixed(2)+'%',label:'Full',note:'0-24'}];
       var retobj = sdata.map(function(obj){
         return(
-          <div className='col-md-2'>
-            <div className='box'>
+          <div className='col-md-3'>
+            <div className='box' onClick={scope.setTime.bind(null,obj.range)}>
               <h3>{obj.label}</h3>
+              <p>{obj.note}</p>
               <div className='description'>{obj.d}</div>
               <div className='description'>{obj.dt}</div>
             </div>

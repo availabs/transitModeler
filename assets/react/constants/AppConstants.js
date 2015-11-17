@@ -85,6 +85,8 @@ module.exports = {
     // -- Jobs
     RECEIVE_JOBS:null,
     RECEIVE_ACTIVE_JOBS:null,
+    //Component actions
+    SEND_MAIL:null,
   }),
 
 
