@@ -99,6 +99,7 @@ var Sliders = React.createClass({
           height = (scope._isFocusedModel(d.id))?scope.props.maxHeight:height;
           //Use the props to determine whether or not to include buttons
           //Default to adding them
+      var background = '';
       var actionbutton = !d.options.action? undefined:(
             <a className={'btn btn-small btn-info'} onClick={scope.props.selection.bind(null,d.id)}>{scope.props.actionText}</a>
       );
@@ -108,9 +109,11 @@ var Sliders = React.createClass({
       var deletebutton = !d.options.delete ? undefined:(
           <a className={'btn btn-small btn-danger'} onClick={scope.props.delete.bind(null,d.id)}>Delete</a>
     );
-
+      if(scope.props.highlightId && scope.props.highlightId === d.id){
+        background = 'rgba(51,122,183,0.3)';
+      }
       return (
-        <div style={{'table-layout':'fixed','vertical-align':'middle'}}>
+        <div style={{'background-color':background,'table-layout':'fixed','vertical-align':'middle'}}>
 
           <div className='row'>
             <div className='col-lg-3'></div>
@@ -122,11 +125,11 @@ var Sliders = React.createClass({
             <div className='col-lg-3'></div>
           </div>
           <div className='row'>
-            
+
             <div className='col-lg-8'>
               <TimeSlider
                 width={width}
-                height={height }
+                height={height}
                 title={d.id}
                 data={d.data}
                 onSet={scope.slideAction}

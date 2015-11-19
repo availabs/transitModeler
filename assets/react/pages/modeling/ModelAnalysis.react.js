@@ -241,7 +241,13 @@ var MarketAreaIndex = React.createClass({
     },
     deleteModel : function(id){
       ModelingActionsCreator.removeActiveModelRun(id);
-      this.setState({model_id:null});
+      var models = this.props.loadedModels.dimensions.run_id.group().top(Infinity);
+      var model_id;
+      if(this.state.model_id !== id)
+        return;
+      else if(models[0])
+        model_id = models[0].key || null;
+      this.setState({model_id:model_id});
     },
     peaksCalculator : function(){
       var scope = this;
@@ -254,11 +260,17 @@ var MarketAreaIndex = React.createClass({
       var fareFilter = {};
       if(!this.props.loadedModels.initialized)
         return {};
+      console.log(this.state.model_runs);
+      var models = this.props.loadedModels.dimensions.run_id.group().top(Infinity);
+      if(models.length === 0)
+        return {am:0,pm:0,full:0,amfb:0,pmfb:0,fullfb:0,ampeak:amPeak,pmpeak:pmPeak};
 
-      if(this.state.model_id)
-        this.props.loadedModels.dimensions.run_id.filter(function(d){
-          return d === scope.state.model_id;
-        });
+      var model_id = this.state.model_id ||
+                     models[0].key;
+
+      this.props.loadedModels.dimensions.run_id.filter(function(d){
+        return d === model_id;
+      });
 
       var amPeakTotalsFB=0, pmPeakTotalsFB=0, FullTotalsFB=0,FBData;
       var amPeakTotals = 0, pmPeakTotals = 0, FullTotals = 0,FullData;
@@ -442,6 +454,7 @@ var MarketAreaIndex = React.createClass({
                           selection={this.selectModel}
                           actionText={'Map'}
                           range={this.state.timeRange}
+                          highlightId={this.state.model_id}
                           />
                     </div>
                     <div style={{width:'100%'}}>

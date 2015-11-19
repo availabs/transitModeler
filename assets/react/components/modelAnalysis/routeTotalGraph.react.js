@@ -202,7 +202,7 @@ var RouteTotalGraph = React.createClass({
           pmTime = data.pmpeak.toString().replace(',' , ' - ');
       var sdata = [{d:data.am,dt:((data.am/data.amfb)*100),label:'AM',note:amTime,range:data.ampeak},
                     {d:data.pm,dt:((data.pm/data.pmfb)*100),label:'PM',note:pmTime,range:data.pmpeak},
-                    {d:data.full,dt:((data.pm/data.pmfb)*100),label:'Full',note:'0 - 24'}];
+                    {d:data.full,dt:((data.full/data.fullfb)*100),label:'Full',note:'0 - 24'}];
       var fbsummary = function(obj){
           if (isNaN(obj.dt) )
             return <span></span>;
