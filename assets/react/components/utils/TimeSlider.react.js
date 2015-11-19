@@ -24,6 +24,7 @@ var TimeSlider = React.createClass({
       margin:{},
       domainLabel:'Time Of Day',
       rangeLabel :'Total Transactions',
+      dispRangelabel:false,
       yLabelOffset:10,
       id:'',
       title:'',
@@ -222,7 +223,7 @@ var TimeSlider = React.createClass({
          .attr('y',-margin.left+this.props.yLabelOffset)
          .attr('dy','.35em')
          .style('text-anchor','start')
-         .text(this.props.rangeLabel);
+         .text((this.props.dispRangelabel)?this.props.rangeLabel:'');
          yxsSvg.append('text')
          .attr('y','0')
          .attr('x',-margin.left/2)

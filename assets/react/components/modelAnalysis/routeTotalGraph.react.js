@@ -168,15 +168,15 @@ var RouteTotalGraph = React.createClass({
           if (isNaN(obj.dt) )
             return <span></span>;
           else
-            return (<div className='description'>{obj.dt.toFixed(2) + '%'}</div>);
+            return (<div className='description'>{'FB%: '+obj.dt.toFixed(2) + '%'}</div>);
       };
       var retobj = sdata.map(function(obj){
         return(
-          <div className='col-md-3'>
+          <div className='col-md-4'>
             <div className='box' onClick={scope.setTime.bind(null,obj.range)}>
               <h3>{obj.label}</h3>
-              <p>{obj.note}</p>
-              <div className='description'>{obj.d}</div>
+              <p>{'Hours: '+obj.note}</p>
+              <div className='description'>{'Model Total: ' +obj.d}</div>
               {fbsummary(obj)}
             </div>
           </div>
