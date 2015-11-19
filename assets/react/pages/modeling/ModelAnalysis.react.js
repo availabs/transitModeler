@@ -64,7 +64,54 @@ var MarketAreaIndex = React.createClass({
             fareboxDates:[],
         };
     },
+    fareFilter : function(options){
+      var scope = this;
+      var totalDays = scope.state.farebox.groups.run_date.size(); // number of days
+      var fareZones = scope.state.fareFilter;
+      var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
+      var fareboxFilter = {};
+      if(fareZones){
+        fareboxFilter.zone=function(d){
+          var zones = d.split(';'); //get the route, boarding , and alightings
+          var route = zones[0];     //get the route
+          var boarding = zones[1], alighting = zones[2]; //get the b and as
 
+          var validZone = fareZones.indexOf(boarding) >= 0;
+                          //and alighting is in the list of farezones
+              validZone = validZone && fareZones.indexOf(alighting) >= 0;
+                          //or there are no excluded zones in which
+                          //allow all
+              validZone = validZone && routes.indexOf(route) >= 0;
+          return validZone;
+        };
+      }
+      if(scope.state.fareboxDates && scope.state.fareboxDates.length !== 0){
+        //Get the date strings for valid dates
+        var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
+          return (new Date(scope.state.fareboxDates[d])).toDateString();
+        });
+        totalDays = validDates.length;
+        fareboxFilter.run_date = function(date){
+          if(validDates.length === 0)
+            return true;
+          var valid = validDates.map(function(d){
+              return date.toDateString() === d;
+            });
+
+          return valid.reduce(function(a,b){return a || b;});
+        };
+      }
+      if(options && options.noHours)
+        return {filter:fareboxFilter,totalDays:totalDays};
+      if(scope.state.timeRange ){
+        var timeFilter = this.state.timeRange.map(function(d){return d.getHours();});
+        fareboxFilter.hours = function(d){ //define time filter function
+          var h = parseInt(d.split(';')[0]);
+          return timeFilter[0] <= h && h <= timeFilter[1];
+        };
+      }
+      return {filter:fareboxFilter,totalDays:totalDays};
+    },
     componentDidMount: function() { //after initial rendering subscribe to the ModelRunStore
         ModelRunStore.addChangeListener(this._onChange);
         TripTableStore.addChangeListener(this._onChange);
@@ -137,45 +184,11 @@ var MarketAreaIndex = React.createClass({
     _getFareboxTimes : function(){
       var scope =this;
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
-        var totalDays = scope.state.farebox.groups.run_date.size(); //get the # of days
-        var fareZones = scope.state.fareFilter;
-        var routes = scope.props.routesGeo.features.map(function(d){return d.properties.short_name;});
-        var fareboxfilter={};
-        if(fareZones){
-          fareboxfilter.zone = function(d){
-            var zones = d.split(';'); //get the route, boarding , and alightings
-            var route = zones[0];     //get the route
-            var boarding = zones[1], alighting = zones[2]; //get the b and as
-
-            var validZone = fareZones.indexOf(boarding) >= 0;
-                            //and alighting is in the list of farezones
-                validZone = validZone && fareZones.indexOf(alighting) >= 0;
-                            //or there are no excluded zones in which
-                            //allow all
-                validZone = validZone && routes.indexOf(route) >= 0;
-            return validZone;
-          };
-        }
-        if(scope.state.fareboxDates.length !== 0){
-          //Get the date strings for valid dates
-          var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
-            return (new Date(scope.state.fareboxDates[d])).toDateString();
-          });
-          totalDays = validDates.length;
-          fareboxfilter.run_date = function(date){
-            if(validDates.length === 0)
-              return true;
-            var valid = validDates.map(function(d){
-                return date.toDateString() === d;
-              });
-
-            return valid.reduce(function(a,b){return a || b;});
-          };
-        }
-        var data = FareboxStore.queryFarebox('hours',fareboxfilter).map(function(d){//get hour records
+        var fareboxfilter = scope.fareFilter({noHours:true});
+        var data = FareboxStore.queryFarebox('hours',fareboxfilter.filter).map(function(d){//get hour records
           var key = d.key.split(';'); //split the sort key
           //return the hour, the average value, the color, and the group.
-          return {x:key[0]+':00',y:(d.value/totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
+          return {x:key[0]+':00',y:(d.value/fareboxfilter.totalDays), color:scope.props.marketarea.routecolors[key[1]], group:key[1]};
         });
         return {id:'farebox',data:data,options:{focus:true}};
       }
@@ -293,29 +306,15 @@ var MarketAreaIndex = React.createClass({
 
       FullTotals =   FullData.reduce(function(a,b){return a + b.value;},0);
 
-      if(this.state.fareboxDates.length !== 0){
-        var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
-          return (new Date(scope.state.fareboxDates[d])).toDateString();
-        });
-        totalDays = validDates.length;
-        fareFilter.run_date = function(date){
-          if(validDates.length === 0)
-            return true;
-          var valid = validDates.map(function(d){
-              return date.toDateString() === d;
-            });
+      fareFilter  = scope.fareFilter();
 
-          return valid.reduce(function(a,b){return a || b;});
-        };
-      }
-
-      FBData = FareboxStore.queryFarebox('hours',fareFilter);
+      FBData = FareboxStore.queryFarebox('hours',fareFilter.filter);
 
       amPeakTotalsFB  = FBData.filter(lowFilter)
-                        .reduce(function(a,b){return a + b.value;},0)/totalDays;
+                        .reduce(function(a,b){return a + b.value;},0)/fareFilter.totalDays;
       pmPeakTotalsFB  = FBData.filter(hiFilter)
-                        .reduce(function(a,b){return a + b.value;},0)/totalDays;
-      FullTotalsFB    = FBData.reduce(function(a,b){return a + b.value;},0)/totalDays;
+                        .reduce(function(a,b){return a + b.value;},0)/fareFilter.totalDays;
+      FullTotalsFB    = FBData.reduce(function(a,b){return a + b.value;},0)/fareFilter.totalDays;
 
       return {am:amPeakTotals,pm:pmPeakTotals,full:FullTotals,
               amfb:amPeakTotalsFB,pmfb:pmPeakTotalsFB,fullfb:FullTotalsFB,
@@ -389,10 +388,11 @@ var MarketAreaIndex = React.createClass({
     },
     render: function() {
       var hourRange;
-      console.log('Analysis State',this.state);
-      if(this.state.timeRange){ //set the range of hours to filter the graph by
+      if(this.state.timeRange){
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
+
+
       // console.log('models',this.props.loadedModels);
         return (
         	<div className="content container">
@@ -459,14 +459,15 @@ var MarketAreaIndex = React.createClass({
                     </div>
                     <div style={{width:'100%'}}>
                         <RouteTotalGraph
+                          timeFilter = {hourRange}
                           colors={this.props.marketarea.routecolors}
-                          timeFilter={hourRange}
                           routeData={this.props.loadedModels}
                           fareboxInit={this.state.useFarebox}
                           fareboxData={this.state.farebox}
                           zoneFilter = {this.state.fareFilter}
                           dateFilter = {this.state.fareboxDates}
                           summaryData = {this.peaksCalculator()}
+                          fareFilter = {this.fareFilter}
                           mailId={'ModelAnalysis'}
                           />
                     </div>

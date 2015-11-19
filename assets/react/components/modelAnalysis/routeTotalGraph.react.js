@@ -86,54 +86,15 @@ var RouteTotalGraph = React.createClass({
     },
     processFarebox : function(){
       var scope=this;
-      var numdays = scope.props.fareboxData.groups.run_date.size();
-      var fareFilter ={}; //define a filter for the query
-      if(scope.props.timeFilter){ //if we will filter by time
-        fareFilter.hours = function(d){ //define time filter function
-          var h = parseInt(d.split(';')[0]);
-          return scope.props.timeFilter[0] <= h && h <= scope.props.timeFilter[1];
-        };
-      }
-      if(scope.props.zoneFilter){
-        var fareZones = this.props.zoneFilter;
-        // console.log('routetgraphfil',fareZones)
-        fareFilter.zone = function(d){//define  zone filter
-          var zones = d.split(';'); //get the route, boarding , and alightings
-          var route = zones[0];     //get the route
-          var boarding = zones[1], alighting = zones[2]; //get the b and as
-
-          var validZone = fareZones.indexOf(boarding) >= 0;
-                          //and alighting is in the list of farezones
-              validZone = validZone && fareZones.indexOf(alighting) >= 0;
-                          //or there are no excluded zones in which
-                          //allow all
-          return validZone;
-        };
-      }
-      if(scope.props.dateFilter.length >0){
-        //Get the date strings for valid dates
-        var validDates = Object.keys(scope.props.dateFilter).map(function(d){
-          return (new Date(scope.props.dateFilter[d])).toDateString();
-        });
-        numdays = validDates.length;
-        fareFilter.run_date = function(date){
-          if(validDates.length === 0)
-            return true;
-          var valid = validDates.map(function(d){
-              return date.toDateString() === d;
-            });
-
-          return valid.reduce(function(a,b){return a || b;});
-        };
-      }
+      var fareFilter = scope.props.fareFilter(); //define a filter for the query
 
       return {
         key:'Fbox',
         color:'#000',
-        values: FareboxStore.queryFarebox('route',fareFilter).map(function(d){ //then query
+        values: FareboxStore.queryFarebox('route',fareFilter.filter).map(function(d){ //then query
           return {
             key:d.key,
-            value:Math.round(d.value/numdays),
+            value:Math.round(d.value/fareFilter.totalDays),
           };
         }),
       };
