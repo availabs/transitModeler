@@ -4,6 +4,7 @@
 var React = require('react');
 var _ = require('lodash');
 var tFormat = d3.time.format('%H:%M');
+
 var gid = 0;
 var lastRange = [];
 var lastAction;
@@ -42,6 +43,12 @@ var TimeSlider = React.createClass({
     if(nextProps.data && nextProps.data !== this.props.data){
       this.setState({data:nextProps.data,gid:this.state.gid+1});
     }
+  },
+  axisFormat : function(d){
+    if(d.getHours()%4 === 2)
+      return tFormat(d);
+    else
+      return '';
   },
   getBarWidth : function(width){
     return width/24 - 1;//number of hours in a day -1 for
@@ -120,7 +127,7 @@ var TimeSlider = React.createClass({
     var xAxis = d3.svg.axis().scale(x)
                   .orient('bottom')
                   .tickSize(6,0)
-                  .tickFormat(tFormat)
+                  .tickFormat(scope.axisFormat)
                   .ticks(24);
     var yAxis = d3.svg.axis().scale(y)
                   .orient('left')
