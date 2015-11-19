@@ -347,56 +347,56 @@ var FareboxAnalysis = React.createClass({
       this.setState({zfilter:zonefilter});
 
     },
-    routeData : function(){
-      var scope = this;
-      if(this.state.route){
-        var fareboxFilter = {};
-        var parts = {};
-        //apply filters to the farebox data
-        fareboxFilter.zone = scope.filterByZones(); //filter by the current zones if any
-        fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
-        // scope.filterByRoute(this.state.route); //filter by current route if selected.
-        console.log(scope.state.route,FareboxStore.queryFarebox('trip',fareboxFilter));
-        FareboxStore.queryFarebox('trip',fareboxFilter).forEach(function(d){
-          var keys = d.key.split(',');
-          if(scope.state.route === keys[0]){
-            console.log(keys,scope.state.route);
-            parts[keys[1]] = parts[keys[1]] || [];
-            parts[keys[1]].push({x:keys[2],y:d.value});
-          }
-        });
-        var items = [];
-        var keyMap = {},colors = d3.scale.category20().range();
-        Object.keys(parts).forEach(function(d,i){
-          parts[d].forEach(function(item){
-            item.color = colors[i%20];
-            item.id = d;
-          });
-
-          keyMap[d] = colors[i%20];
-          items = items.concat(parts[d]);
-        });
-        console.log('color key',keyMap);
-
-        return (
-          <TimeGraph
-            width={400}
-            keyMap={keyMap}
-            height={500}
-            barWidth={10}
-            opacity={0.9}
-            rotateXLabels={90}
-            data={items}
-            filterable={true}
-            titleSize={'14pt'}
-            guides={5}
-            title={'Yearly Trip Totals Throughout the Day'}
-            />
-        );
-      }
-      // return [{key:'none',values:[]}];
-      return (<span></span>);
-    },
+    // routeData : function(){
+    //   var scope = this;
+    //   if(this.state.route){
+    //     var fareboxFilter = {};
+    //     var parts = {};
+    //     //apply filters to the farebox data
+    //     fareboxFilter.zone = scope.filterByZones(); //filter by the current zones if any
+    //     fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
+    //     // scope.filterByRoute(this.state.route); //filter by current route if selected.
+    //     console.log(scope.state.route,FareboxStore.queryFarebox('trip',fareboxFilter));
+    //     FareboxStore.queryFarebox('trip',fareboxFilter).forEach(function(d){
+    //       var keys = d.key.split(',');
+    //       if(scope.state.route === keys[0]){
+    //         console.log(keys,scope.state.route);
+    //         parts[keys[1]] = parts[keys[1]] || [];
+    //         parts[keys[1]].push({x:keys[2],y:d.value});
+    //       }
+    //     });
+    //     var items = [];
+    //     var keyMap = {},colors = d3.scale.category20().range();
+    //     Object.keys(parts).forEach(function(d,i){
+    //       parts[d].forEach(function(item){
+    //         item.color = colors[i%20];
+    //         item.id = d;
+    //       });
+    //
+    //       keyMap[d] = colors[i%20];
+    //       items = items.concat(parts[d]);
+    //     });
+    //     console.log('color key',keyMap);
+    //
+    //     return (
+    //       <TimeGraph
+    //         width={400}
+    //         keyMap={keyMap}
+    //         height={500}
+    //         barWidth={10}
+    //         opacity={0.9}
+    //         rotateXLabels={90}
+    //         data={items}
+    //         filterable={true}
+    //         titleSize={'14pt'}
+    //         guides={5}
+    //         title={'Yearly Trip Totals Throughout the Day'}
+    //         />
+    //     );
+    //   }
+    //   // return [{key:'none',values:[]}];
+    //   return (<span></span>);
+    // },
     onSet : function(range){
       var scope = this;
       scope.calcData(true);
@@ -490,7 +490,6 @@ var FareboxAnalysis = React.createClass({
         scope.setStopColors(zoneInfo.colors); //set the color of the stops with the colormap
         var totalHours = scope._getHours(colors);
         console.log('totals',totalHours);
-        var timeGraph = this.routeData();
 
         var graphs =[
                     {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
@@ -526,7 +525,6 @@ var FareboxAnalysis = React.createClass({
                              colors = {zoneInfo.colors}
                              dates = {this.state.filters}
                              />
-                           {timeGraph}
                         </section>
                     </div>
                     <div className="col-lg-7">
