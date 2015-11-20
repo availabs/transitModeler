@@ -264,7 +264,7 @@ var MarketAreaMap = React.createClass({
                         var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
                         if(isNaN(r)){
                             r = 2;
-                        }else if(d.properties.color){
+                        }else if(scope.props.largeStops){
                           r = 10;
                         }
                         var options = {

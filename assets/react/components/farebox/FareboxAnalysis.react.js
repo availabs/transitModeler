@@ -457,6 +457,7 @@ var FareboxAnalysis = React.createClass({
                 	<div className="col-lg-5" style={{overflow:'hidden'}}>
                         <MarketAreaMap
                             stops={stops}
+                            largeStops={true}
                             routes={routes}
                             tracts ={this.props.tracts}
                             stopFareZones={true}/>
