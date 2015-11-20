@@ -204,12 +204,16 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     }
   }
   function setGtfsRoutes(id,routes){
-    var colors = MarketAreaStore.getCurrentMarketArea().routecolors;
-    routes.features.forEach(function(d){
+    var ma = MarketAreaStore.getCurrentMarketArea();
+    var colors;
+    if(ma){
+        colors = ma.routecolors;
+    }
+    routes.features.forEach(function(d,i){
       if(colors)
         d.properties.color = colors[d.properties.color];
       else {
-        d.properties.color = '#fff';
+        d.properties.color = '';
       }
     });
     _gtfsRoutesGeo[id] = routes;
