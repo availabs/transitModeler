@@ -8,7 +8,7 @@ var React = require('react'),
     LeafletMap = require('../utils/LeafletMap.react'),
     //--Utils
     stopslayerID = 0,
-    prevStopsLength,
+    prevStops,
     tractlayerID = 0,
     outerTractsLength,
     prevTractLength,
@@ -94,9 +94,9 @@ var MarketAreaMap = React.createClass({
             routeLayerID++;
             prevRoutes = currRoutes;
         }
-        if(stops.features.length !== prevStopsLength){
+        if(_.difference(stops,prevStops) !== 0 || _.difference(prevStops,stops) !== 0){
             stopslayerID++;
-            prevStopsLength = stops.features.length;
+            prevStops = stops;
         }
         if(this.props.mode && this.props.mode !== prevMode){
             stopslayerID++;

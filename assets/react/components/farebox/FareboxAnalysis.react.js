@@ -368,7 +368,16 @@ var FareboxAnalysis = React.createClass({
     setStopColors : function(colormap){
       var scope = this;
       scope.props.stopsGeo.features.forEach(function(d){
-        d.properties.color = colormap[firstNum(d.properties.fare_zone)] || '#fff';
+        var lineF = scope.state.zfilter[d.properties.line];
+
+        if(typeof lineF !== 'undefined' && lineF !== null &&
+            lineF.indexOf(firstNum(d.properties.fare_zone)) >= 0 ){
+          d.properties.color = undefined;
+        }
+        else{
+          d.properties.color = colormap[firstNum(d.properties.fare_zone)] || '#fff';
+        }
+
       });
     },
     getZones : function(stops){

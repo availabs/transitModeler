@@ -143,14 +143,8 @@ var ZoneFilter = React.createClass({
         handleChange={this.filterNameInputChange}
         saveAction={this.saveFilterAction}
         />
-        <div>
-        <p>Excluded</p>
-        {scope.state.exclusions.toString()}
-        </div>
         <p>Current Route Zones</p>
         {rzones}
-        <p>Included</p>
-          <div style={{'word-wrap':'break-word'}}>{zonelist}</div>
       </div>
     );
   },
