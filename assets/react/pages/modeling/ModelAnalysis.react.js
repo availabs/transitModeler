@@ -22,6 +22,7 @@ var React = require('react'),
     TripTableStore = require('../../stores/TripTableStore.js'),
     ModelRunStore = require('../../stores/ModelRunStore.js'),
     MailStore = require('../../stores/ComponentMailStore.js'),
+    FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react'),
     FarezoneFilterSelection = require('../../components/utils/FarezoneFilterSelection.react');
 
 var i18n = {
@@ -75,17 +76,18 @@ var MarketAreaIndex = React.createClass({
           var zones = d.split(';'); //get the route, boarding , and alightings
           var route = zones[0];     //get the route
           var boarding = zones[1], alighting = zones[2]; //get the b and as
+          if(!fareZones[route])
+            return true;
 
-          var validZone = fareZones.indexOf(boarding) >= 0;
+          var validZone = fareZones[route].indexOf(boarding) == -1;
                           //and alighting is in the list of farezones
-              validZone = validZone && fareZones.indexOf(alighting) >= 0;
+              validZone = validZone || fareZones[route].indexOf(alighting) ==-1 ;
                           //or there are no excluded zones in which
                           //allow all
-              validZone = validZone && routes.indexOf(route) >= 0;
           return validZone;
         };
       }
-      if(scope.state.fareboxDates && scope.state.fareboxDates.length !== 0){
+      if(scope.state.fareboxDates && Object.keys(scope.state.fareboxDates).length !== 0){
         //Get the date strings for valid dates
         var validDates = Object.keys(scope.state.fareboxDates).map(function(d){
           return (new Date(scope.state.fareboxDates[d])).toDateString();
@@ -306,7 +308,7 @@ var MarketAreaIndex = React.createClass({
 
       FullTotals =   FullData.reduce(function(a,b){return a + b.value;},0);
 
-      fareFilter  = scope.fareFilter();
+      fareFilter  = scope.fareFilter(); //get the current farebox filter
 
       FBData = FareboxStore.queryFarebox('hours',fareFilter.filter);
 
@@ -438,8 +440,15 @@ var MarketAreaIndex = React.createClass({
                     <ModelSummary
                         modelIds={this.props.loadedModels.loadedModels}
                         />
-                    </div>
+                  </div>
+                  <div className='row'>
+                    <FarezoneFilterSummary
+                      zones={this.state.fareFilter}
+                      dates={this.state.fareboxDates}
+                      />
+                  </div>
                 </div>
+
                 <div className='col-lg-6'>
                   <section className='widget'>
                     <div style={{width:'100%'}}>
@@ -464,8 +473,6 @@ var MarketAreaIndex = React.createClass({
                           routeData={this.props.loadedModels}
                           fareboxInit={this.state.useFarebox}
                           fareboxData={this.state.farebox}
-                          zoneFilter = {this.state.fareFilter}
-                          dateFilter = {this.state.fareboxDates}
                           summaryData = {this.peaksCalculator()}
                           fareFilter = {this.fareFilter}
                           mailId={'ModelAnalysis'}

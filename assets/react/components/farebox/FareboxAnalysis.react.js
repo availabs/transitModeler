@@ -118,7 +118,7 @@ var FareboxAnalysis = React.createClass({
             filter :[],
             colors:{},
             zones:[],
-            zfilter:[],
+            zfilter:{},
             routeFilter:null,
         };
     },
@@ -149,12 +149,13 @@ var FareboxAnalysis = React.createClass({
         var boarding = zones[1], alighting = zones[2]; //get the b and as
         var eZones = scope.state.zfilter;//get the valid zones
                         //it's a valid record if the boarding is not there
-        var validZone = eZones.indexOf(boarding) > -1;
+        if(!eZones[route])
+          return true;
+        var validZone = eZones[route].indexOf(boarding) == -1;
                         //and alighting is not there
-            validZone = validZone || eZones.indexOf(alighting) > -1;
+            validZone = validZone || (eZones[route].indexOf(alighting) == -1);
                         //and boarding is in the list of farezones
                         //allow all
-            validZone = validZone || eZones.length === 0;
         return validZone;
       };
     },
@@ -286,7 +287,7 @@ var FareboxAnalysis = React.createClass({
                     });
                     yearDays.forEach(function(day){
                         var date = day.key.getDate();
-                        var dayofmonth = (date <10) ? '0'+(date) : date;
+                        var dayofmonth = (date < 10) ? '0'+(date) : date;
                         var month = day.key.getMonth().length < 9 ? '0'+(day.key.getMonth()+1) : (day.key.getMonth()+1);
                         yearData[day.key.getFullYear()+'-0'+month+'-'+dayofmonth] = parseInt(day.value);
                     });
@@ -338,65 +339,14 @@ var FareboxAnalysis = React.createClass({
       this.setState({route:id,zones:zones});
     },
     delRoute : function(){
-      this.setState({route:null,zfilter:[],zones:{}});
+      this.setState({route:null,zfilter:{},zones:{}});
     },
     zoneFilter : function(zonefilter){
-
       console.log('zonefilter',zonefilter);
       this.calcData(true);
       this.setState({zfilter:zonefilter});
 
     },
-    // routeData : function(){
-    //   var scope = this;
-    //   if(this.state.route){
-    //     var fareboxFilter = {};
-    //     var parts = {};
-    //     //apply filters to the farebox data
-    //     fareboxFilter.zone = scope.filterByZones(); //filter by the current zones if any
-    //     fareboxFilter.run_date = scope._validDate;  //filter by the current data if any
-    //     // scope.filterByRoute(this.state.route); //filter by current route if selected.
-    //     console.log(scope.state.route,FareboxStore.queryFarebox('trip',fareboxFilter));
-    //     FareboxStore.queryFarebox('trip',fareboxFilter).forEach(function(d){
-    //       var keys = d.key.split(',');
-    //       if(scope.state.route === keys[0]){
-    //         console.log(keys,scope.state.route);
-    //         parts[keys[1]] = parts[keys[1]] || [];
-    //         parts[keys[1]].push({x:keys[2],y:d.value});
-    //       }
-    //     });
-    //     var items = [];
-    //     var keyMap = {},colors = d3.scale.category20().range();
-    //     Object.keys(parts).forEach(function(d,i){
-    //       parts[d].forEach(function(item){
-    //         item.color = colors[i%20];
-    //         item.id = d;
-    //       });
-    //
-    //       keyMap[d] = colors[i%20];
-    //       items = items.concat(parts[d]);
-    //     });
-    //     console.log('color key',keyMap);
-    //
-    //     return (
-    //       <TimeGraph
-    //         width={400}
-    //         keyMap={keyMap}
-    //         height={500}
-    //         barWidth={10}
-    //         opacity={0.9}
-    //         rotateXLabels={90}
-    //         data={items}
-    //         filterable={true}
-    //         titleSize={'14pt'}
-    //         guides={5}
-    //         title={'Yearly Trip Totals Throughout the Day'}
-    //         />
-    //     );
-    //   }
-    //   // return [{key:'none',values:[]}];
-    //   return (<span></span>);
-    // },
     onSet : function(range){
       var scope = this;
       scope.calcData(true);
@@ -424,16 +374,6 @@ var FareboxAnalysis = React.createClass({
     getZones : function(stops){
       var scope = this;
       var Farezones = {};
-      // stops.features.forEach(function(d){// for each stop in the geo
-      //   FareZones[d.properties.line] = FareZones[d.properties.line] || []; //define index by routes
-      //   //if there is a farezone that hasn't been seen
-      //   if(d.properties.fare_zone && FareZones[d.properties.line].indexOf(d.properties.fare_zone) === -1){
-      //     //get farezones removing those that have been excluded
-      //     var zones = d.properties.fare_zone.split(',').map(function(d){return firstNum(d);});
-      //     //add the zones to the list for that stops route
-      //     FareZones[d.properties.line] = FareZones[d.properties.line].concat(zones);
-      //   }
-      // });
       FareboxStore.queryFarebox('zone',{},true).forEach(function(d){
         var keys = d.key.split(';');
         var line = keys[0], boarding = keys[1], alighting = keys[2];

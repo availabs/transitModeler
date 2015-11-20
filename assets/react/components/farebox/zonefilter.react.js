@@ -39,21 +39,22 @@ var ZoneFilter = React.createClass({
   },
   getInitialState : function(){
       return{
-        exclusions : [],
+        exclusions : {},
         filters:FareZoneFilterStore.getFarezoneFilters(),
         selection : [],
       };
   },
-  zoneFilter : function(id){
+  zoneFilter : function(id,line){
     var scope = this;
     var excludes = scope.state.exclusions;
     var target = d3.select('#fare_zone'+id);
-    var ix = excludes.indexOf(id);
+    excludes[line] = excludes[line] || [];
+    var ix = excludes[line].indexOf(id);
     if(ix >=0){               //if that zone was already there
-      excludes.splice(ix,1); //remove it
+      excludes[line].splice(ix,1); //remove it
       target.style('background-color','white');
     }else{
-      excludes.push(id);    //otherwise add it.
+      excludes[line].push(id);    //otherwise add it.
       target.style('background-color','gray');
     }
     var filteredZones = scope.currentFilter(scope.props.zones,excludes);
@@ -65,19 +66,13 @@ var ZoneFilter = React.createClass({
   currentFilter : function(zones,excludes){
     var scope = this;
     excludes = excludes || scope.state.exclusions;
-    return Object.keys(zones).map(function(route){
-      return Object.keys(zones[route]);
-    }).reduce(function(p,c){
-      return _.union(p,c);
-    }).filter(function(d){//then filter out any excluded ones
-      return excludes.indexOf(d) < 0;
-    }).sort(function(a,b){return parseInt(a)-parseInt(b);});
+    return excludes;
   },
   saveFilterAction : function(d){
 
     var data = {
                 filtername:d.filter_name,
-                filter:this.state.exclusions,
+                filter:[this.state.exclusions],
                 dates: this.props.dates,
               };
     if(data.filtername && data.filtername.length >= 1)
@@ -89,7 +84,7 @@ var ZoneFilter = React.createClass({
     var scope = this;
     var currfilter = scope.state.filters.reduce(function(a,b){
       if(b.id === selection.id)
-        return b.filter;
+        return b.filter[0];
       else
         return a;
     },[]);
@@ -98,8 +93,9 @@ var ZoneFilter = React.createClass({
       scope.props.zoneFilter(filteredZones);
     });
   },
-  colortype : function(name){
-    if(this.state.exclusions.indexOf(name) < 0)
+  colortype : function(name,route){
+    this.state.exclusions[route] = this.state.exclusions[route] || [];
+    if(this.state.exclusions[route].indexOf(name) < 0)
       return 'white';
     else {
       return 'gray';
@@ -114,9 +110,9 @@ var ZoneFilter = React.createClass({
       return <div></div>;
 
     var rzones = (<div className={'row'}>{
-      Object.keys(scope.props.zones[this.props.route]).map(function(d,i){
+      Object.keys(scope.props.zones[scope.props.route]).map(function(d,i){
         var name = d;
-        return (<div onClick={scope.zoneFilter.bind(null,name)} style={{backgroundColor:scope.colortype(name)}} id={'fare_zone'+name} className={'col-md-3'}>
+        return (<div onClick={scope.zoneFilter.bind(null,name,scope.props.route)} style={{backgroundColor:scope.colortype(name,scope.props.route)}} id={'fare_zone'+name} className={'col-md-3'}>
           <div className={'col-md-1'} style={{backgroundColor:scope.props.colors[d],width:'15px',height:'15px'}}></div>
           <p>{d}</p>
         </div>);

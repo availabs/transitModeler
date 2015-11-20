@@ -103,6 +103,11 @@ var GtfsDisplay = React.createClass({
                 style={{width:'150px',display:'inline','word-wrap':'break-word'}}
                 >{d.filter.toString()}</div></td>
               <td>
+                <div className='col-md-3'
+                  style={{width:'150px',display:'inline','word-wrap':'break-word'}}
+                  >{Object.keys(d.dates||{})}</div>
+              </td>
+              <td>
                 <a className={'btn btn-danger'}
                   onClick={scope.deleteFilter.bind(null,i)}>
                   <i className={'fa fa-trash'}></i>
@@ -124,7 +129,7 @@ var GtfsDisplay = React.createClass({
                   <tr>
                     <td>Filter Name</td>
                     <td>Excluded Zones</td>
-                    <td/>
+                    <td>Dates</td>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,7 +154,7 @@ var GtfsDisplay = React.createClass({
                         {this.renderCurrentData()}
 
                     </div>
-                    <div className='col-lg-6'>
+                    <div className='col-lg-12'>
                       {this.renderFarezoneFilters(this.state.filters)}
                     </div>
                 </div>

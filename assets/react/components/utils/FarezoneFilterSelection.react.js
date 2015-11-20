@@ -24,16 +24,10 @@ var FarezoneSelector = React.createClass({
       filters : FareZoneFilterStore.getFarezoneFilters() || [],
 		};
 	},
-  currentFilter : function(zones,excludes){
+	currentFilter : function(zones,excludes){
     var scope = this;
     excludes = excludes || scope.state.exclusions;
-    return Object.keys(zones).map(function(route){
-      return Object.keys(zones[route]);
-    }).reduce(function(p,c){
-      return _.union(p,c);
-    }).filter(function(d){//then filter out any excluded ones
-      return excludes.indexOf(d) < 0;
-    }).sort(function(a,b){return parseInt(a)-parseInt(b);});
+    return excludes;
   },
   onSelect : function(e,selection){
     var scope = this;
@@ -41,11 +35,11 @@ var FarezoneSelector = React.createClass({
     var currfilter = scope.state.filters.reduce(function(a,b){
       if(b.id === selection.id){
 				dates = b.dates;
-        return b.filter;
+        return b.filter[0];
 			}
       else
         return a;
-    },[]);
+    },{});
     var filteredZones = scope.currentFilter(scope.props.zones,currfilter);
     scope.setState({selection:[selection.id],exclusions:currfilter},function(){
       scope.props.onSelection(filteredZones,dates);
