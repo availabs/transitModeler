@@ -11,17 +11,35 @@ var React = require('react'),
     //-- Components
 
 var GtfsDisplay = React.createClass({
+    
     getInitialState : function(){
       return{
         filters:FareZoneFilterStore.getFarezoneFilters(),
+        messages:[]
       };
     },
+    
+    uploadStarted:function(err,res){
+      
+      console.log('uploadStarted',err,res.body)
+       var newMessages = this.state.messages;
+      if(res.body.error){
+       
+        newMessages.push('Error: '+res.body.error)
+        this.setState({messages:newMessages})
+      }else if(res.body.data){
+        newMessages.push('Success: '+res.body.data.rowCount+' rows added.');
+        this.setState({messages:newMessages})
+      }
+
+    },
+
     onDrop: function(files){
         var scope = this;
         if(files && files.length > 0){
 
             files.forEach( function (file){
-
+                console.log('dropped file',file)
                 var req = request.post('/farebox/upload')
                     .attach('file', file, file.name)
                     .end(scope.uploadStarted)
@@ -86,6 +104,9 @@ var GtfsDisplay = React.createClass({
                       <div style={{fontSize:'12px'}}>Drop Files here or Click to Upload.</div>
                     </Dropzone>
                 </div>
+                <div>
+                {this.renderMessages()}
+                </div>
             </section>
         );
     },
@@ -140,23 +161,37 @@ var GtfsDisplay = React.createClass({
           </section>
         );
     },
+
+    renderMessages:function(){
+      console.log('render messages',this.state.messages)
+      return this.state.messages.map(function(m,i){
+        return (
+          <div key={i} style={{color:'#a00',padding:10}}>
+            {m}
+          </div>
+        )
+      })
+    },
+
     render: function() {
 
+        // <div className='col-lg-12'>
+        //   {this.renderFarezoneFilters(this.state.filters)}
+        // </div>
         return (
             <div className="content container">
                 <h2 className="page-title">Farebox<small> Data Upload</small></h2>
                 <div className="row">
                     <div className="col-lg-6">
                         {this.renderDataController()}
+                       
 
                     </div>
                     <div className="col-lg-6">
                         {this.renderCurrentData()}
 
                     </div>
-                    <div className='col-lg-12'>
-                      {this.renderFarezoneFilters(this.state.filters)}
-                    </div>
+                    
                 </div>
             </div>
         );
