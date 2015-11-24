@@ -33,7 +33,7 @@ var FarezoneFilterSummary = React.createClass({
     },
 
     render: function() {
-      console.log(this.props.dates);
+      //console.log(this.props.dates);
       if(!this.props.zones)
         return <span></span>;
       return(

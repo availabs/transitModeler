@@ -60,6 +60,7 @@ var ModelSummary = React.createClass({
     var currentModel = this.state.model_runs[id];
     // console.log('triptable',this.state.trip_table);
     // console.log('tripsettings',this.state.model_settings);
+    //{currentModel.trips.length}
     return (
       <div>
         <h4>Model Info</h4>
@@ -78,7 +79,7 @@ var ModelSummary = React.createClass({
             </tr>
             <tr>
               <td># Trips</td>
-              <td className="ng-binding">{currentModel.trips.length}</td>
+              <td className="ng-binding"></td>
             </tr>
            <tr>
              <td>Data</td>

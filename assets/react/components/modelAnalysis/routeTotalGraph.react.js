@@ -194,18 +194,23 @@ var RouteTotalGraph = React.createClass({
                 var chart = nv.models.multiBarChart()
                   .x(function(d) { return d.key; })    //Specify the data accessors.
                   .y(function(d) { return d.value; })
-                  .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
+                  .staggerLabels(false)    //Too many bars and not enough room? Try staggering labels.
                   .tooltips(true)        //Don't show tooltips
                   //.showValues(false)       //...instead, show the bar value right on top of each bar.
                   .transitionDuration(350)
-                      .showControls(false);
-
+                    .showControls(false)
+                    .reduceXTicks(false);
+              // chart.xAxis
+              //     .tickFormat(function(d) { 
+              //       console.log(d)
+              //       return d
+              // });
 
               var temp=  d3.select('#routeTotalGraph svg')
                     .datum(scope.processData())
                     .call(chart)
-                    .selectAll('g text')
-                    .style('fill','#000');
+                    // .selectAll('g text')
+                    // .style('fill','#000');
 
                 //console.log('render graph',scope.processData())
                 // if(scope.processData()[0].values.length > 10) {

@@ -236,6 +236,7 @@ module.exports = {
 
   getModelRuns:function(){
     d3.json('/triptable/list',function(err,data){
+      console.log('getModelRun',err,data)
       ServerActionCreators.receiveData('model_run',data);
     });
 

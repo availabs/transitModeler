@@ -102,7 +102,7 @@ function spawnModelRun(job,triptable_id){
 module.exports = {
 
 	finishedModels: function(req,res){
-		var sql = 'SELECT id,user,info,trips FROM triptable where  "isFinished" = true';
+		var sql = 'SELECT id,"user",info FROM triptable where "isFinished" = true';
 		///console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
