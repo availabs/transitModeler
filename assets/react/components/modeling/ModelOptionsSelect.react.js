@@ -1,6 +1,7 @@
+/*globals require,console,module*/
 'use strict';
 var React = require('react'),
-    
+
     // -- Components
     ModelRegressionSelect = require('./ModelRegressionSelect.react'),
     FutureForecastSelect = require('./FutureForecastSelect.react'),
@@ -12,31 +13,32 @@ var ModelOptionsSelect = React.createClass({
 
 
     _setOption:function(e){
-        
+
         var data = e.target.getAttribute('value').split(',');
-        console.log('_setOption',e.target.getAttribute('value'),data)
+        console.log('_setOption',e.target.getAttribute('value'),data);
         ModelingActionsCreator.setOption(data[0],data[1]);
     },
 
     render: function() {
         var scope = this;
-
+        console.log('currentSettings',scope.props.currentSettings);
+        console.log('model options',scope.props.options);
         var fields = Object.keys(scope.props.options).map(function(option){
 
             var regressionInclude = (function(){
-            
+
                 if(option === 'type' && scope.props.currentSettings[option] === 'regression'){
-                    return <ModelRegressionSelect 
-                                currentSettings={scope.props.currentSettings} 
-                                regressions={scope.props.regressions} 
+                    return <ModelRegressionSelect
+                                currentSettings={scope.props.currentSettings}
+                                regressions={scope.props.regressions}
                                 marketarea={scope.props.marketarea} />;
                 }else if(option === 'forecast' && scope.props.currentSettings[option] === 'future'){
                     return (
                         <FutureForecastSelect currentSettings={scope.props.currentSettings}/>
-                    )
+                    );
                 }
 
-                return <span />
+                return <span />;
             })();
 
 
@@ -46,7 +48,7 @@ var ModelOptionsSelect = React.createClass({
 
                 return (
                     <a type="button" className={currClass}  value={[option,key]} onClick={scope._setOption}>{scope.props.options[option][key].name}</a>
-                )
+                );
             });
             return (
                 <div className="form-group">
@@ -60,7 +62,7 @@ var ModelOptionsSelect = React.createClass({
                     </div>
                     {regressionInclude}
                 </div>
-            )
+            );
 
         });
 
@@ -69,7 +71,7 @@ var ModelOptionsSelect = React.createClass({
                 <form className="form-horizontal form-label-left" action="" method="POST">
                     <fieldset>
                         {fields}
-                        
+
                     </fieldset>
                 </form>
             </div>
@@ -78,4 +80,3 @@ var ModelOptionsSelect = React.createClass({
 });
 
 module.exports = ModelOptionsSelect;
-

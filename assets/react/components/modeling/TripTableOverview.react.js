@@ -1,3 +1,4 @@
+/*globals require,console,module*/
 'use strict';
 var React = require('react'),
 
@@ -8,9 +9,13 @@ var TripTableOverview = React.createClass({
 
 
     _loadNewTripTable:function(){
-        var settings = this.props.currentSettings;
+        var settings = {};
+        Object.keys(this.props.currentSettings).forEach(function(d){
+          settings[d] = this.props.currentSettings[d];
+        });
+        settings.tracts = this.props.tractData;
         settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};
-        ModelingActionsCreator.loadTripTable(settings)
+        ModelingActionsCreator.loadTripTable(settings);
     },
 
     _runModel:function(){
@@ -21,7 +26,7 @@ var TripTableOverview = React.createClass({
             marketareaId: this.props.marketarea.id
         };
         console.log('Run Model',tripTableCreate);
-        
+
         ModelingActionsCreator.runModel(tripTableCreate);
     },
 
@@ -31,28 +36,28 @@ var TripTableOverview = React.createClass({
         var buttonStyle = {
             marginTop:'-10px',
             marginLeft:'5px'
-        }
+        };
 
         return (
             <div className="body">
                 Trips Planned:{this.props.currentTripTable ? this.props.currentTripTable.tt.length : 0}
-                
-                <button type="submit" 
-                    className="btn btn-danger pull-right" 
-                    data-toggle="modal" 
-                    data-target="#runModal" 
-                    data-backdrop="false" 
+
+                <button type="submit"
+                    className="btn btn-danger pull-right"
+                    data-toggle="modal"
+                    data-target="#runModal"
+                    data-backdrop="false"
                     style={buttonStyle}>
                         Run Model
                 </button>
 
                 <button
-                    className="btn btn-primary pull-right" 
-                    onClick={scope._loadNewTripTable} 
+                    className="btn btn-primary pull-right"
+                    onClick={scope._loadNewTripTable}
                     style={buttonStyle} >
                         Generate Trip Table
                 </button>
-                
+
                 {scope.renderRunModal()}
             </div>
         );
@@ -71,7 +76,7 @@ var TripTableOverview = React.createClass({
                         <div className="modal-body">
                             <h4>Model Info</h4>
                             <table className="table table-hover">
-                               
+
                                 <tbody><tr>
                                     <td>Model Type</td>
                                     <td className="ng-binding">{this.props.currentSettings.type}</td>
@@ -92,7 +97,7 @@ var TripTableOverview = React.createClass({
 
                         </div>
                         <div className="modal-footer ng-binding">
-                            
+
                             <button type="button" className="btn btn-danger" data-dismiss="modal">Close</button>
                             <button type="button" className="btn btn-info" data-dismiss="modal" onClick={this._runModel} >Run Model</button>
                         </div>
@@ -100,9 +105,8 @@ var TripTableOverview = React.createClass({
                     </div>
                 </div>
             </div>
-        )
+        );
     }
 });
 
 module.exports = TripTableOverview;
-

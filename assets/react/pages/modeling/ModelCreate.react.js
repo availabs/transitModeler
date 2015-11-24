@@ -4,6 +4,7 @@
 var React = require('react'),
     Router = require('react-router'),
     Link = require('react-router').Link,
+    censusUtils = require('../../utils/ModelCreateCensusParse'),
 
 
     // -- Components
@@ -46,7 +47,7 @@ var ModelCreate = React.createClass({
             currentSettings : TripTableStore.getCurrentSettings(),  //get the current settings
             currentTripTable : TripTableStore.getCurrentTripTable(),//get the trip table
             currentMode: TripTableStore.getMode()                   //get the current mode
-        }
+        };
     },
 
     willTransitionTo: function (transition, params) {
@@ -102,6 +103,22 @@ var ModelCreate = React.createClass({
 
         //the trip table overview resides above the map
         //
+        console.log('censusData',this.props.censusData);
+        console.log('currentTripTable',this.state.currentTripTable);
+        console.log('tracts',this.props.tracts);
+        var parsedTracts = {};
+        if(this.state.currentTripTable.tt){
+          var parsedTrips = censusUtils.reduceTripTable(this.state.currentTripTable.tt);
+              parsedTracts = censusUtils.reduceTracts(this.props.tracts);
+          if(this.state.currentSettings.type ==='regression' && this.state.currentSettings.regressionId){
+            censusUtils.addTrips2Tracts(parsedTrips,parsedTracts);
+            censusUtils.addCensusVars2Tracts(this.props.censusData,
+                      this.state.currentSettings.regressionId.censusVariables,
+                      parsedTracts);
+          }
+          console.log('Total Tract Data',parsedTracts);
+        }
+
         return (
         	<div className="content container">
             	<h2 className="page-title">{this.props.marketarea.name} <small>Run New Model</small>
@@ -119,7 +136,11 @@ var ModelCreate = React.createClass({
                 	<div className="col-lg-7">
 
                         <section className="widget no-margin" style={OverviewStyle}>
-                            <TripTableOverview currentTripTable={this.state.currentTripTable} currentSettings={this.state.currentSettings} marketarea={this.props.marketarea}/>
+                            <TripTableOverview
+                              currentTripTable={this.state.currentTripTable}
+                              tractData={parsedTracts}
+                              currentSettings={this.state.currentSettings}
+                              marketarea={this.props.marketarea}/>
                         </section>
 
                         <ModelMap

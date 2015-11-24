@@ -1,14 +1,16 @@
+/*globals require,module,console*/
 'use strict';
 
 var React = require('react'),
     d3 = require('d3'),
     colorbrewer  = require('colorbrewer'),
     deepEqual = require('deep-equal'),
-    // -- Actions 
+    censusUtils = require('../../utils/ModelCreateCensusParse'),
+    // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // --Components
     LeafletMap = require('../utils/LeafletMap.react'),
-    
+
     //  --Component Globals
     currentType = null,
     currentForecast = null,
@@ -18,12 +20,12 @@ var React = require('react'),
     routeLayerID = 0,
     prevRouteLength,
     tractCounts={},
-    odScale = d3.scale.quantile().range(colorbrewer.PuBu[6]);    
+    odScale = d3.scale.quantile().range(colorbrewer.PuBu[6]);
 
 
 
 var ModelMap = React.createClass({
-    
+
     getDefaultProps: function() {
         return {
             mode:'Origin'
@@ -31,15 +33,8 @@ var ModelMap = React.createClass({
     },
 
     _reduceTripTable:function(){
-        var ttTractCount= {};
-        this.props.currentTripTable.tt.forEach(function(trip){
-            if(!ttTractCount[trip.from_geoid]){ ttTractCount[trip.from_geoid] = {o:0,d:0} }
-            if(!ttTractCount[trip.to_geoid]){ ttTractCount[trip.to_geoid] = {o:0,d:0} }
-            
-            ttTractCount[trip.from_geoid].o++;
-            ttTractCount[trip.to_geoid].d++;
-        });
-        return ttTractCount;
+
+        return censusUtils.reduceTripTable(this.props.currentTripTable.tt);
     },
 
     processLayers:function(){
@@ -54,15 +49,15 @@ var ModelMap = React.createClass({
             routeLayerID++;
             prevRouteLength = this.props.tracts.features.length
         }
-        
-        
+
+
         var flatTrips = Object.keys(tractCounts).map(function(key){
             return scope.props.mode === 'Origin' ? tractCounts[key].o : tractCounts[key].d
         }).sort(function(a, b) { return a - b; });
         odScale.range(colorbrewer.PuBu[5])
-        
+
         if(scope.props.mode === 'pop' ||  scope.props.mode === 'emp' ){
-            //flatTrips 
+            //flatTrips
             flatTrips = this.props.tracts.features.map(function(d){
                 forecastData[d.properties.geoid] = d.properties;
                 return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
@@ -72,16 +67,16 @@ var ModelMap = React.createClass({
             odScale.range(colorbrewer.OrRd[5])
         }
 
-        
+
         if( !deepEqual(odScale.domain(),flatTrips) ){
-            
-            
+
+
             odScale.domain(flatTrips);
             d3.selectAll('.tract')
                 .attr('fill',function(feature){
-                    
+
                     var geoid = d3.select(this).attr('class').split('_')[1];
-                    var scaleValue = 0; 
+                    var scaleValue = 0;
 
                     if(tractCounts[geoid]){
                         scaleValue = scope.props.mode === 'Origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
@@ -106,7 +101,7 @@ var ModelMap = React.createClass({
                     zoomOnLoad:true,
                     style:function (feature) {
 
-                        
+
                         //console.log(scaleValue,feature.properties.geoid, tractCounts[feature.properties.geoid])
                         return {
                             className: 'tract geo_'+feature.properties.geoid+'_',
@@ -116,7 +111,7 @@ var ModelMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
                             click: function(e){
                             },
@@ -146,7 +141,7 @@ var ModelMap = React.createClass({
                                     .html('')
                             }
                         });
-                        
+
                     }
                 }
             },
@@ -164,7 +159,7 @@ var ModelMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-                        
+
                         layer.on({
 
                             click: function(e){
@@ -187,10 +182,10 @@ var ModelMap = React.createClass({
                                 e.target.setStyle({opacity :1,weight:5})
                                 //d3.selectAll('.highlighted-station').classed('highlighted-station',false)
                             },
-                            
-                            
+
+
                         });
-                        
+
                     }
                 }
             }
@@ -202,7 +197,8 @@ var ModelMap = React.createClass({
         var scope = this,
             origin = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0',
             dest = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0',
-            busData = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid]['bus_to_work']) : 0,
+            busData = censusUtils.bus2work(scope.props.censusData,
+                                            feature.properties.geoid),
             table = ''+
             '<table class="table">'+
             '<tr><td>Origin Trips</td><td>'+origin+'</td></tr>'+
@@ -211,9 +207,9 @@ var ModelMap = React.createClass({
             if(currentType === 'regression'){
                 table += '<tr><td colspan=2 style="textAlign:center;"><strong> Regression Variables</strong></td></tr>';
                 var censusRows = this.props.currentSettings.regressionId.censusVariables.map(function(cenvar){
-                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0
-                    return '<tr><td>'+cenvar.name+'</td><td>'+data+'</td></tr>'
-                })
+                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0;
+                    return '<tr><td>'+cenvar.name+'</td><td>'+data+'</td></tr>';
+                });
                 table+=censusRows.join(' ')
             }
             if(scope.props.currentSettings.forecast === 'future'){
@@ -233,20 +229,20 @@ var ModelMap = React.createClass({
             });
         }
     },
-    componentWillReceiveProps:function(nextProps){  
-       
+    componentWillReceiveProps:function(nextProps){
+
         if(currentType !== nextProps.currentSettings.type){
             //console.log('new type',nextProps.currentSettings.type)
             currentType = nextProps.currentSettings.type
         }
 
-       
+
     },
 
     render: function() {
 
         //console.log('censusData',this.props.censusData.getTractData())
-        
+
         var legendLayers = {
             od:{
                 type:'buttonGroup',
@@ -260,7 +256,7 @@ var ModelMap = React.createClass({
                 title:'Trip '+this.props.mode+'s',
                 scale:odScale
             }
-            
+
         }
         if(this.props.currentSettings.forecast === 'future'){
             legendLayers.od.buttons.push({text:'Pop Change',value:'pop',click:ModelingActionsCreator.setMode});
@@ -268,14 +264,14 @@ var ModelMap = React.createClass({
         }
 
         return (
-              
+
             <div>
                 <LeafletMap layers={this.processLayers()} legendLayers={legendLayers} legendOptions={{location:'bottomRight'}} height="800px" />
             </div>
-                            
+
         );
     },
-    
+
 
 });
 
