@@ -24,7 +24,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     _DataSets = {
       acs:{},
       ctpp:{},
-      gtfs:{}
+      gtfs:{},
+      lodes:{}
     },
     _refreshHard=false,
     _refresh = false,
@@ -35,6 +36,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 function _addDatasets(rawData){
 
   rawData.forEach(function(ds){
+      console.log(ds);
       if(ds.settings[0]){
         ds.settings = ds.settings[0];
       }

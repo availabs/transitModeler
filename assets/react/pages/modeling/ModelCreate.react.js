@@ -66,6 +66,7 @@ var ModelCreate = React.createClass({
     },
 
     _onChange:function(){
+        console.log('on change', TripTableStore.getCurrentTripTable())
         this.setState({             //when the store updates
             newModelOptions : TripTableStore.getOptions(), //reset the state with the current state of the store;
             currentSettings : TripTableStore.getCurrentSettings(),
@@ -78,6 +79,7 @@ var ModelCreate = React.createClass({
         var settings = this.state.currentSettings; //get the current settings object
         settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes}; //set the market area with the current parent market area data
         if(this.props.marketarea.id > 0){ //if the market area is defined
+            console.log('load new trip table',settings)
             ModelingActionsCreator.loadTripTable(settings); //load the trip table based on the settings
             ttLoaded = true;                                //set that the table has been loaded //This is optimistic, failure needs to be checked
         }
