@@ -207,19 +207,19 @@ var CtppMap = React.createClass({
                                 this.setStyle({fillOpacity:1,
                                 stroke:(scope.props.selected===feature.properties.geoid),
                                 });
-                                //  var toolTip = d3.select('.ToolTip').style({
-                                //     top:e.originalEvent.clientY+'px',
-                                //     left:e.originalEvent.clientX+'px',
-                                //     display:'block'
-                                // });
+                                 var toolTip = d3.select('.ToolTip').style({
+                                    top:e.originalEvent.clientY+'px',
+                                    left:e.originalEvent.clientX+'px',
+                                    display:'block'
+                                });
 
-                                // toolTip.select('h4')
-                                //     .attr('class','TT_Title')
-                                //     .html('Tract : '+feature.properties.geoid);
+                                toolTip.select('h4')
+                                    .attr('class','TT_Title')
+                                    .html('Tract : '+feature.properties.geoid);
 
-                                // toolTip.select('span')
-                                //     .attr('class','TT_Content')
-                                //     .html(scope._toolTipContent(feature.properties,0));
+                                toolTip.select('span')
+                                    .attr('class','TT_Content')
+                                    .html(scope._toolTipContent(feature.properties,0));
                             },
 
                             click: function(e){
