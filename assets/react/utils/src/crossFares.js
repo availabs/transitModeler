@@ -9,7 +9,7 @@ crossFares = {
 	loading:false,
 
 	init:function(data,id){
-		console.log('Farbox Data',data);
+		console.time('process farebox');
 		var t = new Date();
 		crossFares.trips = crossfilter(data);
 		crossFares.all = crossFares.trips.groupAll();
@@ -32,7 +32,7 @@ crossFares = {
 		crossFares.groups['trip'] = crossFares.dimensions.trip.group().reduceSum(function(d){return +d['total_transactions'];});
 		crossFares.groups['hours'] = crossFares.dimensions.hours.group().reduceSum(function(d){return +d['total_transactions'];});
 		//crossFares.groups['boarding_zone'] = crossFares.dimensions.boarding_zone.group().reduceSum(function(d){ return d.total_transactions;});
-		console.log('Processing finished', (t-(new Date()))/1000);
+		console.timeEnd('process farebox');
 		crossFares.clearFilter = function(name){
 			if(name){
 				crossFares.dimensions[name].filterAll();
