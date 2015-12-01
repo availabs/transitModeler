@@ -5,7 +5,7 @@ var React = require('react'),
     // -- Components
     ModelRegressionSelect = require('./ModelRegressionSelect.react'),
     FutureForecastSelect = require('./FutureForecastSelect.react'),
-    ReactStoreInput = require('../utils/ReaCtStoreInput.react'),
+    ReactStoreInput = require('../utils/ReactStoreInput.react'),
 
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
