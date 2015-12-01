@@ -5,7 +5,7 @@ var React = require('react'),
     Router = require('react-router'),
     Link = require('react-router').Link,
     censusUtils = require('../../utils/ModelCreateCensusParse'),
-
+    _ = require('lodash'),
 
     // -- Components
     ModelMap = require('../../components/modeling/ModelMap.react'), //The map to be displayed
@@ -20,6 +20,7 @@ var React = require('react'),
 
     // -- Stores
     TripTableStore = require('../../stores/TripTableStore'),
+    ModelSettingsStore = require('../../stores/ModelSettingsStore'),
 
     // -- Comp Globals
     ttLoaded = false;
@@ -46,16 +47,22 @@ var ModelCreate = React.createClass({
             newModelOptions : TripTableStore.getOptions(),          //get the options available for running models (default)
             currentSettings : TripTableStore.getCurrentSettings(),  //get the current settings
             currentTripTable : TripTableStore.getCurrentTripTable(),//get the trip table
-            currentMode: TripTableStore.getMode()                   //get the current mode
+            currentMode: TripTableStore.getMode(),                   //get the current mode
+            modelSettings: ModelSettingsStore.getCurrentModelSettings(),
         };
     },
 
     willTransitionTo: function (transition, params) {
       //console.log('will transition to',transition,params);
     },
-
+    _onModelSettingsChange : function(){
+      var modsett = ModelSettingsStore.getCurrentModelSettings();
+      if(!_.isEqual(modsett,this.state.modelSettings) )
+        this.setState({modelSettings : modsett});
+    },
     componentDidMount: function() {//once the module mounted to the vdom
         TripTableStore.addChangeListener(this._onChange);  //subscribe to the triptable store
+        ModelSettingsStore.addChangeListener(this._onModelSettingsChange);
         if(this.props.marketarea.id > 0 && !ttLoaded){     //if the market area is defined and the trip table hasn't been loaded
             this._loadNewTripTable();                  //load the trip table
         }
@@ -63,10 +70,12 @@ var ModelCreate = React.createClass({
 
     componentWillUnmount: function() { //if this component will be destroyed
         TripTableStore.removeChangeListener(this._onChange); //delete subscription from the trip table store
+        ModelSettingsStore.removeChangeListener(this._onModelSettingsChange); //remove sub from model setting store
         ttLoaded = false;                                     //note that the trip table is no longer loaded
     },
 
     _onChange:function(){
+      var scope = this;
         this.setState({             //when the store updates
             newModelOptions : TripTableStore.getOptions(), //reset the state with the current state of the store;
             currentSettings : TripTableStore.getCurrentSettings(),
@@ -103,20 +112,21 @@ var ModelCreate = React.createClass({
 
         //the trip table overview resides above the map
         //
-        console.log('censusData',this.props.censusData);
-        console.log('currentTripTable',this.state.currentTripTable);
-        console.log('tracts',this.props.tracts);
-        var parsedTracts = {};
+
+        // console.log('censusData',this.props.censusData);
+        // console.log('currentTripTable',this.state.currentTripTable);
+        // console.log('tracts',this.props.tracts);
+
+        var parsedTracts = censusUtils.reduceTracts(this.props.tracts);
         if(this.state.currentTripTable.tt){
           var parsedTrips = censusUtils.reduceTripTable(this.state.currentTripTable.tt);
-              parsedTracts = censusUtils.reduceTracts(this.props.tracts);
           if(this.state.currentSettings.type ==='regression' && this.state.currentSettings.regressionId){
             censusUtils.addTrips2Tracts(parsedTrips,parsedTracts);
             censusUtils.addCensusVars2Tracts(this.props.censusData,
                       this.state.currentSettings.regressionId.censusVariables,
                       parsedTracts);
           }
-          console.log('Total Tract Data',parsedTracts);
+          // console.log('Total Tract Data',parsedTracts);
         }
 
         return (

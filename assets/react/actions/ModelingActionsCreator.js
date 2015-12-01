@@ -50,11 +50,18 @@ module.exports = {
 			type: ActionTypes.DEL_ACTIVE_MODEL_RUNS
 		});
 	},
-	
+
 	removeActiveModelRun : function(id){
 		AppDispatcher.handleViewAction({
 			type: ActionTypes.DEL_ACTIVE_MODEL_RUN,
 			id:id
+		});
+	},
+
+	addModelSettings : function(settings){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.SET_MODELSETTINGS,
+			data:settings,
 		});
 	},
 
