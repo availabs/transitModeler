@@ -114,6 +114,24 @@ var ModelMap = React.createClass({
 
                         layer.on({
                             click: function(e){
+                              var settings = {
+                                origin: tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0',
+                                dest: tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0',
+                                busData: censusUtils.bus2work(scope.props.censusData,feature.properties.geoid),
+                                geoid: feature.properties.geoid,
+                                pop2020_growth: feature.properties.pop2020_growth,
+                                emp2020_growth:feature.properties.emp2020_growth,
+
+                              };
+                              if( currentType ==='regression' && scope.props.currentSettings.regressionId){
+                                settings.regression = {};
+                                scope.props.currentSettings.regressionId.censusVariables.forEach(function(cenvar){
+                                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0;
+                                    settings.regression[cenvar.name] = data;
+                                });
+                              }
+                              console.log(settings);
+                              ModelingActionsCreator.addModelSettings(settings);
                             },
                             mouseover: function(e){
                                 //console.log(feature.properties,tractCounts)

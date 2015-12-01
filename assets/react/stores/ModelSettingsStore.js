@@ -71,6 +71,7 @@ ModelSettingsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SET_MODELSETTINGS:
       _tempModelSettings = action.data;
+      ModelSettingsStore.emitChange();
     break;
 
     case ActionTypes.SAVE_MODELSETTINGS:

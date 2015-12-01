@@ -170,7 +170,10 @@ var ModelCreate = React.createClass({
                                 options={this.state.newModelOptions}
                                 currentSettings={this.state.currentSettings}
                                 regressions={this.props.regressions}
-                                marketarea={this.props.marketarea} />
+                                marketarea={this.props.marketarea}
+                                modelSettings={this.state.modelSettings}
+                                censusData = {this.props.censusData}
+                                 />
                         </section>
 
                         <section className="widget">
