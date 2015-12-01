@@ -13,8 +13,7 @@ var React = require('react'),
     ModelOptionsSelect = require('../../components/modeling/ModelOptionsSelect.react'), //The widget for the modeling options
     ModelDatasourcesSelect = require('../../components/modeling/ModelDatasourcesSelect.react'), //The widget for dataset selections for the model
     TripTableOverview =  require('../../components/modeling/TripTableOverview.react'), //The widget for displaying the trip table
-
-
+    CustomizeForm = require('../../components/modeling/CustomizeForm.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'), //actions for interacting with the market area
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),    //actions for working with the modeling
@@ -25,7 +24,6 @@ var React = require('react'),
 
     // -- Comp Globals
     ttLoaded = false;
-
 
 
 var ModelCreate = React.createClass({
@@ -40,7 +38,6 @@ var ModelCreate = React.createClass({
                MarketAreaActionsCreator.setCurrentMarketArea(params.marketareaID);
             }
         }
-
     },
 
     getInitialState: function(){
@@ -104,7 +101,7 @@ var ModelCreate = React.createClass({
 
     render: function() {
         var routes = this.props.marketarea.routesGeo || {type:'FeatureCollection',features:[]}; //get the routes or default it to empty geojson
-
+        var scope = this;
         var OverviewStyle = {
             borderBottomLeftRadius:0,
             borderBottomRightRadius:0,
@@ -130,6 +127,8 @@ var ModelCreate = React.createClass({
           }
           // console.log('Total Tract Data',parsedTracts);
         }
+        console.log('Current Model Settings',this.state.modelSettings);
+
 
         return (
         	<div className="content container">
@@ -166,6 +165,15 @@ var ModelCreate = React.createClass({
                                 modelSettings={this.state.modelSettings}
                                 censusData = {this.props.censusData}
                                  />
+                        </section>
+
+                        <section className='widget'>
+                            <CustomizeForm
+                              modelSettings={this.state.modelSettings}
+                              currentSettings={this.state.currentSettings}
+                              tt={this.state.currentTripTable.tt}
+                              censusData = {this.props.censusData}
+                              />
                         </section>
 
                         <section className="widget">

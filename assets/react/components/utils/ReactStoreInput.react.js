@@ -3,8 +3,40 @@ var React = require('react');
 
 var ReactStoreInput = React.createClass({
 
+  getInitialState: function(){
+    return {
+      value:this.props.value
+    };
+  },
+  componentWillReceiveProps : function(nextProps){
+      if(nextProps.value !== null && nextProps.value !== undefined && nextProps.value !== this.state.value)
+        this.setState({value:nextProps.value});
+  },
+
+  _isValid : function(element){
+      return typeof element.length !== 'undefined'  && element.length < 1000;
+  },
+
+  _onChangeAction : function(e){
+    var scope = this;
+    var obj = {};
+    var value = e.target.value;
+    var val;
+    if(scope.props.isNum && scope.props.isValid(value)){
+      val = parseFloat(value);
+      obj[scope.props.propName] = val;
+      scope.props.bubbleup(obj);
+    }
+    scope.setState({value:e.target.value});
+  },
+
   render : function(){
-    return <input className='form-control'></input>;
+    var scope = this;
+    return <input
+            className='form-control'
+            value={scope.state.value}
+            onChange={scope._onChangeAction}
+            />;
   },
 
 });

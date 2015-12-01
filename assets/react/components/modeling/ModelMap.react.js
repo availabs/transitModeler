@@ -6,6 +6,7 @@ var React = require('react'),
     colorbrewer  = require('colorbrewer'),
     deepEqual = require('deep-equal'),
     censusUtils = require('../../utils/ModelCreateCensusParse'),
+    _ = require('lodash'),
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // --Components
@@ -17,6 +18,7 @@ var React = require('react'),
     forecastData = {},
     tractlayerID = 0,
     prevTractLength,
+    prevTracts = {},
     routeLayerID = 0,
     prevRouteLength,
     tractCounts={},
@@ -41,13 +43,13 @@ var ModelMap = React.createClass({
         var scope = this;
         tractCounts = this._reduceTripTable();
 
-        if(this.props.tracts.features.length !== prevTractLength){
+        if(_.isEqual(this.props.tracts.features,prevTracts) ){
             tractlayerID++;
-            prevTractLength = this.props.tracts.features.length
+            prevTracts = this.props.tracts.features;
         }
         if(this.props.routes.features.length !== prevRouteLength){
             routeLayerID++;
-            prevRouteLength = this.props.tracts.features.length
+            prevRouteLength = this.props.tracts.features.length;
         }
 
 
@@ -92,6 +94,18 @@ var ModelMap = React.createClass({
                 })
 
         }
+        var tractProperties = function(feature){
+            feature.properties.origin = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0';
+            feature.properties.dest = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0';
+            feature.properties.busData = censusUtils.bus2work(scope.props.censusData,feature.properties.geoid);
+          if( currentType ==='regression' && scope.props.currentSettings.regressionId){
+            feature.properties.regression = {};
+            scope.props.currentSettings.regressionId.censusVariables.forEach(function(cenvar){
+                var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0;
+                feature.properties.regression[cenvar.name] = data;
+            });
+          }
+        };
         //console.log('testing',tractCounts)
         return {
             tractsLayer:{
@@ -111,27 +125,11 @@ var ModelMap = React.createClass({
                         };
                     },
                     onEachFeature: function (feature, layer) {
-
                         layer.on({
                             click: function(e){
-                              var settings = {
-                                origin: tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0',
-                                dest: tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0',
-                                busData: censusUtils.bus2work(scope.props.censusData,feature.properties.geoid),
-                                geoid: feature.properties.geoid,
-                                pop2020_growth: feature.properties.pop2020_growth,
-                                emp2020_growth:feature.properties.emp2020_growth,
-
-                              };
-                              if( currentType ==='regression' && scope.props.currentSettings.regressionId){
-                                settings.regression = {};
-                                scope.props.currentSettings.regressionId.censusVariables.forEach(function(cenvar){
-                                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0;
-                                    settings.regression[cenvar.name] = data;
-                                });
-                              }
-                              console.log(settings);
-                              ModelingActionsCreator.addModelSettings(settings);
+                              tractProperties(feature);
+                              console.log(feature.properties);
+                              ModelingActionsCreator.addModelSettings(feature);
                             },
                             mouseover: function(e){
                                 //console.log(feature.properties,tractCounts)
@@ -142,13 +140,13 @@ var ModelMap = React.createClass({
                                     top:e.originalEvent.clientY+'px',
                                     display:'block',
                                     opacity:1.0
-                                })
+                                });
                                 tt.select('h4')
                                     .attr('class','TT_Title')
-                                    .html('Tract '+feature.properties.geoid)
+                                    .html('Tract '+feature.properties.geoid);
                                 tt.select('span')
                                     .attr('class','TT_Content')
-                                    .html(table)
+                                    .html(table);
 
                             },
                             mouseout: function(e){

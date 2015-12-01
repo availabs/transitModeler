@@ -5,10 +5,11 @@ var React = require('react'),
     // -- Components
     ModelRegressionSelect = require('./ModelRegressionSelect.react'),
     FutureForecastSelect = require('./FutureForecastSelect.react'),
-    ReactStoreInput = require('../utils/ReactStoreInput.react'),
+
 
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
+
 
 var ModelOptionsSelect = React.createClass({
 
@@ -20,44 +21,7 @@ var ModelOptionsSelect = React.createClass({
         ModelingActionsCreator.setOption(data[0],data[1]);
     },
 
-    _customizeModel : function(){
-      var scope = this;
-      if(!this.props.modelSettings)
-        return <span></span>;
-      var settings = this.props.modelSettings;
-      var form = (function(){
-        var regression, futureForecast,rows;
-        if(scope.props.currentSettings.type === 'regression' && scope.props.currentSettings.regressionId){
-          var head = (<tr><td><h4>Regression Variables</h4></td></tr> );
-          rows = scope.props.currentSettings.regressionId.censusVariables.map(function(cvar){
-            var data = scope.props.censusData.getTractData()[settings.geoid] ? parseInt(scope.props.censusData.getTractData()[settings.geoid][cvar.name]) : 0;
-            return <tr><td>{cvar.name}</td><td><input className='form-control' value={data}></input></td></tr>;
-          });
-          regression = [head].concat(rows);
-        }
-        if(scope.props.currentSettings.forecast === 'future'){
-          futureForecast = [];
-          futureForecast.push( <tr><td><h4> 2020 Forecast </h4></td></tr> );
-          futureForecast.push( <tr><td>Population Growth </td><td><input className='form-control' value={settings.pop2020_growth}></input></td></tr>);
-          futureForecast.push( <tr><td>Employment Growth </td><td><input className='form-control' value={settings.emp2020_growth}></input></td></tr>);
-        }
-        var table = (
-        <div>
-          <h3>{'FIPS: ' +settings.geoid}</h3>
-          <table class='table'>
-            <tr><td>Origin Trips</td><td><input className='form-control' value={settings.origin}></input></td></tr>
-            <tr><td>Destination Trips</td><td><input className='form-control' value={settings.dest}></input></td></tr>
-            <tr><td>Bus To Work</td><td><input className='form-control' value={settings.busData}></input></td></tr>
-            {regression}
-            {futureForecast}
-          </table>
-        </div>);
 
-        return table;
-      })();
-
-      return form;
-    },
 
     render: function() {
         var scope = this;
@@ -113,7 +77,6 @@ var ModelOptionsSelect = React.createClass({
                         {fields}
 
                     </fieldset>
-                    {scope._customizeModel()}
                 </form>
             </div>
         );

@@ -9,9 +9,10 @@ var TripTableOverview = React.createClass({
 
 
     _loadNewTripTable:function(){
+        var scope = this;
         var settings = {};
-        Object.keys(this.props.currentSettings).forEach(function(d){
-          settings[d] = this.props.currentSettings[d];
+        Object.keys(scope.props.currentSettings).forEach(function(d){
+          settings[d] = scope.props.currentSettings[d];
         });
         settings.tracts = this.props.tractData;
         settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};

@@ -65,6 +65,20 @@ module.exports = {
 		});
 	},
 
+	createModelSetting : function(settings){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.CREATE_MODELSETTING,
+			data: settings,
+		});
+	},
+
+	editModelSettings : function( settings ){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.EDIT_MODELSETTINGS,
+			data: settings,
+		});
+	},
+
   setMode:function(mode){
     //console.log('setMode',mode)
     AppDispatcher.handleViewAction({

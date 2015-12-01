@@ -78,9 +78,12 @@ module.exports = {
 
     RECIEVE_MODELSETTINGS:null,
     SET_MODELSETTINGS:null,
+    EDIT_MODELSETTINGS:null,
     SAVE_MODELSETTINGS:null,
+    CREATE_MODELSETTING:null,
     DELETE_MODELSETTINGS:null,
-
+    COMMIT_MODEL_EDITS:null,
+    UNDO_MODEL_EDITS:null,
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,
