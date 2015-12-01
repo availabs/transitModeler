@@ -84,7 +84,25 @@ var CtppOverview = React.createClass({
           />
       );
     },
+    
+    renderLoading :function(){
+        return (
+          
+                <section className="widget" style={{textAlign:'center'}}>
+                    <h3 style={{padding:150}}>Loading CTPP Data</h3>
+                </section>
+          
+        )
+    },
+
+
     render: function() {
+        console.log('ctpp data',this.props.ctppData);
+           
+       
+        if(!this.props.ctppData.initialized){
+             return this.renderLoading(); 
+        }
 
         var direction = this.state.direction,
             opposite = (this.state.direction === 'from_tract') ? 'to_tract' : 'from_tract';
@@ -103,10 +121,10 @@ var CtppOverview = React.createClass({
               cdata = content.top(Infinity).map(function(d){return {key:d[opposite],value:d.est};});
               dim.filterAll();
               console.log('after filter clear sum',sum(this.props.ctppData.groups[opposite].top(Infinity)));
-            }else{
+            }else {
               cdata = this.props.ctppData.groups[direction].top(Infinity);
-           }
-
+            }
+            
             //get all the groups from the ctpp
 
             var ctppColumns = [

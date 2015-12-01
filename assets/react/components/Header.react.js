@@ -95,6 +95,9 @@ var Header = React.createClass({
         return (
             <header className="page-header">
                 <div className="navbar">
+                    <ul className="nav navbar-nav">
+                        <li><h2 className='page-title' style={{marginTop:5}}>{this.props.marketarea ? this.props.marketarea.name : ''}</h2></li>
+                    </ul>
                     <ul className="nav navbar-nav navbar-right pull-right">
                         
                         <li className="hidden-xs dropdown">

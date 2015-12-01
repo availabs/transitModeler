@@ -95,3 +95,35 @@ body {
 }
 
 
+
+.overview-nav > a:hover{
+  border-bottom: 3px solid rgb(77, 157, 215)!important;
+}
+
+
+.overview-nav > a.active{
+  border-bottom: 3px solid rgb(77, 157, 215)!important;
+}
+
+.edit-nav > a:hover{
+  border-bottom: 3px solid #e5603b!important;
+}
+
+.edit-nav > a{
+  color: #e5603b;
+}
+.edit-nav > a.active{
+  border-bottom: 3px solid #e5603b!important;
+}
+
+.model-nav > a:hover{
+  border-bottom: 3px solid #56bc76!important;
+}
+
+.model-nav > a{
+  color: #56bc76;
+}
+.model-nav > a.active{
+  border-bottom: 3px solid #56bc76!important;
+}
+

@@ -12,7 +12,7 @@ var ModelRunSelector = React.createClass({
 
   	_loadModelRun:function(){
   		var id = this.refs.modelRunId.getDOMNode().childNodes[1].getAttribute("value");
-  		console.log('Analyze Model',id);
+  		//console.log('Analyze Model',id);
 			if(id){
 				ModelingActionsCreator.addActiveModelRun(id);
 				this.props.onSelection(id);
@@ -33,7 +33,7 @@ var ModelRunSelector = React.createClass({
 		}
 	},
 	setSelection : function(e,selection){
-		console.log(e,selection);
+		//console.log(e,selection);
 		this.setState({selection:[selection.id]});
 	},
 	render: function() {
@@ -55,28 +55,35 @@ var ModelRunSelector = React.createClass({
 	  			"text" : key + ' ' +name
 	  		};
 	  	});
-			//create a select box from the generated names
+			//create a select box from the generated name
+		var loading =  <img src={"/img/loading.gif"} style={{width:60,height:60}} />;
+
 	    return (
-	    	<div style={{width:this.props.width || '100%',
-										float:'left'}}>
-	    		<div className="form-group">
-	                <div className="input-group input-group">
+	    	<div className='row'>
+	    		<div className='col-xs-8' id="sliderGuide">
+		    		<div className="form-group">
+		                <div className="input-group input-group">
 
-	                    <Select2Component
-	                      id="modelRunId"
-	                      dataSet={names}
-	                      multiple={false}
-	                      styleWidth="100%"
-	                      ref="modelRunId"
-												onSelection={scope.setSelection}
-	                      val={this.state.selection}
-	                      placeholder="Select a Model to Analyze" />
+		                    <Select2Component
+		                      id="modelRunId"
+		                      dataSet={names}
+		                      multiple={false}
+		                      styleWidth="100%"
+		                      ref="modelRunId"
+													onSelection={scope.setSelection}
+		                      val={this.state.selection}
+		                      placeholder="Select a Model to Analyze" />
 
-	                    <div className="input-group-btn">
-	                        <button type="button" className="btn btn-default" onClick={this._loadModelRun}><i className="fa fa-plus"></i></button>
-	                    </div>
-	                </div>
-	            </div>
+		                    <div className="input-group-btn">
+		                        <button type="button" className="btn btn-default" onClick={this._loadModelRun}><i className="fa fa-plus"></i></button>
+		                    </div>
+
+		                </div>
+		            </div>
+		        </div>
+		        <div className='col-xs-4'>
+		            {this.props.loading ?  loading :'' }
+	           	</div>
 	    	</div>
 	    );
 	}

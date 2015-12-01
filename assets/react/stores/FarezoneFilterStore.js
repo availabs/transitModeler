@@ -81,18 +81,18 @@ FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
   switch(action.type) {
 
     case ActionTypes.SET_FAREZONEFILTER:
-      console.log('Got filter list');
+      //console.log('Got filter list');
       _currentFilterSet = action.data;
     break;
 
     case ActionTypes.SAVE_FAREZONEFILTER:
-      console.log('saving farezone filter',action.data);
+      //console.log('saving farezone filter',action.data);
       SailsWebApi.create('farezonefilter',action.data,function(){
         requireFilters();
       });
     break;
     case ActionTypes.RECEIVE_FAREZONEFILTERS:
-      console.log('Receive farezone filters',action.data);
+      //console.log('Receive farezone filters',action.data);
       _filterSets = action.data ;
       FarezoneFilterStore.emitChange();
     break;

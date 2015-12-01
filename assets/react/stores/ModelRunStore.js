@@ -23,12 +23,13 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var _modelRuns = {},
     _runData= {},
-    _activeRuns = [];
+    _activeRuns = [],
+    _loadingModel = false;
 
 function addModelRuns(rawData){
 
   //console.log('GTFS STORE/_addDatasets',rawData);
-
+  _loadingModel = false;
   rawData.forEach(function(ds){
       ds.info = JSON.parse(ds.info);
       _modelRuns[ds.id] = ds;
@@ -61,10 +62,12 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
     if(_activeRuns.indexOf(id) === -1){
       _activeRuns.push(id);
       _runData[id] = 'loading';
+      _loadingModel = true;
       sailsWebApi.getModelRun(id);
       ModelRunStore.emitChange();
     }
   },
+  
   delActiveModelRun : function(id){
     var ix = _activeRuns.indexOf(id);
     if(ix >=0){
@@ -73,12 +76,12 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
       ModelRunStore.emitChange();
     }
   },
+
   getActiveModelRuns : function(){
 
     var loading = false;
     _activeRuns.forEach(function(runId){
-      if( _runData[runId] !== 'loading' ) { loading = true; }
-      console.log('getActiveModelRuns, new data',runId,_runData[runId],crossTrips.loadedModels.indexOf(runId));
+      if( _runData[runId] === 'loading' ) { loading = true; }
       if(crossTrips.loadedModels.indexOf(runId) === -1 && _runData[runId] !== 'loading'){
         if(!crossTrips.initialized){
           console.log('init crosstrips',runId);
@@ -96,16 +99,20 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
         crossTrips.removeRun(runId);
       }
     });
-    crossTrips.loading = loading;
+    console.log('getActiveModelRuns',loading)
+    _loadingModel = loading;
+    crossTrips.loading = _loadingModel;
     return crossTrips;
   },
 
   delActiveModels : function(){
-      _activeRuns.forEach(function(id){ //set all the run data to null
-        _runData[id] = null;
-      });
-      _activeRuns = []; //get rid of all the known ids;
-      ModelRunStore.emitChange();
+
+    _activeRuns.forEach(function(id){ //set all the run data to null
+      _runData[id] = null;
+    });
+    _activeRuns = []; //get rid of all the known ids;
+    ModelRunStore.emitChange();
+
   },
 
 

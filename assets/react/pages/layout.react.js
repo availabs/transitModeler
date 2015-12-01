@@ -97,8 +97,8 @@ var App = React.createClass({
         		<Logo />
     	    	<Sidebar activeJobs={this.state.activeJobs} menuItems={this.state.menu} />
     	    	<div className="wrap">
-                    <Header />
-    	    		 <RouteHandler
+                    <Header marketarea={this.state.currentMarketarea} />
+    	    		<RouteHandler
                         activeJobs={this.state.activeJobs}
                         jobhistory ={this.state.jobhistory}
                         marketarea={this.state.currentMarketarea}

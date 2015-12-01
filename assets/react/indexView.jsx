@@ -18,8 +18,12 @@ var React = require('react'),
 
     //  --- Pages
     Dashboard = require('./pages/Dashboard.react'),
-    MarketAreaIndex = require('./pages/marketarea/MarketAreaIndex.react'),
-    MarketAreaEdit = require('./pages/marketarea/MarketAreaEdit2.react'),
+    MarketAreaIndex = require('./pages/marketarea/overview/acsOverview.react'),
+    MarketAreaCtpp = require('./pages/marketarea/overview/ctppOverview.react'),
+    MarketAreaSurvey = require('./pages/marketarea/overview/surveyOverview.react'),
+    MarketAreaGtfs = require('./pages/marketarea/overview/gtfsOverview.react'),
+    MarketAreaFarebox = require('./pages/marketarea/overview/fareboxOverview.react'),
+    MarketAreaEdit = require('./pages/marketarea/MarketAreaEdit.react'),
     MarketAreaNew = require('./pages/marketarea/MarketAreaNew.react'),
     ModelAnalysis = require('./pages/modeling/ModelAnalysis.react'),
     ModelCreate = require('./pages/modeling/ModelCreate.react'),
@@ -46,6 +50,10 @@ var i18n = {
 var routes = (
   <Route name="app" path="/" handler={App}>
     <Route name="MarketAreaIndex" path="/marketarea/:marketareaID" handler={MarketAreaIndex} />
+    <Route name="MarketAreaCtpp" path="/marketarea/:marketareaID/ctpp" handler={MarketAreaCtpp} />
+    <Route name="MarketAreaSurvey" path="/marketarea/:marketareaID/survey" handler={MarketAreaSurvey} />
+    <Route name="MarketAreaFarebox" path="/marketarea/:marketareaID/farebox" handler={MarketAreaFarebox} />
+    <Route name="MarketAreaGtfs" path="/marketarea/:marketareaID/gtfs" handler={MarketAreaGtfs} />
     <Route name="MarketAreaEdit" path="/marketarea/:marketareaID/edit" handler={MarketAreaEdit} />
     <Route name="MarketAreaNew" path="/new/marketarea" handler={MarketAreaNew} />
     <Route name="ModelAnalysis" path="/marketarea/:marketareaID/models" handler={ModelAnalysis} />

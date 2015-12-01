@@ -80,7 +80,7 @@ module.exports = {
 					+'Order By T.route_id,R.route_short_name, starting, T.trip_id,T.trip_headsign '
 					+') as T2 '
 					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
-					console.log(sql);
+					//console.log(sql);
 			Datasource.query(sql,{},function(err,data){
 				if(err) console.log('error',err);
 
@@ -146,7 +146,7 @@ module.exports = {
 				return new Stop(d.stop);
 			});
 		var route = new RouteObj(reqobj.route);
-		console.log('route obj',route);
+		//console.log('route obj',route);
 		console.log(featList);
 		var trips = reqobj.trip_ids;
 		var deltas = reqobj.deltas;
@@ -165,7 +165,7 @@ module.exports = {
 		Datasource.findOne({id:agency}).exec(function(err,data){
 			debugger;
 			if(err){ console.log(err); return;}
-			console.log(data);
+			//console.log(data);
 			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,maId,function(err,data){
 				if(err){
 					console.log(err);
@@ -265,7 +265,7 @@ module.exports = {
 		settings = req.body.settings || {},
 		dsID = parseInt(req.param('id'));
 		savedata = req.body.savedata;
-		console.log('dsID',dsID);
+		//console.log('dsID',dsID);
 
 		if(typeof name === 'undefined'){
 			res.send('{status:"error",message:"Error Need New Edit Name"}',500);
@@ -273,18 +273,18 @@ module.exports = {
 		//First query the database to check if the table name exists;
 		Datasource.find({type:'gtfs'}).sort('id').exec(function(err,data){
 
-			console.log(err,data);
+			//console.log(err,data);
 			var chk = data.filter(function(d){//collect those with the same name
 				return d.tableName === name;
 			});
-			console.log(data);
+			//console.log(data);
 			var source = data.filter(function(d){
-				console.log('obj',d);
-				console.log('truth value',d.id === dsID);
+				//console.log('obj',d);
+				//console.log('truth value',d.id === dsID);
 					return d.id === dsID;
 			})[0].tableName;
 
-			console.log(err,data);
+			//console.log(err,data);
 			if(chk.length >0){ //if that schema already exists
 				var flashMessage = [{
 					name:'Data Exists',
@@ -335,7 +335,7 @@ module.exports = {
 				console.log(err);
 				res.send('{status:"Error", message:"Internal Server Failure"}',500);
 			}else{
-				if(sout) console.log('stdout : ',sout);
+				//if(sout) console.log('stdout : ',sout);
 				if(serr){
 					console.log('stderr : ',serr);
 					res.send('{status:"Error", message:"Internal Server Failure"}',500);
@@ -363,7 +363,7 @@ function spawnGtfsClone(job,names,config,savedata){
 	//Add this entry to the datasources table
 
 
-	console.log(sql);
+	//console.log(sql);
 	Datasource.query(sql,{},function(err,data){//run the queries
 		if(err){ console.log(err); return; }
 		Job.update({id:job.id},{status:'Building Frequencies',progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done

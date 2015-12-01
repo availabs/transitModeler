@@ -115,7 +115,7 @@ var TimeSlider = React.createClass({
     var margin = {top:this.props.margin.top || 10,
        right:this.props.margin.right || 60,
        bottom:this.props.margin.bottom || (scope.props.putXAxis)? 60:0,
-       left:this.props.margin.left || 60},
+       left:this.props.margin.left || 30},
        width = this.props.width - margin.left - margin.right,
        height = this.props.height - margin.top - margin.bottom;
     var totalDomain = [tFormat.parse(this.props.minTime),tFormat.parse(this.props.maxTime)];
@@ -202,12 +202,12 @@ var TimeSlider = React.createClass({
           stroke:'black',
           shapeRendering:'crispEdges'
         })
-        .append('text')
-        .attr('class','xlabel')
-        .attr('y',margin.bottom-5)
-        .attr('x',width/2)
-        .style('text-anchor','middle')
-        .text(this.props.domainLabel);
+        // .append('text')
+        // .attr('class','xlabel')
+        // .attr('y',margin.bottom-5)
+        // .attr('x',width/2)
+        // .style('text-anchor','middle')
+        // .text(this.props.domainLabel);
       }
     var yxsSvg =   svg.append('g')
          .attr('class','y axis')

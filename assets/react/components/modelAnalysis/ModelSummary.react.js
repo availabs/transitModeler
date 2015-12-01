@@ -20,13 +20,15 @@ var ModelSummary = React.createClass({
     };
     return Is;
   },
+
   _onChange : function(){//when a subscription has been updated
     this.setState({//get the trip tables from the store
       model_runs : ModelRunStore.getModelRuns(),
       trip_table : TripTableStore.getCurrentTripTable(),
     });
-    console.info('update',TripTableStore.getCurrentTripTable());
+    //console.info('update',TripTableStore.getCurrentTripTable());
   },
+
   componentWillReceiveProps : function(nextProps){
     //if we receive new props and the user hasn't already chosen an id to view
     //set it blindly to the first model from the parent specified from the
@@ -37,17 +39,22 @@ var ModelSummary = React.createClass({
         this.setState({activeId:null});
       }
   },
+
   componentDidMount : function(){
     ModelRunStore.addChangeListener(this._onChange);
     TripTableStore.addChangeListener(this._onChange);
   },
+
   componentWillUnmount : function(){
     ModelRunStore.removeChangeListener(this._onChange);
     TripTableStore.removeChangeListener(this._onChange);
   },
+
+  
   _setActiveModel : function(id){
     this.setState({activeId:id});
   },
+
   renderExtraInfo : function(){
 
   },
