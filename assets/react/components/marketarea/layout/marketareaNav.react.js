@@ -13,13 +13,16 @@ var MarketareNav = React.createClass({
 	            <div className="col-lg-12">
 	             	<section className="widget" style={{overflow:'auto', paddingBottom:7,paddingRight:0}}>
 		    			<ul className="nav navbar-nav col-lg-12" style={{background:'#fff'}}>
-		                    <li className='overview-nav' style={{display:'inline-block'}}>
-		                        <Link to="MarketAreaIndex" params={{marketareaID:this.props.marketarea.id}}>Census ACS</Link>
-		                    </li>
-		                    <li className='overview-nav' style={{display:'inline-block'}}>
-		                       <Link to="MarketAreaCtpp" params={{marketareaID:this.props.marketarea.id}}>Census CTPP</Link>
-		                    </li>
-		                    <li className='overview-nav'>
+    	                    <li className='overview-nav' style={{display:'inline-block'}}>
+    	                        <Link to="MarketAreaIndex" params={{marketareaID:this.props.marketarea.id}}>Census ACS</Link>
+    	                    </li>
+    	                    <li className='overview-nav' style={{display:'inline-block'}}>
+    	                       <Link to="MarketAreaCtpp" params={{marketareaID:this.props.marketarea.id}}>Census CTPP</Link>
+    	                    </li>
+                            <li className='overview-nav' style={{display:'inline-block'}}>
+                               <Link to="MarketAreaLodes" params={{marketareaID:this.props.marketarea.id}}>LODES</Link>
+                            </li>
+    	                    <li className='overview-nav'>
                                 <Link to="MarketAreaSurvey" params={{marketareaID:this.props.marketarea.id}}>Survey</Link>
                             </li>
                             <li className='overview-nav'>
@@ -34,7 +37,6 @@ var MarketareNav = React.createClass({
                              <li className='model-nav'>
                                <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}}>Model Analysis</Link>
                             </li>
-
                             <li className='edit-nav pull-right'>
                                <Link to="MarketAreaEdit" params={{marketareaID:this.props.marketarea.id}}>Edit Marketarea</Link>
                             </li>

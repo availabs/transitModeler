@@ -254,7 +254,7 @@ var CtppMap = React.createClass({
 
         var legendLayers = {
             census:{
-                title:'CTPP',
+                title:this.props.type.toUpperCase(),
                 scale:odScale
             }
         };

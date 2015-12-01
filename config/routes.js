@@ -20,6 +20,7 @@ module.exports.routes = {
   //------DataSources Routes-----------------------
   '/datasources/acs/:marketareaId/:year':'DataSourceController.getACS',
   '/datasources/ctpp/:marketareaId':'DataSourceController.getCTPP',
+  '/datasources/lodes/:marketareaId':'DataSourceController.getLODES',
   '/datasources/survey/:marketareaId':'DataSourceController.getSurvey',
   '/datasources/farebox/:marketareaId':'FareboxController.getFarebox',
 

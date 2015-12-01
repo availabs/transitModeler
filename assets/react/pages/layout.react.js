@@ -48,6 +48,7 @@ var App = React.createClass({
                 censusData: CensusStore.getCurrentDataSet(),
                 activeCensusVariable: CensusStore.getActiveVariable(),
                 ctppData: MarketAreaStore.getCurrentCtpp(),
+                lodesData: MarketAreaStore.getCurrentLodes(),
                 loadedModels: ModelRunStore.getActiveModelRuns(),
                 routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
                 routesGeo : GtfsStore.getRoutesGeo(),
@@ -109,6 +110,7 @@ var App = React.createClass({
                         censusData={this.state.censusData}
                         activeCensusVariable = {this.state.activeCensusVariable}
                         ctppData = {this.state.ctppData}
+                        lodesData = {this.state.lodesData}
                         routes = {this.state.routes}
                         routesGeo = {this.state.routesGeo}
                         stopsGeo = {this.state.stopsGeo}

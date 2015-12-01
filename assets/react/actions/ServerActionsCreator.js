@@ -51,10 +51,22 @@ module.exports = {
     });
 
   },
+  
   receiveCtpp:function(marketareaId,rawData){
     
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_CTPP_DATA,
+      marketareaId: marketareaId,
+      rawData:rawData
+    });
+
+  },
+
+
+  receiveLodes:function(marketareaId,rawData){
+    
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_LODES_DATA,
       marketareaId: marketareaId,
       rawData:rawData
     });

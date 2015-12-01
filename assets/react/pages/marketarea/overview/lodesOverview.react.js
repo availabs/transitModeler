@@ -43,9 +43,9 @@ var MarketAreaIndex = React.createClass({
                 <MarketareaNav marketarea={this.props.marketarea}/>
                 
                 <CtppOverview
-                    type='ctpp'
+                    type='lodes'
                     tracts={this.props.tracts}
-                    data = {this.props.ctppData}
+                    data = {this.props.lodesData}
                     marketarea={this.props.marketarea}
                     censusData={this.props.censusData}
                     stopsGeo={this.props.stopsGeo}

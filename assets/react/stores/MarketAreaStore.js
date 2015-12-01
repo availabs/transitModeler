@@ -11,10 +11,12 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     //utils
     SailsWebApi = require('../utils/sailsWebApi'),
     CrossCtpp = require('../utils/src/crossCtpp'),
+    CrossLodes = require('../utils/src/crossLodes'),
 
     _currentID = null,
     _marketAreas = {},
     _ctppData = {},
+    _lodesData = {},
     _nullMarketArea = {name:''};
 
 
@@ -103,6 +105,28 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
 
   },
 
+  getCurrentLodes : function(){
+    if(_currentID && _currentID > 0){
+
+        if(_lodesData[_currentID] && _lodesData[_currentID] !== 'loading'){
+          console.log('init crosslodes',_currentID)
+          CrossLodes.init(_lodesData[_currentID])
+          return CrossLodes;
+
+        }else if(_lodesData[_currentID] !== 'loading'){
+            SailsWebApi.getLodes(_currentID);
+            _lodesData[_currentID] = 'loading'
+            return {initialized:false};
+
+        }else{
+            //still loading
+            return {initialized:false};
+        }
+    }
+    else{ return {initialized:false}; }
+
+  },
+
   getAll: function() {
     return _marketAreas;
   }
@@ -141,11 +165,19 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_CTPP_DATA:
-        //console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
+        console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
         _ctppData[action.marketareaId] = action.rawData;
 
         MarketAreaStore.emitChange();
     break;
+
+     case ActionTypes.RECEIVE_LODES_DATA:
+        console.log('MarketAreaStore / RECEIVE_LODES_DATA',action);
+        _lodesData[action.marketareaId] = action.rawData;
+
+        MarketAreaStore.emitChange();
+    break;
+
     case ActionTypes.DELETE_DATASOURCE: //when a datasource has been deleted
                                         //refresh marketareas just in case
       SailsWebApi.read('marketarea');
