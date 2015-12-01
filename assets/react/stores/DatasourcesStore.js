@@ -36,7 +36,6 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 function _addDatasets(rawData){
 
   rawData.forEach(function(ds){
-      console.log(ds);
       if(ds.settings[0]){
         ds.settings = ds.settings[0];
       }

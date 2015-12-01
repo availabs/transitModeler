@@ -95,7 +95,9 @@ var Sliders = React.createClass({
     var sliders = displayData.map(function(d,i){
       var isFirst = 0 === i;
       var height = scope.props.height - ((isFirst)?0:scope.props.margin.bottom);
-      var width  = (scope._isFocusedModel(d.id))?scope.props.maxWidth:scope.props.width;
+      var element = document.querySelector('#sliderGuide'),
+          elemWidth = parseInt(window.getComputedStyle(element).width)
+      var width  = parseInt(elemWidth*1.1),//scope.props.maxWidth,//(scope._isFocusedModel(d.id))?scope.props.maxWidth:scope.props.width;
           height = (scope._isFocusedModel(d.id))?scope.props.maxHeight:height;
           //Use the props to determine whether or not to include buttons
           //Default to adding them
@@ -115,22 +117,23 @@ var Sliders = React.createClass({
       return (
         <div style={{'background-color':background,'table-layout':'fixed','vertical-align':'middle'}}>
 
-          <div className='row'>
-            <div className='col-lg-3'></div>
-            <div className='btn-group col-lg-6'>
-              {actionbutton}
-              {focusbutton}
-              {deletebutton}
+          <div className='row' style={{paddingTop:10}}>
+            <div className='col-lg-6' style={{textAlign:'left'}} ><h4 style={{paddingLeft:10}}>Model Run {d.id}</h4></div>
+            <div className='col-lg-6' style={{textAlign:'right'}}>
+              <div className='btn-group pull-right'>
+                {actionbutton}
+                {focusbutton}
+                {deletebutton}
+              </div>
             </div>
-            <div className='col-lg-3'></div>
+            
           </div>
           <div className='row'>
 
-            <div className='col-lg-8'>
+            <div className='col-lg-12'>
               <TimeSlider
                 width={width}
                 height={height}
-                title={d.id}
                 data={d.data}
                 onSet={scope.slideAction}
                 margin={{bottom:(isFirst)?scope.props.margin.bottom:0}}
@@ -142,7 +145,7 @@ var Sliders = React.createClass({
                 rangeTicks = {0}
                 />
             </div>
-            <div className='col-lg-2'></div>
+            
           </div>
 
 

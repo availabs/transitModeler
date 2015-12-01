@@ -10,7 +10,7 @@ var crossTrips = {
 	loading:false,
 
 	init:function(data,id){
-		console.log('crossTrips init',crossTrips.loadedModels,data,id)
+		//console.log('crossTrips init',crossTrips.loadedModels,data,id)
 		crossTrips.trips = crossfilter(data);
 
 		crossTrips.loadedModels.push(id);
@@ -36,6 +36,7 @@ var crossTrips = {
 
 		crossTrips.initialized = true;
 	},
+	
 	addRun:function(data,id){
 
 		crossTrips.trips.add(data);

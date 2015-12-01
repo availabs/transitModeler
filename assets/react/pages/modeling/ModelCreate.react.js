@@ -8,6 +8,7 @@ var React = require('react'),
     _ = require('lodash'),
 
     // -- Components
+    MarketareaNav = require('../../components/marketarea/layout/marketareaNav.react'),
     ModelMap = require('../../components/modeling/ModelMap.react'), //The map to be displayed
     ModelOptionsSelect = require('../../components/modeling/ModelOptionsSelect.react'), //The widget for the modeling options
     ModelDatasourcesSelect = require('../../components/modeling/ModelDatasourcesSelect.react'), //The widget for dataset selections for the model
@@ -132,16 +133,7 @@ var ModelCreate = React.createClass({
 
         return (
         	<div className="content container">
-            	<h2 className="page-title">{this.props.marketarea.name} <small>Run New Model</small>
-                    <div className="btn-group pull-right">
-                        <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
-                            Model Analysis
-                        </Link>
-                        <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
-                            Run New Models
-                        </Link>
-                    </div>
-                </h2>
+            	<MarketareaNav marketarea={this.props.marketarea}/>
 
                 <div className="row">
                 	<div className="col-lg-7">

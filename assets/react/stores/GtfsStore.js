@@ -259,7 +259,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       }
       gtfsId = _editGtfs || ma.origin_gtfs;
       routes = ma.routes;
-      console.log('GTFS Store',gtfsId);
+      //console.log('GTFS Store',gtfsId);
       if(_eGtfsRoutesGeo[gtfsId] && _eGtfsRoutesGeo[gtfsId] !=='loading' && ma.id ===_eGtfsRoutesGeo[gtfsId].maId){
         return _eGtfsRoutesGeo[gtfsId];
       }
@@ -280,7 +280,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
       }
       gtfsId = _editGtfs || ma.origin_gtfs;
       routes = ma.routes;
-      console.log('GTFS Store Stops',gtfsId);
+      //console.log('GTFS Store Stops',gtfsId);
       if(_eGtfsStopsGeo[gtfsId] && _eGtfsStopsGeo[gtfsId] !=='loading' && ma.id === _eGtfsStopsGeo[gtfsId].maId){
         return _eGtfsStopsGeo[gtfsId];
       }
@@ -417,7 +417,7 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         return _gtfsDataSets[gtfsId].routes;
       }
       else if(!_loading){
-        console.log('load stops', maId);
+        //console.log('load stops', maId);
         _loadRoutes(gtfsId);
         // _loadRoutesGeo(maId,gtfsId,routes);
 
@@ -502,7 +502,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         _eGtfsRoutesGeo[action.Id[0]].id = action.Id[0];
         _eGtfsRoutesGeo[action.Id[0]].maId = action.Id[1];
         GtfsStore.emitChange();
-        console.log('ID',action.Id,'Editable Routes',_eGtfsRoutesGeo);
+        //console.log('ID',action.Id,'Editable Routes',_eGtfsRoutesGeo);
     break;
 
     case ActionTypes.RECEIVE_GTFS_EDIT_STOPS:
@@ -510,7 +510,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         _eGtfsStopsGeo[action.Id[0]].id = action.Id[0];
         _eGtfsStopsGeo[action.Id[0]].maId = action.Id[1];
         GtfsStore.emitChange();
-        console.log('ID',action.Id,'Editable Stops',_eGtfsStopsGeo);
+        //console.log('ID',action.Id,'Editable Stops',_eGtfsStopsGeo);
     break;
 
     case ActionTypes.SET_GTFS:

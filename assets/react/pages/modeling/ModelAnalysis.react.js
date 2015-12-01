@@ -7,16 +7,18 @@ var React = require('react'),
     _ = require('lodash'),
 
     // -- Components
-    WidgetHeader = require('../../components/WidgetHeader.react'),
+    MarketareaNav = require('../../components/marketarea/layout/marketareaNav.react'),
     ModelRunSelector = require('../../components/modelAnalysis/modelRunSelector.react'),
     RouteTotalGraph = require('../../components/modelAnalysis/routeTotalGraph.react'),
     ModelRunContainer = require('../../components/modelAnalysis/modelRunContainer.react'),
     TimeSliders = require('../../components/utils/TimeSliders.react'),
     TimeGraph = require('../../components/utils/TimeGraph.react'),
     ModelSummary= require('../../components/modelAnalysis/ModelSummary.react'),
+    
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
+    
     // -- Stores
     FareboxStore =  require('../../stores/FareboxStore.js'),
     TripTableStore = require('../../stores/TripTableStore.js'),
@@ -65,6 +67,7 @@ var MarketAreaIndex = React.createClass({
             fareboxDates:[],
         };
     },
+
     fareFilter : function(options){
       var scope = this;
       var totalDays = scope.state.farebox.groups.run_date.size(); // number of days
@@ -126,17 +129,21 @@ var MarketAreaIndex = React.createClass({
         FareboxStore.removeChangeListener(this._onChange);
         MailStore.removeChangeListener(this._onMail);
     },
+
+
     componentWillUpdate : function(nextProps){
       if(this.props.marketarea.id !== nextProps.marketarea.id){
         this.setState(this.getInitialState());
       }
     },
+
     _onChange:function(){ //when a subscription has updated
         this.setState({//get the model runs from the store
             model_runs:ModelRunStore.getModelRuns(),
             farebox : FareboxStore.getFarebox(this.props.marketarea.id),
         });
     },
+
     _onMail : function(){
       var scope = this;
 
@@ -145,6 +152,7 @@ var MarketAreaIndex = React.createClass({
         scope._onTimeChange(message.data);
       }
     },
+
     _renderModelRuns:function(){
         //console.log('loaded Models',this.props.loadedModels)
         //if the models are not ready display nothing
@@ -388,103 +396,131 @@ var MarketAreaIndex = React.createClass({
 
 
     },
-    render: function() {
+     renderHeader:function(){
+      return (
+        <div>
+          <section className="widget">
+            <div className="body no-margin" style={{overflow:'hidden'}}>
+              <div className="row">
+                <div className="col-lg-8" style={{paddingTop:10}}>
+                      
+                  <ModelRunSelector
+                    marketarea={this.props.marketarea}
+                    model_runs={this.state.model_runs}
+                    onSelection={this.selectModel}
+                    loading = {this.props.loadedModels.loading}
+                    />
+
+                </div>
+                <div className="col-lg-4" > 
+                   
+                 
+                  
+                    <div className="row">
+                      <div className='col-xs-6'>
+                        {this._fareboxButton()}
+                      </div>
+                      <div className='col-xs-6' style={{paddingTop:10}}>
+                        <FarezoneFilterSelection
+                            zones={this._getFareZones(this.props.stopsGeo).zones}
+                            onSelection ={this.setFarezoneFilter}
+                            width={'40%'}
+                        />
+                      </div>
+                    </div>
+                    
+
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      )
+    },
+
+    renderAnalysis:function(){
+      console.log('render analysis')
       var hourRange;
       if(this.state.timeRange){
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
       }
-
-
-      // console.log('models',this.props.loadedModels);
-        return (
-        	<div className="content container">
-            	<h2 className="page-title">{this.props.marketarea.name} <small>Model Analysis</small>
-                    <div className="btn-group pull-right">
-                        <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
-                            Model Analysis
-                        </Link>
-                        <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}} type="button" className="btn btn-primary" data-original-title="" title="">
-                            Run New Models
-                        </Link>
-                    </div>
-                </h2>
-
-                <div className="row">
-
-                    <div className="col-lg-12" >
-                        <section className="widget">
-                            <div className="body no-margin" style={{overflow:'hidden'}}>
-                                <ModelRunSelector
-                                  marketarea={this.props.marketarea}
-                                  model_runs={this.state.model_runs}
-                                  width={'40%'}
-                                  onSelection={this.selectModel}
-                                  />
-                                  <FarezoneFilterSelection
-                                    zones={this._getFareZones(this.props.stopsGeo).zones}
-                                    onSelection ={this.setFarezoneFilter}
-                                    width={'40%'}
-                                    />
-                                  <div style={{float:'left',width:'20%'}}>
-                                      {this._fareboxButton()}
-                                    </div>
-                          </div>
-                        </section>
-                </div>
-                </div>
-                <div className='col-lg-6'>
-                  <div className='row'>
-                      {this._renderModelRuns()}
-                  </div>
-                  <div className='row'>
-                    <ModelSummary
-                        modelIds={this.props.loadedModels.loadedModels}
-                        />
-                  </div>
-                  <div className='row'>
-                    <FarezoneFilterSummary
-                      zones={this.state.fareFilter}
-                      dates={this.state.fareboxDates}
-                      />
-                  </div>
-                </div>
-
-                <div className='col-lg-6'>
-                  <section className='widget'>
-                    <div style={{width:'100%'}}>
-                        <TimeSliders
-                          datasets={this._getTimeData()}
-                          height={100}
-                          width={400}
-                          maxHeight={300}
-                          maxWidth={400}
-                          onChange={this._onTimeChange}
-                          delete ={this.deleteModel}
-                          selection={this.selectModel}
-                          actionText={'Map'}
-                          range={this.state.timeRange}
-                          highlightId={this.state.model_id}
-                          />
-                    </div>
-                    <div style={{width:'100%'}}>
-                        <RouteTotalGraph
-                          timeFilter = {hourRange}
-                          colors={this.props.marketarea.routecolors}
-                          routeData={this.props.loadedModels}
-                          fareboxInit={this.state.useFarebox}
-                          fareboxData={this.state.farebox}
-                          summaryData = {this.peaksCalculator()}
-                          fareFilter = {this.fareFilter}
-                          mailId={'ModelAnalysis'}
-                          />
-                    </div>
-                    <div style={{width:'100%'}}>
-
-                    </div>
-                  </section>
-
-                </div>
+      return (
+        <div>
+          <div className='col-lg-6'>
+            <div className='row'>
+                {this._renderModelRuns()}
             </div>
+            <div className='row'>
+              <ModelSummary
+                  modelIds={this.props.loadedModels.loadedModels}
+                  />
+            </div>
+            <div className='row'>
+              <FarezoneFilterSummary
+                zones={this.state.fareFilter}
+                dates={this.state.fareboxDates}
+                />
+            </div>
+          </div>
+
+          <div className='col-lg-6'  style={{paddingRight:0}}>
+            <section className='widget'>
+              <div style={{width:'100%'}} id="sliderDiv">
+                  <TimeSliders
+                    datasets={this._getTimeData()}
+                    height={200}
+                    width={400}
+                    maxHeight={300}
+                    maxWidth={600}
+                    onChange={this._onTimeChange}
+                    delete ={this.deleteModel}
+                    selection={this.selectModel}
+                    actionText={'Map'}
+                    range={this.state.timeRange}
+                    highlightId={this.state.model_id}
+                    />
+              </div>
+              <div style={{width:'100%'}}>
+                  <RouteTotalGraph
+                    timeFilter = {hourRange}
+                    colors={this.props.marketarea.routecolors}
+                    routeData={this.props.loadedModels}
+                    fareboxInit={this.state.useFarebox}
+                    fareboxData={this.state.farebox}
+                    summaryData = {this.peaksCalculator()}
+                    fareFilter = {this.fareFilter}
+                    mailId={'ModelAnalysis'}
+                    />
+              </div>
+              <div style={{width:'100%'}}>
+
+              </div>
+            </section>
+
+          </div>
+        </div>
+      )
+    },
+    renderEmpty:function(){
+      var loading =  <img src={"/img/loading.gif"} style={{width:60,height:60}} />
+      return (
+        <div className="col-lg-12" style={{padding:0,margin:0}}>
+          <section className="widget">
+            <div className="body no-margin" style={{overflow:'hidden',textAlign:'center'}}>
+              <h4 style={{padding:150}}> {this.props.loadedModels.loading ? loading : 'No Model Selected' }</h4>
+            </div>
+          </section>
+        </div>
+      )
+    },
+    render: function() {
+        
+        return (
+          <div className="content container">
+            <MarketareaNav marketarea={this.props.marketarea}/>
+            {this.renderHeader()}
+            {Object.keys(this.props.loadedModels.loadedModels).length > 0 ? this.renderAnalysis() : this.renderEmpty()  }  
+          </div>
 
         );
     },
