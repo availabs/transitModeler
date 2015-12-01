@@ -205,6 +205,13 @@ module.exports = {
     });
   },
 
+  getLodes: function(marketareaId){
+    io.socket.get('/datasources/lodes/'+marketareaId,function(data){
+      //console.log('sailsWebApi / getCtpp',marketareaId,data)
+      ServerActionCreators.receiveLodes(marketareaId,data);
+    });
+  },
+
   getGtfsRoutes: function(tablename,gtfs_id,cb){
     io.socket.get( '/dataSources/gtfs/routes/'+tablename,function(data){
       ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data);

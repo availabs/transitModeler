@@ -20,6 +20,7 @@ var React = require('react'),
     Dashboard = require('./pages/Dashboard.react'),
     MarketAreaIndex = require('./pages/marketarea/overview/acsOverview.react'),
     MarketAreaCtpp = require('./pages/marketarea/overview/ctppOverview.react'),
+    MarketAreaLodes = require('./pages/marketarea/overview/lodesOverview.react'),
     MarketAreaSurvey = require('./pages/marketarea/overview/surveyOverview.react'),
     MarketAreaGtfs = require('./pages/marketarea/overview/gtfsOverview.react'),
     MarketAreaFarebox = require('./pages/marketarea/overview/fareboxOverview.react'),
@@ -51,6 +52,7 @@ var routes = (
   <Route name="app" path="/" handler={App}>
     <Route name="MarketAreaIndex" path="/marketarea/:marketareaID" handler={MarketAreaIndex} />
     <Route name="MarketAreaCtpp" path="/marketarea/:marketareaID/ctpp" handler={MarketAreaCtpp} />
+    <Route name="MarketAreaLodes" path="/marketarea/:marketareaID/lodes" handler={MarketAreaLodes} />
     <Route name="MarketAreaSurvey" path="/marketarea/:marketareaID/survey" handler={MarketAreaSurvey} />
     <Route name="MarketAreaFarebox" path="/marketarea/:marketareaID/farebox" handler={MarketAreaFarebox} />
     <Route name="MarketAreaGtfs" path="/marketarea/:marketareaID/gtfs" handler={MarketAreaGtfs} />

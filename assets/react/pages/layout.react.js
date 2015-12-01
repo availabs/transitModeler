@@ -48,6 +48,7 @@ var App = React.createClass({
                 censusData: CensusStore.getCurrentDataSet(),
                 activeCensusVariable: CensusStore.getActiveVariable(),
                 ctppData: MarketAreaStore.getCurrentCtpp(),
+                lodesData: MarketAreaStore.getCurrentLodes(),
                 loadedModels: ModelRunStore.getActiveModelRuns(),
                 routes : MarketAreaStore.getCurrentMarketArea() ? GtfsStore.getCurrentRouteList() : [],
                 routesGeo : GtfsStore.getRoutesGeo(),
@@ -109,6 +110,7 @@ var App = React.createClass({
                         censusData={this.state.censusData}
                         activeCensusVariable = {this.state.activeCensusVariable}
                         ctppData = {this.state.ctppData}
+                        lodesData = {this.state.lodesData}
                         routes = {this.state.routes}
                         routesGeo = {this.state.routesGeo}
                         stopsGeo = {this.state.stopsGeo}
@@ -150,7 +152,7 @@ var App = React.createClass({
                     ]
                 },
                 {text:'Job History', icon:'fa fa-cog', action:'jobhistory',type:'Route'},
-                {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/docs/NJTransit%20User\'s%20Manual.pdf'}
+                {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/users_guide.pdf'}
             ]
         };
     }

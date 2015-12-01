@@ -89,7 +89,7 @@ var CtppOverview = React.createClass({
         return (
           
                 <section className="widget" style={{textAlign:'center'}}>
-                    <h3 style={{padding:150}}>Loading CTPP Data</h3>
+                    <h3 style={{padding:150}}>Fetching Data...</h3>
                 </section>
           
         )
@@ -97,16 +97,16 @@ var CtppOverview = React.createClass({
 
 
     render: function() {
-        console.log('ctpp data',this.props.ctppData);
+        //console.log('data',this.props.type,this.props.data);
            
-       
-        if(!this.props.ctppData.initialized){
+
+        if(!this.props.data.initialized){
              return this.renderLoading(); 
         }
 
         var direction = this.state.direction,
             opposite = (this.state.direction === 'from_tract') ? 'to_tract' : 'from_tract';
-            //filter the ctppData based on the current direction and geoid
+            //filter the data based on the current direction and geoid
 
 
             var cdata;
@@ -114,15 +114,15 @@ var CtppOverview = React.createClass({
               return list.map(function(d){return d.value;}).reduce(function(p,c){return p + c;});
             };
             if(this.state.filter){
-              var dim = this.props.ctppData.dimensions[direction];
-              console.log('original sum',sum(this.props.ctppData.groups[opposite].top(Infinity)));
+              var dim = this.props.data.dimensions[direction];
+              console.log('original sum',sum(this.props.data.groups[opposite].top(Infinity)));
               var content = dim.filter(this.state.filter);
-              console.log('after filter sum',sum(this.props.ctppData.groups[opposite].top(Infinity)));
+              console.log('after filter sum',sum(this.props.data.groups[opposite].top(Infinity)));
               cdata = content.top(Infinity).map(function(d){return {key:d[opposite],value:d.est};});
               dim.filterAll();
-              console.log('after filter clear sum',sum(this.props.ctppData.groups[opposite].top(Infinity)));
+              console.log('after filter clear sum',sum(this.props.data.groups[opposite].top(Infinity)));
             }else {
-              cdata = this.props.ctppData.groups[direction].top(Infinity);
+              cdata = this.props.data.groups[direction].top(Infinity);
             }
             
             //get all the groups from the ctpp
@@ -131,8 +131,7 @@ var CtppOverview = React.createClass({
                 {key:'key',name:'Tract'},
                 {key:'value',name:'Num Trips'},
             ];
-            console.log('data',cdata);
-            console.log('colnumns',ctppColumns);
+            
         return (
         	<div >
 
@@ -140,6 +139,7 @@ var CtppOverview = React.createClass({
                 	<div className="col-lg-7">
 
                         <CtppMap
+                            type={this.props.type}
                             tracts={this.props.tracts}
                             ctppData={cdata}
                             marketarea={this.props.marketarea}
@@ -152,7 +152,6 @@ var CtppOverview = React.createClass({
 
                     </div>
                     <div className="col-lg-5">
-
 
                         <section className="widget">
                             <header>

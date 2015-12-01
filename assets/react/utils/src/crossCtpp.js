@@ -23,20 +23,11 @@ crossCtpp = {
 	},
 
 	filter: function(dim,val){
-		//console.log('filtering',dim,val,crossCtpp.dimensions)
-		if( ['Vote Frequency in Last 5 Years','Age'].indexOf(dim) > -1){
 			
-			val.forEach(function(d){
-				crossCtpp.dimensions[dim].filter(d);
-			});
+		crossCtpp.dimensions[dim].filter(function(d){
+		  return val.indexOf(d) > -1;
+		});
 		
-		}else{
-			
-			crossCtpp.dimensions[dim].filter(function(d){
-			  return val.indexOf(d) > -1;
-			});
-		
-		}
 	}
 }
 

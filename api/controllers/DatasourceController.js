@@ -248,6 +248,28 @@ module.exports = {
 
   	},
 
+  	getLODES: function(req,res){
+  		var id = req.param('id')
+		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
+			var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+			//w_geocode, h_geocode, s000,
+			var sql = "SELECT h_geocode as from_tract,w_geocode as to_tract, s000 as est " +
+			            "FROM lodes_34_2010_tracts " +
+			            "WHERE  w_geocode in " + tracts + " and h_geocode in "+tracts;
+
+			MarketArea.query(sql, {}, function(error, data) {
+			    if (error) {
+			          console.log("error executing "+sql, error);
+			          res.send({status: 500, message: 'internal error'}, 500);
+			          return;
+			    }
+
+			    res.send(data.rows);
+			})
+		});
+
+  	},
+
 	getCTPP: function(req, res) {
 		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
