@@ -43,7 +43,7 @@ var ModelMap = React.createClass({
         var scope = this;
         tractCounts = this._reduceTripTable();
 
-        if( _.isEqual(this.props.tracts.features,prevTracts) ){
+        if( !_.isEqual(this.props.tracts.features,prevTracts) ){
             tractlayerID++;
             prevTracts = _.cloneDeep(this.props.tracts.features);
         }
@@ -62,8 +62,11 @@ var ModelMap = React.createClass({
             //flatTrips
             flatTrips = this.props.tracts.features.map(function(d){
                 forecastData[d.properties.geoid] = d.properties;
+                if(scope.props.currentSettings.forecast ==='future' &&
+                    scope.props.currentSettings.forecastType === 'custom')
+                    return scope.props.mode === 'pop' ? d.properties.pop_growth_custom || 0 : d.properties.emp_growth_custom || 0;
                 return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
-            })
+            });
 
 
             odScale.range(colorbrewer.OrRd[5])
