@@ -87,11 +87,12 @@ var CensusMap = React.createClass({
                 <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'percent')}>
                     <input type="radio" name="options" id="option2" /> Percent 
                 </label>
-                <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'density')}>
-                    <input type="radio" name="options" id="option3" /> Density
-                </label>
+                
             </div>
         )
+        // <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'density')}>
+        //     <input type="radio" name="options" id="option3" /> Density
+        // </label>
     },
 
     _layerToggle:function(layer){

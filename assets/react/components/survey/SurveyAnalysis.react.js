@@ -165,7 +165,7 @@ var SurveyAnalysis = React.createClass({
 
     render: function() {
        //console.log('survey data',this.state.survey)
-       console.log('Filters',this.state.filters);
+       //console.log('Filters',this.state.filters,this._renderSurveys());
         return (
         	<div>
 
@@ -178,7 +178,8 @@ var SurveyAnalysis = React.createClass({
                                 routes={this.props.routesGeo}
                                 tracts ={this.props.tracts}
                                 survey= {this._filterGeo()}
-                                type={this.state.type} />
+                                type={this.state.type}
+                                routeColors={this.props.marketarea.routecolors} />
                         </div>
                         <br/>
 

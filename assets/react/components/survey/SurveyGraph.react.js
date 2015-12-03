@@ -47,7 +47,7 @@ var SurveyGraph = React.createClass({
             //console.log('busroute group',data)
             if(this.props.keyMap){
                 data.values = data.values.map(function(d){
-                    d.key = scope.props.keyMap[d.key];
+                    d.key = d.key //scope.props.keyMap[];
                     return d;
                 });
             }
@@ -75,18 +75,24 @@ var SurveyGraph = React.createClass({
                     .transitionDuration(350);
 
                     chart.discretebar.dispatch.on("elementClick", function(e) {
-                        console.log(e);
+                        //console.log(e);
                         var filter = {};
                         filter[scope.props.groupName] = e.point.key;
-                        console.log(filter,e);
+                        //console.log(filter,e);
                         scope.props.filterFunction(filter);
                     });
                     //.showControls(false)
+                    chart.xAxis     //Chart x-axis settings
+                    .tickFormat(function(d){
+                        if(scope.props.keyMap){
+                            return scope.props.keyMap[d];
+                        }
+                        return d;
+                    })
 
                     if(scope.props.colors && (typeof scope.props.colors !== 'string')){
-                      console.log(scope.props.colors);
+                      //console.log(scope.props.colors);
                       chart.color(function(d){
-                        console.log(d.key);
                         return scope.props.colors[d.key];
                       });
                     }

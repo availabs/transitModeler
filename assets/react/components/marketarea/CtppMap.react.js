@@ -5,6 +5,7 @@ var React = require('react'),
 
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
+    MapControls = require('../utils/MapControls.react'),
 
     //--Utils
     d3 = require('d3'),
@@ -25,7 +26,28 @@ var React = require('react'),
 
 var CtppMap = React.createClass({
 
-
+    getInitialState : function(){
+        return {
+            stop:true,
+            route:true,
+            display:'total'
+        }
+    },
+    _layerToggle:function(layer){
+        //console.log('toggle layer',layer)
+        var newState = {}
+        if(this.state[layer]){
+            d3.selectAll('.'+layer)
+                .style('display','none')
+            newState[layer] = false
+            this.setState(newState)
+        }else{
+             d3.selectAll('.'+layer)
+                .style('display','block')
+            newState[layer] = true
+            this.setState(newState)
+        }
+    },
     _toolTipContent:function(props,index){
         var scope = this;
 
@@ -106,13 +128,14 @@ var CtppMap = React.createClass({
                     geo:scope.props.routes,
                     options:{
                         zoomOnLoad:true,
-                        bringToBack:true,
+                        //bringToBack:true,
                         style:function (feature,i) {
                             return {
-                                className: 'route_'+feature.properties.short_name,
+                                className: 'route route_'+feature.properties.short_name,
                                 weight:7,
                                 opacity:0.3,
-                                color : feature.properties.color ? feature.properties.color : '#000'
+                                color : scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name] : '#000'
+                                //feature.properties.color ? feature.properties.color : '#000'
                             };
                         },
 
@@ -171,7 +194,7 @@ var CtppMap = React.createClass({
                                 opacity: 1,
                                 fillOpacity: 0.8,
                                 stroke:false,
-                                className:'busStop',
+                                className:'stop busStop',
                                 fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
                                 radius: r
                             };
@@ -184,7 +207,7 @@ var CtppMap = React.createClass({
                 geo: geo,
                 options:{
                     zoomOnLoad:true,
-                    bringToFront:true,
+                    bringToBack:true,
                     style:function(feature){
                         var styleobj =  {
                             stroke:false,
@@ -207,19 +230,19 @@ var CtppMap = React.createClass({
                                 this.setStyle({fillOpacity:1,
                                 stroke:(scope.props.selected===feature.properties.geoid),
                                 });
-                                 var toolTip = d3.select('.ToolTip').style({
-                                    top:e.originalEvent.clientY+'px',
-                                    left:e.originalEvent.clientX+'px',
-                                    display:'block'
-                                });
+                                //  var toolTip = d3.select('.ToolTip').style({
+                                //     top:e.originalEvent.clientY+'px',
+                                //     left:e.originalEvent.clientX+'px',
+                                //     display:'block'
+                                // });
 
-                                toolTip.select('h4')
-                                    .attr('class','TT_Title')
-                                    .html('Tract : '+feature.properties.geoid);
+                                // toolTip.select('h4')
+                                //     .attr('class','TT_Title')
+                                //     .html('Tract : '+feature.properties.geoid);
 
-                                toolTip.select('span')
-                                    .attr('class','TT_Content')
-                                    .html(scope._toolTipContent(feature.properties,0));
+                                // toolTip.select('span')
+                                //     .attr('class','TT_Content')
+                                //     .html(scope._toolTipContent(feature.properties,0));
                             },
 
                             click: function(e){
@@ -259,9 +282,14 @@ var CtppMap = React.createClass({
             }
         };
 
+        var legendOptions = {
+            title:this.props.type.toUpperCase(),
+        }
+
         return (
             <div>
-                <LeafletMap layers={layers} legendLayers={legendLayers} height="750px" />
+                <LeafletMap layers={layers}  height="750px" />
+                <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle}/>
             </div>
         );
     },

@@ -49,7 +49,7 @@ var Map = React.createClass({
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
-                    console.log('new',key)
+                    //console.log('new',key)
                     scope._updateLayer(key,currLayer,true);
                 }else{
                     console.log('MAP/recieve props/ DEAD END');
@@ -59,49 +59,44 @@ var Map = React.createClass({
     },
 
     _updateLayer : function(key,layer){
-        if(map && map.hasLayer(layers[key].layer)){
-            map.removeLayer(layers[key].layer);
-        }
-        layers[key] = {
-            id:layer.id,
-            layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
-        };
-        layers[key].layer.addData(layer.geo); // to get layerAdd event
-        map.addLayer(layers[key].layer);
-        //priority check force front layers back to front
-        var toplayers = Object.keys(layers).forEach(function(d){
-          if(layers[d].layer.options.bringToFront){
-              layers[d].layer.bringToFront();
-          }
-          if(layers[d].layer.options.bringToBack){
-            layers[d].layer.bringToBack();
-          }
-        });
-        console.log(key, layer.id === 1,layer.options.zoomOnLoad , layer.geo.features.length > 0)
-        if(layer.id === 1 && layer.options.zoomOnLoad && layer.geo.features.length > 0){
-            var ezBounds = d3.geo.bounds(layer.geo);
-            map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
-        }
+        if(map){
+            if(map.hasLayer(layers[key].layer)){
+                map.removeLayer(layers[key].layer);
+            }
+            layers[key] = {
+                id:layer.id,
+                layer: new L.geoJson({type:'FeatureCollection',features:[]},layer.options)
+            };
+            layers[key].layer.addData(layer.geo); // to get layerAdd event
+            map.addLayer(layers[key].layer);
+            //priority check force front layers back to front
+            var toplayers = Object.keys(layers).forEach(function(d){
+              if(layers[d].layer.options.bringToFront){
+                  layers[d].layer.bringToFront();
+              }
+              if(layers[d].layer.options.bringToBack){
+                layers[d].layer.bringToBack();
+              }
+            });
+            //console.log(key, layer.id === 1,layer.options.zoomOnLoad , layer.geo.features.length > 0)
+            if(layer.id === 1 && layer.options.zoomOnLoad && layer.geo.features.length > 0){
+                var ezBounds = d3.geo.bounds(layer.geo);
+                map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
+            }
 
-        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0 && !this.props.neverReZoom){
-            var ezBounds = d3.geo.bounds(layer.geo);
-            map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
-        }
+            if(layer.options.zoomOnUpdate && layer.geo.features.length > 0 && !this.props.neverReZoom){
+                var ezBounds = d3.geo.bounds(layer.geo);
+                map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
+            }
 
-        if(layer.options.bringToFront){
-            layers[key].layer.bringToFront();
+            if(layer.options.bringToFront){
+                layers[key].layer.bringToFront();
+            }
+            if(layer.options.bringToBack){
+                //console.log('bring to back',key)
+                layers[key].layer.bringToBack();
+            }
         }
-        if(layer.options.bringToBack){
-            console.log('bring to back',key)
-            layers[key].layer.bringToBack();
-        }
-
-        console.time('element sort')
-        // d3.selectAll('.leaflet-overlay-pane path').sort(function(a,b){
-        //     //console.log(a,b,i)
-        //     return 1;
-        // })
-        console.timeEnd('element sort')
     },
 
     _renderLegend: function(){

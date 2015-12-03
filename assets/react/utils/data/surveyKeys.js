@@ -42,5 +42,52 @@ module.exports = {
 		7 : 'Senior',
 		8 : 'Other',
 		999 : 'NR'
+	},
+
+	'tripfreq':{
+		1 : '7 day / week',
+		2 : '6 day / week',
+		3 : '5 day / week',
+		4 : '3-4 day / week',
+		5 : '1-2 day / week',
+		6 : '1-3 day / mnth',
+		7 : '< 1 day / month',
+		8 : 'first time',
+		999 : 'NR'
+	},
+
+	'triptenure':{
+		1 : '< 6 months',
+		2 : '6 month - 1 year',
+		3 : '1 -2 years',
+		4 : '2 - 5 years',
+		5 : '5 - 10 years',
+		6 : '> 10 years',
+		999 : 'NR'
+	},
+	'qualservchg':{
+		1 : 'Declined',
+		2 : 'Somewhat Declined',
+		3 : 'Remained the Same',
+		4 : 'Somewhat Improved',
+		5 : 'Improved',
+		6 : 'Not applicable',
+		999 : 'NR'
+	},
+	
+	'gender':{
+		1 : 'Male',
+		2 : 'Female',
+		999: 'NR'
+	},
+
+	'age':{
+		1 : '< 18 years',
+		2 : '18-24 years',
+		3 : '25-34 years',
+		4 : '35-44 years',
+		5 : '45-54 years',
+		6 : '55-61 years',
+		7 : '62 or over'
 	}
 }
