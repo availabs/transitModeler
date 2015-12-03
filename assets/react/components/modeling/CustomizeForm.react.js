@@ -45,9 +45,9 @@ var CustomizeForm = React.createClass({
           }
           if(scope.props.currentSettings.forecast === 'future'){
             futureForecast = [];
-            futureForecast.push( <tr><td><h4> 2020 Forecast </h4></td></tr> );
-            futureForecast.push( <tr><td>Population Growth </td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop2020_growth' isValid={isValid}  value={settings.pop2020_growth}></RSInput></td></tr>);
-            futureForecast.push( <tr><td>Employment Growth </td><td><RSInput isNum={true} propName='emp2020_growth' isValid={isValid} value={settings.emp2020_growth}></RSInput></td></tr>);
+            futureForecast.push( <tr><td><h4> Forecast </h4></td></tr> );
+            futureForecast.push( <tr><td>Population Growth </td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop_growth_custom' isValid={isValid}  value={settings.pop_growth_custom || settings.pop2020_growth}></RSInput></td></tr>);
+            futureForecast.push( <tr><td>Employment Growth </td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='emp_growth_custom' isValid={isValid} value={settings.emp_growth_custom || settings.emp2020_growth}></RSInput></td></tr>);
           }
           var table = (
           <div>

@@ -22,7 +22,7 @@ var ReactStoreInput = React.createClass({
     var obj = {};
     var value = e.target.value;
     var val;
-    if(scope.props.isNum && scope.props.isValid(value)){
+    if(scope.props.isNum && scope.props.isValid(value) && scope.props.bubbleup){
       val = parseFloat(value);
       obj[scope.props.propName] = val;
       scope.props.bubbleup(obj);
