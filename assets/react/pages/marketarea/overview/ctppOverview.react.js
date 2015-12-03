@@ -49,7 +49,8 @@ var MarketAreaIndex = React.createClass({
                     marketarea={this.props.marketarea}
                     censusData={this.props.censusData}
                     stopsGeo={this.props.stopsGeo}
-                    routesGeo={this.props.routesGeo} />
+                    routesGeo={this.props.routesGeo}
+                    routeColors={this.props.marketarea.routecolors} />
 
         	</div>
         );

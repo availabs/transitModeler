@@ -214,7 +214,8 @@ var MarketAreaMap = React.createClass({
                             className: 'route_'+feature.properties.short_name,
                             weight:7,
                             opacity:0.3,
-                            color : feature.properties.color ? feature.properties.color : '#000'
+                            color : scope.props.routeColors && scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name]  : '#000'
+                            //feature.properties.color ? feature.properties.color
                         };
                     },
 
@@ -276,7 +277,7 @@ var MarketAreaMap = React.createClass({
                             fillOpacity: 0.9,
                             stroke:false,
                             className:'busStop',
-                            fillColor: (d.properties.color)?d.properties.color:(scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00'),
+                            fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
                             radius: r
                         };
                         return L.circleMarker(latlng, options);

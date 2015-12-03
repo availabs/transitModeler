@@ -1,7 +1,8 @@
 /*globals require,module,console*/
 'use strict'
 
-var React = require('react');
+var React = require('react'),
+    SurveyKeys = require('../../utils/data/surveyKeys');
 
 
 var SurveyFilters = React.createClass({
@@ -21,7 +22,7 @@ var SurveyFilters = React.createClass({
         }
           return (<tr>
             <td>{label}</td>
-           <td>{scope.props.data[d]}</td>
+           <td>{SurveyKeys[label] ? SurveyKeys[label][scope.props.data[d]] : scope.props.data[d]}</td>
            <td><button className='btn btn-danger btn-sm' onClick={scope.props.buttonclick.bind(null,d)}>clear</button></td>
            </tr>);
        });
