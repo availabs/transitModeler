@@ -20,14 +20,18 @@ var MarketAreaNew = React.createClass({
     },
     _handleChange : function(e){
       var partial_state = {};
-      var canUpdate = true;
+      var valid = true;
       if(this.props.handleChange){
-        canUpdate = this.props.handleChange(e.target.value);
+        valid = this.props.handleChange(e.target.value);
       }
-      if(canUpdate){
-        partial_state[e.target.id] = e.target.value;
-        this.setState(partial_state);
-      }
+      if(valid)
+        partial_state.invalid=false;
+
+      else
+        partial_state.invalid=true;
+
+      partial_state[e.target.id] = e.target.value;
+      this.setState(partial_state);
     },
     _saveChange : function(e){
       var err = this.props.saveAction(this.state);
@@ -42,9 +46,18 @@ var MarketAreaNew = React.createClass({
             return ( <div className="modal-body">
                                         <h4>{key}</h4>
                                         <input type="text" id={key} className='form-control' value={scope.state[key]} onChange={scope._handleChange}/>
+                                        <p>{(scope.state.invalid && scope.props.invalidMessages[key]) ? scope.props.invalidMessages[key] : ''}</p>
                                     </div>
                   );
         });
+        var savebutton = (function(){
+          if(scope.state.invalid)
+            return (<button type="button" onClick={scope._saveChange} className="btn btn-primary" data-dismiss="modal" disabled>Save changes</button>);
+          else {
+            return (<button type="button" onClick={scope._saveChange} className="btn btn-primary" data-dismiss="modal">Save changes</button>);
+          }
+        })();
+
 
         return (
                     <div className="body">
@@ -60,7 +73,7 @@ var MarketAreaNew = React.createClass({
                                     {fields}
                                     <div className="modal-footer">
                                         <button type="button" onClick={this._cancelAction} className="btn btn-default" data-dismiss="modal">Close</button>
-                                        <button type="button" onClick={this._saveChange} className="btn btn-primary" data-dismiss="modal">Save changes</button>
+                                        {savebutton}
                                     </div>
 
                                 </div>

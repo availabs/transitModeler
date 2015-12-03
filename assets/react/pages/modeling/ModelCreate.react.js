@@ -172,6 +172,7 @@ var ModelCreate = React.createClass({
                               currentSettings={this.state.currentSettings}
                               tt={this.state.currentTripTable.tt}
                               censusData = {this.props.censusData}
+                              tracts = {this.props.tracts}
                               />
                         </section>
 

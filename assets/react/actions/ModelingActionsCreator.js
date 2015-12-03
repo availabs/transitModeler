@@ -72,6 +72,19 @@ module.exports = {
 		});
 	},
 
+	saveModelSettings : function(data){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.SAVE_MODELSETTINGS,
+			data:data
+		});
+	},
+
+	resetModelSettings : function(){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.UNDO_MODEL_EDITS,
+		});
+	},
+
 	editModelSettings : function( settings ){
 		AppDispatcher.handleViewAction({
 			type: ActionTypes.EDIT_MODELSETTINGS,
