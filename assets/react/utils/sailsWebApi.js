@@ -237,13 +237,13 @@ module.exports = {
     d3.json('/triptable/run')
       .post(JSON.stringify({model:data}),function(err,data){
         if(err){  console.log('SAILS WEB API / runModel / error',err);  }
-        console.log('SAILS WEB API / runModel',data);
+        //console.log('SAILS WEB API / runModel',data);
       });
   },
 
   getModelRuns:function(){
     d3.json('/triptable/list',function(err,data){
-      console.log('getModelRun',err,data)
+      //console.log('getModelRun',err,data)
       ServerActionCreators.receiveData('model_run',data);
     });
 

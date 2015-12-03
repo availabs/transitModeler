@@ -44,11 +44,13 @@ var Map = React.createClass({
                 if(layers[key]){
                     //if layer existed previously check version ids
                     if(currLayer.id !== layers[key].id){
+                        //console.log('update',key)
                         scope._updateLayer(key,currLayer);
                     }
                 }else if(currLayer.geo.features.length > 0){
                     //layer is new and has features
-                    scope._updateLayer(key,currLayer);
+                    console.log('new',key)
+                    scope._updateLayer(key,currLayer,true);
                 }else{
                     console.log('MAP/recieve props/ DEAD END');
                 }
@@ -57,7 +59,7 @@ var Map = React.createClass({
     },
 
     _updateLayer : function(key,layer){
-        if(map.hasLayer(layers[key].layer)){
+        if(map && map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer);
         }
         layers[key] = {
@@ -75,12 +77,31 @@ var Map = React.createClass({
             layers[d].layer.bringToBack();
           }
         });
-        //end priority check;
-        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0 &&
-            !this.props.neverReZoom){
+        console.log(key, layer.id === 1,layer.options.zoomOnLoad , layer.geo.features.length > 0)
+        if(layer.id === 1 && layer.options.zoomOnLoad && layer.geo.features.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
+
+        if(layer.options.zoomOnUpdate && layer.geo.features.length > 0 && !this.props.neverReZoom){
+            var ezBounds = d3.geo.bounds(layer.geo);
+            map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
+        }
+
+        if(layer.options.bringToFront){
+            layers[key].layer.bringToFront();
+        }
+        if(layer.options.bringToBack){
+            console.log('bring to back',key)
+            layers[key].layer.bringToBack();
+        }
+
+        console.time('element sort')
+        // d3.selectAll('.leaflet-overlay-pane path').sort(function(a,b){
+        //     //console.log(a,b,i)
+        //     return 1;
+        // })
+        console.timeEnd('element sort')
     },
 
     _renderLegend: function(){
@@ -124,7 +145,7 @@ var Map = React.createClass({
             center: [39.8282, -98.5795],
             zoom: 4,
             layers: [mapquestOSM],
-            zoomControl: false,
+            zoomControl: true,
             attributionControl: false
         });
         if(this.props.layers){

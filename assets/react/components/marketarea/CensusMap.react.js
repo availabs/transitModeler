@@ -4,6 +4,7 @@ var React = require('react'),
 
     //--Components
     LeafletMap = require('../utils/LeafletMap.react'),
+    MapControls = require('../utils/MapControls.react'),
 
     //--Utils
     d3 = require('d3'),
@@ -16,14 +17,100 @@ var React = require('react'),
     prevTractLength = 0,
     prevDomain = [],
     prevStopsLength = 0,
-    prevRoutesLength = 0;
+    prevRoutesLength = 0,
+     divmarker = L.divIcon({
+                    className:'stop busStop',
+                    iconSize:[2,2]
+                });
     //--Stores
 
 
 
 var CensusMap = React.createClass({
 
-     _toolTipContent:function(props,index){
+    getInitialState : function(){
+        return {
+            stop:true,
+            route:true,
+            display:'total'
+        }
+    },
+
+    _getDomain:function(disp){
+        var category_name = Object.keys(this.props.censusData.getCategories())[this.props.activeCategory],
+            category = this.props.censusData.getCategories()[category_name],
+            tractData = this.props.censusData.getTractData(),
+            activeVariable = this.props.activeVariable,
+            geo = this.props.tracts;
+
+        if(disp === 'total'){
+            return geo.features.map(function(feature){
+                if( tractData[feature.properties.geoid] ){
+                    return tractData[feature.properties.geoid][activeVariable];
+                }
+                return 0
+            })
+
+        }else if(disp === 'percent'){
+            
+            
+            return geo.features.map(function(feature){
+                if( tractData[feature.properties.geoid] ){
+                     var total = 0;
+                    category.forEach(function(val){ total += tractData[feature.properties.geoid][val] });
+                    return (tractData[feature.properties.geoid][activeVariable]/total)*100;
+                }
+                return 0
+            })
+
+        }
+    },
+
+    _changeDisplay:function(disp){
+        
+
+        if(disp !== this.state.disp){
+            
+            odScale.domain(this._getDomain(disp));
+            this.colorTracts()
+            this.setState({display:disp})
+        }
+    },
+
+
+    _customButtons: function(){
+        return (
+            <div className="btn-group" data-toggle="buttons">
+                <label className="btn btn-success active" onClick={this._changeDisplay.bind(null,'total')}>
+                    <input type="radio" name="options" id="option1" /> Total
+                </label>
+                <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'percent')}>
+                    <input type="radio" name="options" id="option2" /> Percent 
+                </label>
+                <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'density')}>
+                    <input type="radio" name="options" id="option3" /> Density
+                </label>
+            </div>
+        )
+    },
+
+    _layerToggle:function(layer){
+        //console.log('toggle layer',layer)
+        var newState = {}
+        if(this.state[layer]){
+            d3.selectAll('.'+layer)
+                .style('display','none')
+            newState[layer] = false
+            this.setState(newState)
+        }else{
+             d3.selectAll('.'+layer)
+                .style('display','block')
+            newState[layer] = true
+            this.setState(newState)
+        }
+    },
+
+    _toolTipContent:function(props,index){
         var scope = this;
 
         var category_name = Object.keys(this.props.censusData.getCategories())[this.props.activeCategory],
@@ -54,25 +141,41 @@ var CensusMap = React.createClass({
         return c;
     },
 
+    colorTracts:function (){
+        // this.props.tracts.features.forEach(function(d){
+        //     console.log(d.properties.geoid)
+        // })
+        var scope=this,
+            category_name = Object.keys(this.props.censusData.getCategories())[this.props.activeCategory],
+            category = this.props.censusData.getCategories()[category_name],
+            tractData = this.props.censusData.getTractData(),
+            activeVariable = this.props.activeVariable;
+           
+        d3.selectAll('.tract')
+        .attr('fill',function(d){
+            var geoid = this.classList[1].split('_')[1]
+            if(scope.state.display === 'total'){
+                return odScale( tractData[geoid] ? tractData[geoid][activeVariable] : 0)
+            }else if(scope.state.display === 'percent'){
+                    var total = 0;
+                    category.forEach(function(val){ total += tractData[geoid][val] });
+                  return odScale( tractData[geoid] ? (tractData[geoid][activeVariable]/total)*100 : 0)
+            }
+        })
+    },
+
     render: function() {
         var scope = this,
             geo = this.props.tracts;
 
-        var tractData = this.props.censusData.getTractData(),
+         var tractData = this.props.censusData.getTractData(),
+            category_name = Object.keys(this.props.censusData.getCategories())[this.props.activeCategory],
+            category = this.props.censusData.getCategories()[category_name],
             activeVariable = this.props.activeVariable;
 
         odScale.domain(
 
-            geo.features.map(function(feature){
-                if( tractData[feature.properties.geoid] ){
-                    return tractData[feature.properties.geoid][activeVariable];
-                }
-                return 0
-            }).filter(function(d){
-                return d > 0;
-            }).sort(function(a,b){
-                return b-a;
-            })
+           this._getDomain(this.state.display)
 
         );
 
@@ -84,9 +187,14 @@ var CensusMap = React.createClass({
           stopslayerID++;
           prevStopsLength = scope.props.stops.features.length;
         }
-        if(geo.features.length != prevTractLength || !deepEqual(prevDomain,odScale.domain())){
+        if(geo.features.length != prevTractLength ){
             tractlayerID++;
         }
+        if( !deepEqual(prevDomain,odScale.domain()) ){
+            //console.log('color tracts here')
+            this.colorTracts()
+        }
+
         prevDomain = odScale.domain();
         prevTractLength = geo.features.length;
 
@@ -96,7 +204,8 @@ var CensusMap = React.createClass({
                 geo: geo,
                 options:{
                     zoomOnLoad:true,
-                    bringToFront:true,
+                    //bringToFront:true,
+                    bringToBack:true,
                     style:function(feature){
                         return {
                             stroke:false,
@@ -108,7 +217,12 @@ var CensusMap = React.createClass({
                     onEachFeature: function (feature, layer) {
                         layer.on({
                             mouseover: function(e){
-                                this.setStyle({stroke:true});
+                                
+                                this.setStyle({
+                                    stroke:true,
+                                    fillColor: d3.select('.geo_'+feature.properties.geoid).attr('fill')
+                                })
+
                                  var toolTip = d3.select('.ToolTip').style({
                                     top:e.originalEvent.clientY+'px',
                                     left:e.originalEvent.clientX+'px',
@@ -130,7 +244,10 @@ var CensusMap = React.createClass({
 
 
                             mouseout: function(e){
-                               this.setStyle({stroke:false});
+                               this.setStyle({
+                                    stroke:false,
+                                    fillColor: d3.select('.geo_'+feature.properties.geoid).attr('fill')
+                                });
                                 var toolTip = d3.select('.ToolTip').style({
                                     top:e.originalEvent.clientY+'px',
                                     left:e.originalEvent.clientX+'px',
@@ -146,13 +263,13 @@ var CensusMap = React.createClass({
                 id:routeLayerID,
                 geo:scope.props.routes,
                 options:{
-                    bringToBack:true,
+                    //bringToBack:true,
                     style:function (feature,i) {
                         return {
-                            className: 'route_'+feature.properties.short_name,
+                            className: 'route route_'+feature.properties.short_name,
                             weight:7,
                             opacity:0.3,
-                            color : feature.properties.color ? feature.properties.color : '#000'
+                            color : scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name] : '#000'
                         };
                     },
 
@@ -197,41 +314,60 @@ var CensusMap = React.createClass({
                 id:stopslayerID,
                 geo:scope.props.stops,
                 options:{
-                  bringToBack:true,
+                  bringToFront:true,
                     pointToLayer: function (d, latlng) {
-
-                        var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
-                        if(isNaN(r)){
-                            r = 2;
-                        }
                         var options = {
-
-
-                            color: "#00a" ,
-                            weight: 3,
-                            opacity: 1,
-                            fillOpacity: 0.8,
-                            stroke:false,
-                            className:'busStop',
-                            fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
-                            radius: r
-                        };
-                        return L.circleMarker(latlng, options);
+                            icon:divmarker,
+                            draggable:false,
+                            //className:'stop busStop',
+                        },
+                        obj = L.marker(latlng, options);
+                        return obj;
                     },
+                    // pointToLayer: function (d, latlng) {
+
+                    //     var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
+                    //     if(isNaN(r)){
+                    //         r = 2;
+                    //     }
+                    //     var options = {
+
+
+                    //         color: "#00a" ,
+                    //         weight: 3,
+                    //         opacity: 1,
+                    //         fillOpacity: 0.8,
+                    //         stroke:false,
+                    //         className:'stop busStop',
+                    //         fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
+                    //         radius: r
+                    //     };
+                    //     return L.circleMarker(latlng, options);
+                    // },
                 }
             }
         }
 
         var legendLayers = {
+
             census:{
-                title:this.props.activeVariable,
+                title:'Variable: '+this.props.activeVariable,
                 scale:odScale
             }
+        },
+
+        legendOptions = {
+            title:'Variable: '+this.props.activeVariable,
+            location:'beneath'
         }
 
+        //console.log('render map',odScale.domain());
         return (
             <div>
-                <LeafletMap layers={layers} legendLayers={legendLayers} height="750px" />
+
+                <LeafletMap layers={layers} height="750px" />
+
+                <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle} customControls={this._customButtons()}/>
             </div>
         );
     },

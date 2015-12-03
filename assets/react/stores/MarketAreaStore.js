@@ -165,14 +165,14 @@ MarketAreaStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_CTPP_DATA:
-        console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
+        //console.log('MarketAreaStore / RECEIVE_CTPP_DATA',action);
         _ctppData[action.marketareaId] = action.rawData;
 
         MarketAreaStore.emitChange();
     break;
 
      case ActionTypes.RECEIVE_LODES_DATA:
-        console.log('MarketAreaStore / RECEIVE_LODES_DATA',action);
+        //console.log('MarketAreaStore / RECEIVE_LODES_DATA',action);
         _lodesData[action.marketareaId] = action.rawData;
 
         MarketAreaStore.emitChange();

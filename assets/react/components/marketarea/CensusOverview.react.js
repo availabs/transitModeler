@@ -126,7 +126,8 @@ var CensusOverview = React.createClass({
                             censusData={this.props.censusData}
                             activeCategory={this.state.activeCensusCategory}
                             stops={this.props.stopsGeo}
-                            routes={this.props.routesGeo} />
+                            routes={this.props.routesGeo}
+                            routeColors={this.props.marketarea.routecolors} />
 
                     </div>
                     <div className="col-lg-5">

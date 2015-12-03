@@ -32,7 +32,7 @@ var MarketareNav = React.createClass({
                                <Link to="MarketAreaGtfs" params={{marketareaID:this.props.marketarea.id}}>Gtfs</Link>
                             </li>
                              <li className='model-nav'>
-                               <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}}>Create Model</Link>
+                               <Link to="ModelCreate" params={{marketareaID:this.props.marketarea.id}}>New Model</Link>
                             </li>
                              <li className='model-nav'>
                                <Link to="ModelAnalysis" params={{marketareaID:this.props.marketarea.id}}>Model Analysis</Link>

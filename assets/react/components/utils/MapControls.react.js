@@ -18,53 +18,83 @@ var MapLegend = React.createClass({
 		}
 	},
 
+	mapControlClick:function(layer){
+
+		if(this.props.layerToggle){
+			this.props.layerToggle(layer);
+		}
+	},
+
+	renderMapControls:function(){
+		return (
+			<div className="btn-group" data-toggle="buttons">
+	            <label className="btn btn-sm btn-info active" onClick={this.mapControlClick.bind(null,'route')}>
+	                <input type="checkbox" /> Routes
+	            </label>
+	            <label className="btn btn-sm btn-info active" onClick={this.mapControlClick.bind(null,'stop')}>
+	                <input type="checkbox" /> Stops
+	            </label>
+	            
+	        </div>
+	    )
+	},
+
 	renderLayer:function(layer){
 		var legendItems = layer.scale.quantiles().map(function(d,i){
 			if(i === 0){
 				return (
-					<tr key={i}>
-						<td>
-							<div  style={{margin:'0 auto',width:'20px',height:'20px',backgroundColor:layer.scale(d)}}></div>
+					
+						<td style ={{backgroundColor:layer.scale(d),textAlign:'center'}}>
+							{ '< ' + parseInt(d) }
 						</td>
-						<td> { '< ' + parseInt(d) }</td>
-					</tr>
+						
 				) 
 			}
 
 			if(i === layer.scale.quantiles().length-1){
 				return (
-					<tr key={i}>
-						<td style={{borderTop:'none'}} > 
-							<div  style={{margin:'0 auto',width:'20px',height:'20px',backgroundColor:layer.scale(d)}}></div>
+					
+						<td style={{borderTop:'none',backgroundColor:layer.scale(d),textAlign:'center'}} > 
+						 { '> ' + parseInt(d) }
 						</td>
-						<td style={{borderTop:'none'}} > { '> ' + parseInt(d) }</td>
-					</tr>
+					
 				) 
 			}
 
 			return (
-				<tr key={i}>
-					<td style={{borderTop:'none'}} >
-						<div  style={{margin:'0 auto',width:'20px',height:'20px',backgroundColor:layer.scale(d)}}></div>
-					</td>
-					<td style={{borderTop:'none'}} >{parseInt(layer.scale.quantiles()[i-1])} - {parseInt(d)}</td>
-				</tr>
-			)	
+				
+				<td style={{borderTop:'none',backgroundColor:layer.scale(d),textAlign:'center'}} >
+					{ parseInt(layer.scale.quantiles()[i-1]) } - {parseInt(d)}
+				</td>
+			)
 		});
 
 		return (
-			<div>
+			
 				
 				<table className="table">
-					<thead>
-						<tr >
-							<td colSpan='2'><h4>{layer.title ? layer.title.replace(/_/g," ") : ''}</h4></td>
-						</tr>
-					</thead>
 					<tbody>
+						<tr>
 						{legendItems}
+						</tr>
 					</tbody>
 				</table>
+		
+		)
+	},
+	renderHeader:function(){
+
+		return (
+			<div className='row' style={{padding:10}}>
+				<div className='col-xs-4'>
+					<span style={{fontSize:'16px'}}>{this.props.options.title ? this.props.options.title.replace(/_/g," ") : ''}</span>
+				</div>
+				<div className='col-xs-4'>
+					{this.renderMapControls()}
+				</div>
+				<div className='col-xs-4'>
+					{this.props.customControls ? this.props.customControls : ''}
+				</div>
 			</div>
 		)
 	},
@@ -88,11 +118,6 @@ var MapLegend = React.createClass({
 			<div>
 				
 				<table className="table">
-					<thead>
-						<tr >
-							<td colSpan='2'><h4>{layer.title ? layer.title.replace(/_/g," ") : ''}</h4></td>
-						</tr>
-					</thead>
 					<tbody>
 						{legendItems}
 					</tbody>
@@ -127,18 +152,17 @@ var MapLegend = React.createClass({
 	render: function() {
 		var scope = this,
 		displayStyle  = {
-			position:'absolute',
 			display:this.props.config.display,
 			backgroundColor:'white',
-			padding:'5',
-			borderTop:'5px solid black',
+			padding:2,
+			borderTop:'1px solid black',
 			minWidth:'200px',
-			width:this.props.size.width,
 			color:'#000',
-			borderRadius:'5px',
-			zIndex:100,
+			borderRadius:'0px',
+			fontFamily: "'Open Sans', sans-serif",
+			fontWeight: 300
+			
 		}
-		console.log(this.props)
 		var layers = Object.keys(scope.props.layers).map(function(key){
 
 			if(scope.props.layers[key].type === 'circle'){
@@ -151,45 +175,14 @@ var MapLegend = React.createClass({
 		
 		});
 
-		if(this.props.options.location === 'bottomRight'){
-			displayStyle.right=this.props.config.x;
-			displayStyle.bottom=this.props.config.y;
-		}else if(this.props.options.location === 'topLeft'){
-			displayStyle.left=this.props.config.x;
-			displayStyle.top=this.props.config.y;
-		}else if(this.props.options.location === 'topRight'){
-			displayStyle.right=this.props.config.x;
-			displayStyle.top=this.props.config.y;
-		}
-		else if(this.props.options.location === 'beneath'){
-			console.log('beneath')
-			
-			displayStyle  = {
-				position:'absolute',
-				backgroundColor:'white',
-				padding:'5',
-				borderTop:'5px solid black',
-				minWidth:'200px',
-				color:'#000',
-				borderRadius:'5px',
-				zIndex:100,
-				right:0,
-				height:40
-			}
-			return(
-				<div className="mapLegend" style={displayStyle}>
-
-					
-				</div>
-			)
-		}
-
+		
 		
 		
 
 
 		return (
-			<div className="mapLegend" style={displayStyle}>
+			<div className="mapControls col-xs-12" style={displayStyle}>
+				{this.renderHeader()}	
 				{layers}
 			</div>
 		);
