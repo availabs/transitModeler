@@ -43,9 +43,9 @@ var ModelMap = React.createClass({
         var scope = this;
         tractCounts = this._reduceTripTable();
 
-        if( !_.isEqual(this.props.tracts.features,prevTracts) ){
+        if( this.props.tracts.features.length !== prevTractLength ){
             tractlayerID++;
-            prevTracts = _.cloneDeep(this.props.tracts.features);
+            prevTractLength = this.props.tracts.features.length;
         }
         if(this.props.routes.features.length !== prevRouteLength){
             routeLayerID++;
@@ -64,7 +64,7 @@ var ModelMap = React.createClass({
                 forecastData[d.properties.geoid] = d.properties;
                 if(scope.props.currentSettings.forecast ==='future' &&
                     scope.props.currentSettings.forecastType === 'custom')
-                    return scope.props.mode === 'pop' ? d.properties.pop_growth_custom || 0 : d.properties.emp_growth_custom || 0;
+                    return scope.props.mode === 'pop' ? d.properties.pop_growth_custom || forecastData[d.properties.geoid].pop2020_growth : d.properties.emp_growth_custom || forecastData[d.properties.geoid].emp2020_growth;
                 return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
             });
 
@@ -79,7 +79,6 @@ var ModelMap = React.createClass({
             odScale.domain(flatTrips);
             d3.selectAll('.tract')
                 .attr('fill',function(feature){
-
                     var geoid = d3.select(this).attr('class').split('_')[1];
                     var scaleValue = 0;
 
@@ -88,13 +87,18 @@ var ModelMap = React.createClass({
 
                     }
                     //console.log('fdata',forecastData)
-                    if((scope.props.mode === 'pop'  || scope.props.mode === 'emo') &&  forecastData[geoid]){
+                    if((scope.props.mode === 'pop'  || scope.props.mode === 'emp') &&  forecastData[geoid]){
                         //console.log('pop',geoid,forecastData[geoid].pop2020_growth)
-                        scaleValue = scope.props.mode === 'pop' ? forecastData[geoid].pop2020_growth : forecastData[geoid].emp2020_growth;forecastData[geoid].pop2020_growth;
+                        if(scope.props.currentSettings.forecast ==='future' &&
+                            scope.props.currentSettings.forecastType === 'custom' && geoid === '34001010700')
+                            scaleValue =  (scope.props.mode === 'pop') ? forecastData[geoid].pop_growth_custom || forecastData[geoid].pop2020_growth : forecastData[geoid].emp_growth_custom || forecastData[geoid].emp2020_growth;
+                        else{
+                            scaleValue = (scope.props.mode === 'pop') ? forecastData[geoid].pop2020_growth : forecastData[geoid].emp2020_growth;
+                          }
                     }
 
                     return odScale(scaleValue);
-                })
+                });
 
         }
         var tractProperties = function(feature){
