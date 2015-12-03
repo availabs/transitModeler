@@ -43,9 +43,9 @@ var ModelMap = React.createClass({
         var scope = this;
         tractCounts = this._reduceTripTable();
 
-        if(_.isEqual(this.props.tracts.features,prevTracts) ){
+        if( _.isEqual(this.props.tracts.features,prevTracts) ){
             tractlayerID++;
-            prevTracts = this.props.tracts.features;
+            prevTracts = _.cloneDeep(this.props.tracts.features);
         }
         if(this.props.routes.features.length !== prevRouteLength){
             routeLayerID++;

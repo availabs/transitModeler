@@ -55,8 +55,7 @@ var ModelCreate = React.createClass({
     },
     _onModelSettingsChange : function(){
       var modsett = ModelSettingsStore.getCurrentModelSettings();
-      if(!_.isEqual(modsett,this.state.modelSettings) )
-        this.setState({modelSettings : modsett});
+      this.setState({modelSettings : modsett});
     },
     componentDidMount: function() {//once the module mounted to the vdom
         TripTableStore.addChangeListener(this._onChange);  //subscribe to the triptable store
