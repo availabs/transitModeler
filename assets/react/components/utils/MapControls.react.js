@@ -28,9 +28,11 @@ var MapLegend = React.createClass({
 	renderMapControls:function(){
 		return (
 			<div className="btn-group" data-toggle="buttons">
+	            
 	            <label className="btn btn-sm btn-info active" onClick={this.mapControlClick.bind(null,'route')}>
 	                <input type="checkbox" /> Routes
 	            </label>
+	            
 	            <label className="btn btn-sm btn-info active" onClick={this.mapControlClick.bind(null,'stop')}>
 	                <input type="checkbox" /> Stops
 	            </label>
@@ -40,6 +42,8 @@ var MapLegend = React.createClass({
 	},
 
 	renderLayer:function(layer){
+		//console.log('renderLayer',layer);
+
 		var legendItems = layer.scale.quantiles().map(function(d,i){
 			if(i === 0){
 				return (
@@ -83,6 +87,14 @@ var MapLegend = React.createClass({
 		)
 	},
 	renderHeader:function(){
+		var scope = this,
+			buttonLayer = Object.keys(scope.props.layers).map(function(key){
+			
+			if(scope.props.layers[key].type === 'buttonGroup'){
+				return scope.renderButtonGroup(scope.props.layers[key])
+			}
+
+		}).filter(function(d){ return d });
 
 		return (
 			<div className='row' style={{padding:10}}>
@@ -94,10 +106,12 @@ var MapLegend = React.createClass({
 				</div>
 				<div className='col-xs-4'>
 					{this.props.customControls ? this.props.customControls : ''}
+					{buttonLayer.length > 0 ? buttonLayer : ''}
 				</div>
-			</div>
+		</div>
 		)
 	},
+
 	renderCircleLayer:function(layer){
 		var legendItems = layer.scale.quantiles().map(function(d,i){
 			
@@ -128,7 +142,7 @@ var MapLegend = React.createClass({
 	
 	renderButtonGroup:function(layer){
 		var buttons = layer.buttons.map(function(d,i){
-			var btnClass = 'btn btn-primary';
+			var btnClass = 'btn btn-primary btn-xs';
 			if(d.value === layer.active){
 				btnClass+= ' active';
 			}
@@ -169,16 +183,16 @@ var MapLegend = React.createClass({
 				return scope.renderCircleLayer(scope.props.layers[key])
 			}
 			else if(scope.props.layers[key].type === 'buttonGroup'){
-				return scope.renderButtonGroup(scope.props.layers[key])
+				//return null
+			}else{
+				return scope.renderLayer(scope.props.layers[key])
 			}
-			return scope.renderLayer(scope.props.layers[key])
-		
-		});
+			
 
-		
-		
-		
 
+		}).filter(function(d){ return d });
+
+	
 
 		return (
 			<div className="mapControls col-xs-12" style={displayStyle}>

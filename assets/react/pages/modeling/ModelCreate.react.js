@@ -53,10 +53,12 @@ var ModelCreate = React.createClass({
     willTransitionTo: function (transition, params) {
       //console.log('will transition to',transition,params);
     },
+    
     _onModelSettingsChange : function(){
       var modsett = ModelSettingsStore.getCurrentModelSettings();
       this.setState({modelSettings : modsett});
     },
+    
     componentDidMount: function() {//once the module mounted to the vdom
         TripTableStore.addChangeListener(this._onChange);  //subscribe to the triptable store
         ModelSettingsStore.addChangeListener(this._onModelSettingsChange);
@@ -85,7 +87,9 @@ var ModelCreate = React.createClass({
         var settings = this.state.currentSettings; //get the current settings object
         settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes}; //set the market area with the current parent market area data
         if(this.props.marketarea.id > 0){ //if the market area is defined
+            console.log('---------------------------')
             console.log('load new trip table',settings)
+            console.log('---------------------------')
             ModelingActionsCreator.loadTripTable(settings); //load the trip table based on the settings
             ttLoaded = true;                                //set that the table has been loaded //This is optimistic, failure needs to be checked
         }
@@ -93,13 +97,32 @@ var ModelCreate = React.createClass({
     },
 
     componentWillReceiveProps:function(nextProps){ //just before setting the new props object
-        if(nextProps.marketarea.id > 0 && !ttLoaded){ //if the parent market are is defined, and we don't have the tript table
+        if((nextProps.marketarea.id > 0 && !ttLoaded ) || this.props.tracts.features.length !==nextProps.tracts.features.length){ //if the parent market are is defined, and we don't have the tript table
             this._loadNewTripTable();             //load the trip table
         }
+        
+    },
+    renderMap : function(){
+        var routes = this.props.marketarea.routesGeo || {type:'FeatureCollection',features:[]}; //get the routes or default it to empty geojson
+        
+        if(this.props.tracts.features.length === 0){
+            return <div> Loading </div>
+        }
+
+
+        return (
+            <ModelMap
+                mode = {this.state.currentMode}
+                currentTripTable={this.state.currentTripTable}
+                tracts={this.props.tracts}
+                routes={ routes }
+                routeColors = {this.props.marketarea.routecolors}
+                currentSettings = {this.state.currentSettings}
+                censusData = {this.props.censusData} />
+        )
     },
 
     render: function() {
-        var routes = this.props.marketarea.routesGeo || {type:'FeatureCollection',features:[]}; //get the routes or default it to empty geojson
         var scope = this;
         var OverviewStyle = {
             borderBottomLeftRadius:0,
@@ -126,7 +149,7 @@ var ModelCreate = React.createClass({
           }
           // console.log('Total Tract Data',parsedTracts);
         }
-        console.log('Current Model Settings',this.state.modelSettings);
+        console.log('Current Model Settings',this.state.currentSettings);
 
 
         return (
@@ -143,14 +166,9 @@ var ModelCreate = React.createClass({
                               currentSettings={this.state.currentSettings}
                               marketarea={this.props.marketarea}/>
                         </section>
+                        
+                        {this.renderMap()}
 
-                        <ModelMap
-                            mode = {this.state.currentMode}
-                            currentTripTable={this.state.currentTripTable}
-                            tracts={this.props.tracts}
-                            routes={ routes }
-                            currentSettings = {this.state.currentSettings}
-                            censusData = {this.props.censusData} />
 
                     </div>
                     <div className="col-lg-5">

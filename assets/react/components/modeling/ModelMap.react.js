@@ -11,6 +11,7 @@ var React = require('react'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
     // --Components
     LeafletMap = require('../utils/LeafletMap.react'),
+    MapControls = require('../utils/MapControls.react'),
 
     //  --Component Globals
     currentType = null,
@@ -34,6 +35,14 @@ var ModelMap = React.createClass({
         };
     },
 
+    getInitialState : function(){
+        return {
+            stop:true,
+            route:true,
+            //display:'total'
+        }
+    },
+
     _reduceTripTable:function(){
 
         return censusUtils.reduceTripTable(this.props.currentTripTable.tt);
@@ -49,7 +58,7 @@ var ModelMap = React.createClass({
         }
         if(this.props.routes.features.length !== prevRouteLength){
             routeLayerID++;
-            prevRouteLength = this.props.tracts.features.length;
+            prevRouteLength = this.props.routes.features.length;
         }
 
 
@@ -101,6 +110,7 @@ var ModelMap = React.createClass({
                 });
 
         }
+
         var tractProperties = function(feature){
             feature.properties.origin = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0';
             feature.properties.dest = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0';
@@ -113,13 +123,18 @@ var ModelMap = React.createClass({
             });
           }
         };
-        //console.log('testing',tractCounts)
+        
+        //console.log('testing',this.props.tracts)
+        
         return {
             tractsLayer:{
                 id:tractlayerID,
                 geo:this.props.tracts,
+                
+                //zoomOnLoad:true,
                 options:{
                     zoomOnLoad:true,
+                    bringToBack:true,
                     style:function (feature) {
 
 
@@ -135,7 +150,7 @@ var ModelMap = React.createClass({
                         layer.on({
                             click: function(e){
                               tractProperties(feature);
-                              console.log(feature.properties);
+                              //console.log(feature.properties);
                               ModelingActionsCreator.addModelSettings(feature);
                             },
                             mouseover: function(e){
@@ -174,10 +189,10 @@ var ModelMap = React.createClass({
                 options:{
                     style:function (feature) {
                         return {
-                            className: 'route_'+feature.properties.short_name,
+                            className: 'route route_'+feature.properties.short_name,
                             weight:5,
                             opacity:1,
-                            color:'#333',
+                            color: scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name] : '#000',//'#333',
                             fillColor:'#999'
                         };
                     },
@@ -214,9 +229,8 @@ var ModelMap = React.createClass({
             }
         }
     },
+
     renderToolTip:function(feature,tractCounts){
-        //,this.props.mode === 'Origin' ?  : tractCounts[feature.properties.geoid].d )
-        //console.log('rtt',tractCounts,tractCounts[feature.properties.geoid],feature.properties.geoid)
         var scope = this,
             origin = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].o : '0',
             dest = tractCounts[feature.properties.geoid] ? tractCounts[feature.properties.geoid].d : '0',
@@ -244,6 +258,7 @@ var ModelMap = React.createClass({
             table +='</table>';
             return table;
     },
+    
     _updateTooltip:function(tt){
         var scope = this;
         if (scope.isMounted()) {
@@ -252,6 +267,7 @@ var ModelMap = React.createClass({
             });
         }
     },
+    
     componentWillReceiveProps:function(nextProps){
 
         if(currentType !== nextProps.currentSettings.type){
@@ -260,6 +276,28 @@ var ModelMap = React.createClass({
         }
 
 
+    },
+
+    _layerToggle:function(layer){
+        console.log('toggle layer',layer,this.state[layer])
+        var newState = {}
+        if(this.state[layer]){
+            console.log('toggle',layer,'off')
+            d3.selectAll('.'+layer)
+                .style('display','none')
+            newState[layer] = false
+            this.setState(newState)
+        }else{
+            console.log('toggle',layer,'on')
+             d3.selectAll('.'+layer)
+                .style('display','block')
+            newState[layer] = true
+            this.setState(newState)
+        }
+    },
+
+    _customButtons:function(){
+        return <div />
     },
 
     render: function() {
@@ -286,10 +324,19 @@ var ModelMap = React.createClass({
             legendLayers.od.buttons.push({text:'Emp Change',value:'emp',click:ModelingActionsCreator.setMode});
         }
 
+        var legendOptions = {
+            title: this.props.mode,
+            location:'beneath'
+        }
+        var layers = this.processLayers();
+        //console.log('render layers',layers.routesLayer.id,layers.tractsLayer.id)
+
         return (
 
             <div>
-                <LeafletMap layers={this.processLayers()} legendLayers={legendLayers} legendOptions={{location:'bottomRight'}} height="800px" />
+
+                <LeafletMap layers={layers}  height="800px" />
+                <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle} customControls={this._customButtons()}/>
             </div>
 
         );

@@ -152,13 +152,17 @@ var Map = React.createClass({
                     layer: L.geoJson(currLayer.geo,currLayer.options)
                 };
                 map.addLayer(layers[key].layer);
+                
                 if(currLayer.options.bringToFront){
                   layers[key].layer.bringToFront();
                 }
+
                 if(currLayer.options.bringToBack){
                   layers[key].layer.bringToBack();
                 }
+
                 if(currLayer.options.zoomOnLoad && currLayer.geo.features.length > 0){
+
                     var ezBounds = d3.geo.bounds(currLayer.geo);
                     map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
                 }

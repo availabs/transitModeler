@@ -25,8 +25,8 @@ var ModelOptionsSelect = React.createClass({
 
     render: function() {
         var scope = this;
-        console.log('currentSettings',scope.props.currentSettings);
-        console.log('model options',scope.props.options);
+        //console.log('currentSettings',scope.props.currentSettings);
+        //console.log('model options',scope.props.options);
         var fields = Object.keys(scope.props.options).map(function(option){
 
             var regressionInclude = (function(){
