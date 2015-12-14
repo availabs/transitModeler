@@ -109,7 +109,7 @@ var MarketAreaStore = assign({}, EventEmitter.prototype, {
     if(_currentID && _currentID > 0){
 
         if(_lodesData[_currentID] && _lodesData[_currentID] !== 'loading'){
-          console.log('init crosslodes',_currentID)
+          //console.log('init crosslodes',_currentID)
           CrossLodes.init(_lodesData[_currentID])
           return CrossLodes;
 

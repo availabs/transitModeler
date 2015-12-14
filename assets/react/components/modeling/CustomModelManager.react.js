@@ -24,22 +24,17 @@ var FutureForecast = React.createClass({
             width:'100%'
         }
         //console.log('forecast render',this.props.currentSettings.forecastType)
-        var mpoClass="btn btn-default",
-            customClass="btn btn-default";
-        if(this.props.currentSettings.forecastType === 'mpo'){
-            mpoClass += ' active'
-        }else{
-            customClass +=' active'
-        }
+       
 
         return (
             <div >
-                <label className="col-sm-4 control-label">Future Forecase</label>
+                <label className="col-sm-4 control-label">Load Model</label>
                 <div className="col-sm-8">
-                    <div className="btn-group">
-                        <a type="button" className={mpoClass} value="forecastType,mpo" onClick={this._setOption}>MPO 2020 Forecast</a>
-                        <a type="button" className={customClass} value="forecastType,custom" onClick={this._setOption}>Custom Forcast</a>
-                    </div>
+                    Selector
+                </div>
+                <label className="col-sm-4 control-label">Current Model</label>
+                <div className="col-sm-8">
+                    <Input type="text" value="New Model Settings" />
                 </div>
             </div>
         );

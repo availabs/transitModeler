@@ -127,8 +127,11 @@ TripTableStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_TRIPTABLE_LISTS:
       //console.log('RECEIVE_TRIPTABLE_LISTS',action)
-      _currentTripTable = action.data;
-      TripTableStore.emitChange();
+
+      if(action.data && action.data.tt && action.data.tt.length > 0){
+        _currentTripTable = action.data;
+        TripTableStore.emitChange();
+      }
     break;
 
     // case ActionTypes.RECEIVE_TRIPTABLES:

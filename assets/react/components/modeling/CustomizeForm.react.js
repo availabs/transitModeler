@@ -21,110 +21,131 @@ var validNameInput = function(str){
 
 var CustomizeForm = React.createClass({
 
+
     bubbleUp : function(data){
-      data.geoid = this.props.modelSettings.geoid;
-      ModelingActionsCreator.editModelSettings(data);
+      
+      console.log('bubbleUp',data);
+      this.props.editTract(Object.keys(data)[0],data[Object.keys(data)[0]],this.props.modelSettings.geoid)
+      //ModelingActionsCreator.editModelSettings(data);
     },
 
     validChange : function(d){
         return validNameInput(d);
     },
 
-    save : function(d){
-      var scope = this;
-      console.log(d.Name);
-      var settingsGroupObj = {}; //initialize the object to hold the group of settings
-      settingsGroupObj.Name = d.Name;
-      settingsGroupObj.Group = [];
-
-      //get the tract counts for origin destination and bus 2 work
-      var tractCounts = censusUtils.reduceTripTable(scope.props.tt);
-      scope.props.tracts.features.forEach(function(d){
-        if(d.properties.dirty)
-          return;
-        var geoid = d.properties.geoid;
-        d.properties.origin = tractCounts[geoid] ? tractCounts[geoid].o : '0';
-        d.properties.dest = tractCounts[geoid] ? tractCounts[geoid].d : '0';
-        d.properties.busData = censusUtils.bus2work(scope.props.censusData,geoid);
-        if( scope.props.currentSettings.type ==='regression' && scope.props.currentSettings.regressionId){
-          d.properties.regression = {};
-          scope.props.currentSettings.regressionId.censusVariables.forEach(function(cenvar){
-              var regData = scope.props.censusData.getTractData()[geoid] ? parseInt(scope.props.censusData.getTractData()[geoid][cenvar.name]) : 0;
-              d.properties.regression[cenvar.name] = regData;
-          });
-        }
-      });
-
-      settingsGroupObj.Group = scope.props.tracts.features;
-      ModelingActionsCreator.saveModelSettings(settingsGroupObj);
-    },
-
     reset : function() {
       ModelingActionsCreator.resetModelSettings();
     },
 
-    render: function() {
+    renderEditor:function(){
+        
+        var scope = this,
+            regression, 
+            futureForecast,
+            rows,
+            settings = this.props.modelSettings;
 
-        var scope = this;
-        if(!scope.props.modelSettings ||
-          !scope.props.currentSettings || //if the forcast type isnt custom ignore
-            scope.props.currentSettings.forecastType !== 'custom')
-          return <span></span>;
-
-        var settings = this.props.modelSettings;
-        console.log('from settings',settings);
-        //if it is
-        var tractCounts = censusUtils.reduceTripTable(scope.props.tt);
-        var form = (function(){
-          var regression, futureForecast,rows;
           if(scope.props.currentSettings.type === 'regression' && scope.props.currentSettings.regressionId){
             var head = (<tr><td><h4>Regression Variables</h4></td></tr> );
             rows = scope.props.currentSettings.regressionId.censusVariables.map(function(cvar){
-              var data = scope.props.censusData.getTractData()[settings.geoid] ? parseInt(scope.props.censusData.getTractData()[settings.geoid][cvar.name]) : 0;
-              return <tr><td>{cvar.name}</td><td><RSInput isValid={isValid} value={data}></RSInput></td></tr>;
+              return <tr><td>{cvar.name}</td><td><RSInput isValid={isValid} isNum={true} bubbleup={scope.bubbleUp} propName={cvar.name} value={scope.props.tractData[settings.geoid][cvar.name]}></RSInput></td></tr>;
             });
             regression = [head].concat(rows);
           }
-          if(scope.props.currentSettings.forecast === 'future'){
-            futureForecast = [];
-            futureForecast.push( <tr><td><h4> Forecast </h4></td></tr> );
-            futureForecast.push( <tr><td>Population Growth </td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop_growth_custom' isValid={isValid}  value={settings.pop_growth_custom || settings.pop2020_growth}></RSInput></td></tr>);
-            futureForecast.push( <tr><td>Employment Growth </td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='emp_growth_custom' isValid={isValid} value={settings.emp_growth_custom || settings.emp2020_growth}></RSInput></td></tr>);
-          }
-          var table = (
-          <div>
-            <h3>{'FIPS: ' +settings.geoid}</h3>
-            <table class='table'>
-              <tbody>
-              <tr><td>Origin Trips</td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='origin' isValid={isValid} value={settings.origin}></RSInput></td></tr>
-              <tr><td>Destination Trips</td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='dest' isValid={isValid} value={settings.dest}></RSInput></td></tr>
-              <tr><td>Bus To Work</td><td><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='busData' isValid={isValid} value={settings.busData}></RSInput></td></tr>
-              {regression}
-              {futureForecast}
-              <tr>
-                <td>
-                   <a onClick={scope.reset} className='btn btn-danger' >Reset All</a>
-                 </td>
-                 <td>
-                    <CreationForm className='btn btn-danger'
-                      buttonText={'Save Settings'}
-                      id={'formTractSettings'}
-                      handleChange={scope.validChange}
-                      invalidMessages={{Name:'Name cannot be empty'}}
-                      saveAction={scope.save}
-                      values={{Name:'ModelSettings'}}
-                      />
-                </td>
-              </tr>
-              </tbody>
-            </table>
+          //console.log('is there tract data',scope.props.tractData)
+          futureForecast = [];
+          futureForecast.push( <tr><td><h4 class="page-title"> Forecast </h4></td></tr> );
+          futureForecast.push( <tr><td>Population Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop2020_growth' isValid={isValid}  value={scope.props.tractData[settings.geoid].pop2020_growth || 0}></RSInput></td></tr>);
+          futureForecast.push( <tr><td>Employment Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='emp2020_growth' isValid={isValid} value={scope.props.tractData[settings.geoid].emp2020_growth || 0}></RSInput></td></tr>);
+          
+          return  (
+            <div className="row">
+              <div  className='col-sm-12'>
+              <h3>{'FIPS: ' +settings.geoid}</h3>
+              <table class='table'>
+                <tbody>
+                {regression}
+                {futureForecast}
+                </tbody>
+              </table>
+              </div>
+            </div>
+          )
 
-          </div>);
+    },
 
-          return table;
-        })();
 
-      return form;
+    loadSettings:function(settingsId){
+      //call up props
+
+      if(this.props.loadCustomSettings){
+        if(settingsId === -1){
+          var newSettings = {name:'',settings:''}
+          //console.log('new settings,newSettings');
+          this.props.loadCustomSettings( newSettings );
+        
+        }else{
+        
+          this.props.loadCustomSettings( this.props.customSettingsList[settingsId] )
+        
+        }
+      }
+    },
+
+    editModelName:function(e){
+      //console.log(e.target.value)
+      if(this.props.changeName){
+        this.props.changeName(e.target.value)
+      }
+    },
+
+    render: function() {
+        //console.log('render custom',this.props.modelSettings,this.props.currentSettings)
+        var scope = this,
+            settings = this.props.modelSettings,
+            form = <span />
+
+        if(!settings.geoid){
+          form =  <span>Click Tract to Edit Data</span>
+        }else{
+          form = this.renderEditor();
+        }
+        //console.log('from settings',this.props.customSettingsList);
+        var settingList = Object.keys(scope.props.customSettingsList).map(function(settingId){
+           return(
+              <li><a onClick={scope.loadSettings.bind(null,settingId)}>{scope.props.customSettingsList[settingId].name} </a></li>
+            )
+        })
+
+      return (
+        <div>
+          <h4 class="page-title">Custom Forecast Editor</h4>
+        <div  className="row">
+          <fieldset>
+            <div className="form-group" style={{minHeight:30}}>
+                <label className="col-sm-1 control-label"></label>
+                    
+                        
+                <div className="col-sm-11 input-group" style={{paddingRight:5}}>
+                    <input onChange={this.editModelName} value={this.props.customModel.name} placeholder='Enter Settings Name' id="segmented-dropdown" className="form-control" type="text" style={{marginRight:0}} />
+                    <div className="input-group-btn">
+                        <button className="btn btn-warning" tabindex="-1" onClick={this.props.saveModel}>Save</button>
+                        <button className="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            Load<i className="fa fa-caret-down"></i>
+                        </button>
+                        <ul className="dropdown-menu">
+                            <li><a onClick={scope.loadSettings.bind(null,-1)}>New Settings</a></li>
+                            <li className="divider"></li>
+                            {settingList}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+          </fieldset>
+        </div>
+          {form}
+        </div>
+      )
     }
 });
 

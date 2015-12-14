@@ -14,19 +14,25 @@ var TripTableOverview = React.createClass({
         Object.keys(scope.props.currentSettings).forEach(function(d){
           settings[d] = scope.props.currentSettings[d];
         });
-        settings.tracts = this.props.tractData;
+        settings.tract_forecasts = this.props.tractData;
         settings.marketarea = {id:this.props.marketarea.id,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};
+        console.log('--------------------------')
+        console.log('Load New Triptable',settings);
+        console.log('--------------------------')
         ModelingActionsCreator.loadTripTable(settings);
     },
 
     _runModel:function(){
         var settings = this.props.currentSettings;
+        settings.tract_forecasts = this.props.tractData;
         settings.marketarea = {id:this.props.marketarea.id,name:this.props.marketarea.name,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};
         var tripTableCreate  = {
             info:JSON.stringify(settings),
             marketareaId: this.props.marketarea.id
         };
+        console.log('--------------------------')
         console.log('Run Model',tripTableCreate);
+        console.log('--------------------------')
 
         ModelingActionsCreator.runModel(tripTableCreate);
     },
@@ -41,7 +47,7 @@ var TripTableOverview = React.createClass({
 
         return (
             <div className="body">
-                Trips Planned:{this.props.currentTripTable ? this.props.currentTripTable.tt.length : 0}
+                Trips Planned:{this.props.currentTripTable && this.props.currentTripTable.tt  ? this.props.currentTripTable.tt.length : 0}
 
                 <button type="submit"
                     className="btn btn-danger pull-right"
@@ -92,7 +98,7 @@ var TripTableOverview = React.createClass({
                                 </tr>
                                  <tr>
                                     <td>Number of Trips</td>
-                                    <td className="ng-binding">{this.props.currentTripTable.tt.length}</td>
+                                    <td className="ng-binding">{this.props.currentTripTable && this.props.currentTripTable.tt ? this.props.currentTripTable.tt.length : 0}</td>
                                 </tr>
                             </tbody></table>
 

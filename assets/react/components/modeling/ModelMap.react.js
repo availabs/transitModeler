@@ -45,7 +45,7 @@ var ModelMap = React.createClass({
 
     _reduceTripTable:function(){
 
-        return censusUtils.reduceTripTable(this.props.currentTripTable.tt);
+        return censusUtils.reduceTripTable(this.props.currentTripTable ? this.props.currentTripTable.tt : []);
     },
 
     processLayers:function(){
@@ -70,11 +70,10 @@ var ModelMap = React.createClass({
         if(scope.props.mode === 'pop' ||  scope.props.mode === 'emp' ){
             //flatTrips
             flatTrips = this.props.tracts.features.map(function(d){
-                forecastData[d.properties.geoid] = d.properties;
-                if(scope.props.currentSettings.forecast ==='future' &&
-                    scope.props.currentSettings.forecastType === 'custom')
-                    return scope.props.mode === 'pop' ? d.properties.pop_growth_custom || forecastData[d.properties.geoid].pop2020_growth : d.properties.emp_growth_custom || forecastData[d.properties.geoid].emp2020_growth;
-                return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
+                //forecastData[d.properties.geoid] = d.properties;
+                if(scope.props.currentSettings.forecast ==='future')
+                    return scope.props.mode === 'pop' ? scope.props.forecastData[d.properties.geoid].pop2020_growth : scope.props.forecastData[d.properties.geoid].emp2020_growth;
+                //return scope.props.mode === 'pop' ? d.properties.pop2020_growth : d.properties.emp2020_growth;
             });
 
 
@@ -95,15 +94,11 @@ var ModelMap = React.createClass({
                         scaleValue = scope.props.mode === 'Origin' ? tractCounts[geoid].o : tractCounts[geoid].d;
 
                     }
-                    //console.log('fdata',forecastData)
-                    if((scope.props.mode === 'pop'  || scope.props.mode === 'emp') &&  forecastData[geoid]){
+                    if((scope.props.mode === 'pop'  || scope.props.mode === 'emp') &&  scope.props.forecastData[geoid]){
                         //console.log('pop',geoid,forecastData[geoid].pop2020_growth)
-                        if(scope.props.currentSettings.forecast ==='future' &&
-                            scope.props.currentSettings.forecastType === 'custom' && geoid === '34001010700')
-                            scaleValue =  (scope.props.mode === 'pop') ? forecastData[geoid].pop_growth_custom || forecastData[geoid].pop2020_growth : forecastData[geoid].emp_growth_custom || forecastData[geoid].emp2020_growth;
-                        else{
-                            scaleValue = (scope.props.mode === 'pop') ? forecastData[geoid].pop2020_growth : forecastData[geoid].emp2020_growth;
-                          }
+                       
+                        scaleValue = (scope.props.mode === 'pop') ? scope.props.forecastData[geoid].pop2020_growth : scope.props.forecastData[geoid].emp2020_growth;
+                          
                     }
 
                     return odScale(scaleValue);
@@ -244,15 +239,15 @@ var ModelMap = React.createClass({
             if(currentType === 'regression'){
                 table += '<tr><td colspan=2 style="textAlign:center;"><strong> Regression Variables</strong></td></tr>';
                 var censusRows = this.props.currentSettings.regressionId.censusVariables.map(function(cenvar){
-                    var data = scope.props.censusData.getTractData()[feature.properties.geoid] ? parseInt(scope.props.censusData.getTractData()[feature.properties.geoid][cenvar.name]) : 0;
+                    var data = scope.props.forecastData[feature.properties.geoid][cenvar.name] || 0;
                     return '<tr><td>'+cenvar.name+'</td><td>'+data+'</td></tr>';
                 });
                 table+=censusRows.join(' ')
             }
             if(scope.props.currentSettings.forecast === 'future'){
                 table   += '<tr><td colspan=2 style="textAlign:center;"><strong> 2020 Forceast</strong></td></tr>'
-                        + '<tr><td>Population Growth</td><td>'+feature.properties.pop2020_growth +'%</td></tr>'
-                        + '<tr><td>Employment Growth</td><td>'+feature.properties.emp2020_growth +'%</td></tr>';
+                        + '<tr><td>Population Growth</td><td>'+scope.props.forecastData[feature.properties.geoid].pop2020_growth +'%</td></tr>'
+                        + '<tr><td>Employment Growth</td><td>'+scope.props.forecastData[feature.properties.geoid].emp2020_growth +'%</td></tr>';
             }
 
             table +='</table>';
@@ -335,7 +330,7 @@ var ModelMap = React.createClass({
 
             <div>
 
-                <LeafletMap layers={layers}  height="800px" />
+                <LeafletMap layers={layers}  height="600px" />
                 <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle} customControls={this._customButtons()}/>
             </div>
 

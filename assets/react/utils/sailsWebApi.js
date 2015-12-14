@@ -262,7 +262,7 @@ module.exports = {
     d3.json('/acs/load')
     .post(JSON.stringify(newData),function(err,data){
        if(err){  console.log('SAILS WEB API / loadAcs / error',err);  }
-       console.log('SAILS WEB API  / loadACS',data);
+       //console.log('SAILS WEB API  / loadACS',data);
     });
   },
   deleteGtfs : function(ds,cb){
@@ -280,6 +280,7 @@ module.exports = {
       if(cb){cb(data);}
     });
   },
+  
   create: function(type,data,cb){
 
     d3.json('/'+type).post(JSON.stringify(data),function(err,resData){

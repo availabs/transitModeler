@@ -26,6 +26,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     _templates = null,
     _originalModelSettings = null,
     _tempModelSettings = null,
+    _customSettingsList = null,
 
     //buffers for server responses
     _modelSettingsGroupNames = [],
@@ -86,9 +87,24 @@ var ModelSettingsStore = assign({}, EventEmitter.prototype, {
     return _modelSettings;
   },
 
+  getModelSettingsList : function(){
+    
+    if( !_customSettingsList ){
+      SailsWebApi.read('modelsettings')
+      _customSettingsList = 'loading'
+      return {};
+    }
+
+    if( _customSettingsList === 'loading' ){
+      return {};
+    }
+
+    return _customSettingsList
+  },
+
   getCurrentModelSettings : function(){
     if(!_currentTract || !_tempModelSettings[_currentTract])
-      return undefined;
+      return {};
     return _tempModelSettings[_currentTract];
   },
 
@@ -146,10 +162,17 @@ ModelSettingsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   switch(action.type) {
     case ActionTypes.RECEIVE_MODELSETTINGSS:
-      console.log('RECEIVED MODEL SETTINGS',action);
-      processModelSettingGroups(action.data);
-      console.log('NAMES',_modelSettingsGroupNames,'Groups',_modelSettingsGroups);
+      //console.log('RECEIVED MODEL SETTINGS',action);
+      //processModelSettingGroups(action.data);
+      //console.log('NAMES',_modelSettingsGroupNames,'Groups',_modelSettingsGroups);
+      if(_customSettingsList === 'loading'){
+        _customSettingsList = {}
+      }
+      action.data.forEach(function(set){
+        _customSettingsList[set.id] = set;
+      })
       ModelSettingsStore.emitChange();
+
     break;
 
     case ActionTypes.SET_MODELSETTINGS:

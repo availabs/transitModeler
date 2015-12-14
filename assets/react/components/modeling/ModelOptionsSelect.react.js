@@ -5,7 +5,7 @@ var React = require('react'),
     // -- Components
     ModelRegressionSelect = require('./ModelRegressionSelect.react'),
     FutureForecastSelect = require('./FutureForecastSelect.react'),
-
+    CustomModelManager = require('./CustomModelManager.react'),
 
     // -- Actions
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
@@ -17,7 +17,7 @@ var ModelOptionsSelect = React.createClass({
     _setOption:function(e){
 
         var data = e.target.getAttribute('value').split(',');
-        console.log('_setOption',e.target.getAttribute('value'),data);
+        //console.log('_setOption',e.target.getAttribute('value'),data);
         ModelingActionsCreator.setOption(data[0],data[1]);
     },
 
@@ -30,7 +30,7 @@ var ModelOptionsSelect = React.createClass({
         var fields = Object.keys(scope.props.options).map(function(option){
 
             var regressionInclude = (function(){
-
+                //console.log(option)
                 if(option === 'type' && scope.props.currentSettings[option] === 'regression'){
                     return <ModelRegressionSelect
                                 currentSettings={scope.props.currentSettings}

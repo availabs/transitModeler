@@ -86,13 +86,14 @@ module.exports = {
     COMMIT_MODEL_EDITS:null,
     UNDO_MODEL_EDITS:null,
     ADD_MODEL_SETTINGS_GROUP:null,
+    
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,
     RECEIVE_TRIPTABLES:null,
     RECEIVE_MODEL_RUNS:null,
     RECEIVE_FULL_MODEL_RUNS:null,
-
+    
     // -- Jobs
     RECEIVE_JOBS:null,
     RECEIVE_ACTIVE_JOBS:null,

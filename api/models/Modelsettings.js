@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
     name:'string',
-    settings:'array',
-    id:'integer',
+    settings:'json',
   }
+  
 };

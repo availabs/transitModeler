@@ -221,6 +221,7 @@ module.exports = {
 		var output = {tt:[],failed:[]};
 		//set the id of the regressionModel
 		var regressionModel = triptable.regressionId;
+		var customTracts = triptable.tracts;
 		//accumulators for total trip count and tract pairs count
 		var numTripsTotal = 0,
 			tractPairCount  = 0;
@@ -248,19 +249,20 @@ module.exports = {
 										pop_growth = 1;
 									if(triptable.forecast != 'current'){ //if doing a future forcast
 										//and there is a population recorded for the home tract
-										if(typeof triptable.tract_forecasts.population[tractPair.home_tract] != 'undefined'){
+										if(triptable.tract_forecasts[tractPair.home_tract] && triptable.tract_forecasts[tractPair.home_tract].pop2020_growth){
 											//set to the growth of population 1 + the population of the home tract/100
-											pop_growth = 1+(triptable.tract_forecasts.population[tractPair.home_tract]/100);
+											pop_growth = 1+(triptable.tract_forecasts[tractPair.home_tract].pop2020_growth/100);
 										}
 										//and there is a population record for the work tract
-										if(typeof triptable.tract_forecasts.employment[tractPair.work_tract] != 'undefined'){
+										if(triptable.tract_forecasts[tractPair.work_tract] && triptable.tract_forecasts[tractPair.work_tract].emp2020_growth){
 											//add to the growth of population 1 + the population of the work tract
-											pop_growth = 1+(triptable.tract_forecasts.employment[tractPair.work_tract]/100);
+											pop_growth = 1+(triptable.tract_forecasts[tractPair.work_tract].emp2020_growth/100);
 										}
 									}
 									//get the time matrix for the current tract pairing
 									var time = getTimeMatrix(tractPair);
-									var regressionTrips = getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId);
+									var tract_forecasts = triptable.forecast === 'future' ? triptable.tract_forecasts : null
+									var regressionTrips = getRegressionTrips(tractPair,time,triptable.time,triptable.marketarea.id,triptable.type,triptable.regressionId,tract_forecasts);
 									//define function get the number of trips
 									var planTrips = function(type){
 										if(type !== 'off'){
@@ -427,7 +429,7 @@ function planTrip(tractPair,timeMatrix,stop_points,timeOfDay,output){
 	}
 }
 
-function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model){
+function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract_forcasts){
 
 	var regressionRiders = 0;//initialize number of riders to zero
 
@@ -443,7 +445,8 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model){
 			// 	acs_data.acs[tractPair.home_tract][cv.name]*cv.coef
 			// );
 			//add the to the regression riders the indicator variable times
-			regressionRiders += acs_data.acs[tractPair.home_tract][cv.name]*cv.coef;
+			var census = tract_forcasts && tract_forcasts[tractPair.home_tract][cv.name] ? tract_forcasts[tractPair.home_tract][cv.name]  : acs_data.acs[tractPair.home_tract][cv.name]
+			regressionRiders += census*cv.coef;
 
 		});
 		//the regression ratio = # of riders divided by those in the current tract that take the bus to work.
@@ -515,6 +518,7 @@ function getTimeMatrix(tractPair){
 				'highMin':highMin
 			};
 	})
+
 	return output
 }
 
