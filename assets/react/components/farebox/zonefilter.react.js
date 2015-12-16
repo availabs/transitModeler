@@ -15,6 +15,8 @@ var React = require('react'),
     FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react'),
     CreationForm = require('../gtfs/CreationForm.react');
 
+
+var originalDates,originalFilter;
 var numrexp = /[0-9]+/g;
 var firstNum = function(str){
   if(str){
@@ -43,7 +45,18 @@ var ZoneFilter = React.createClass({
         exclusions : {},
         filters:FareZoneFilterStore.getFarezoneFilters(),
         selection : [],
+        filterId : null,
       };
+  },
+  componentWillReceiveProps : function(nextProps){
+    var flag  = 0;
+    if(originalDates && !_.isEqual(originalDates,nextProps.dates)){
+      flag = flag || 1;
+    }
+    if(flag && !this.state.dirty){
+      console.log('!!!!!!!!!!!SETTING DATA DIRTY!!!!!!!!!!!');
+      this.setState({dirty:true});
+    }
   },
   zoneFilter : function(id,line){
     var scope = this;
@@ -59,7 +72,12 @@ var ZoneFilter = React.createClass({
       target.style('background-color','gray');
     }
     var filteredZones = scope.currentFilter(scope.props.zones,excludes);
-    scope.setState({exclusions:excludes},function(){
+    var dirty = false;
+    if(originalFilter && !_.isEqual(excludes,originalFilter) && !scope.state.dirty){
+      dirty = true;
+      console.log('!!!!!!!!!!!SETTING DATA DIRTY!!!!!!!!!!!');
+    }
+    scope.setState({exclusions:excludes,dirty:dirty},function(){
       scope.props.zoneFilter(filteredZones);
     });
   },
@@ -75,9 +93,12 @@ var ZoneFilter = React.createClass({
                 filtername:d.filter_name,
                 filter:[this.state.exclusions],
                 dates: this.props.dates,
+                id : (this.state.dirty) ? -1:this.state.filterId,
               };
-    if(data.filtername && data.filtername.length >= 1)
+    if(data.filtername && data.filtername.length >= 1){
+      console.log('Tried To Save',data);
       FarezoneActionsCreator.saveFilter(data);
+    }
     else
       console.log('Fail to save');
   },
@@ -94,7 +115,9 @@ var ZoneFilter = React.createClass({
         currfilter.dates[d] = new Date(currfilter.dates[d]);
     });
     var filteredDates = currfilter.dates;
-    scope.setState({selection:[selection.id],exclusions:currfilter.filter[0]},function(){
+    originalDates = _.cloneDeep(filteredDates);
+    originalFilter = _.cloneDeep(filteredZones);
+    scope.setState({filterId:selection.id,exclusions:currfilter.filter[0],dirty:false},function(){
       scope.props.zoneFilter(filteredZones,filteredDates);
     });
   },
@@ -170,7 +193,7 @@ var ZoneFilter = React.createClass({
           styleWidth='50%'
           onSelection={scope.onSelect}
           placeholder={'Previous filters'}
-          val={scope.state.selection}
+          val={(scope.state.filterId)?[scope.state.filterId]:[]}
         />
       <CreationForm
         buttonText={'Save Filter'}

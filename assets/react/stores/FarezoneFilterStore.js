@@ -75,6 +75,22 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
 
 });
 
+function saveFilter(filter){
+  if(!filter.id || filter.id >= 0){
+    console.log('CREATING FILTER');
+    SailsWebApi.update('farezonefilter',filter,function(){
+      requireFilters();
+    });
+  }
+  else if(filter.id && filter.id < 0){
+    console.log('UPDATING FILTER');
+    delete filter.id;
+    SailsWebApi.create('farezonefilter',filter,function(){
+      requireFilters();
+    });
+  }
+}
+
 FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
   //console.log('action happening',action);
@@ -88,9 +104,8 @@ FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SAVE_FAREZONEFILTER:
       //console.log('saving farezone filter',action.data);
-      SailsWebApi.create('farezonefilter',action.data,function(){
-        requireFilters();
-      });
+      //save the data;
+      saveFilter(action.data);
     break;
     case ActionTypes.RECEIVE_FAREZONEFILTERS:
       //console.log('Receive farezone filters',action.data);
