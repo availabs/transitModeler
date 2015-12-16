@@ -12,6 +12,7 @@ var React = require('react'),
     Select2Component = require('../utils/Select2.react'),
     FareZoneFilterStore = require('../../stores/FarezoneFilterStore'),
     FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator'),
+    FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react'),
     CreationForm = require('../gtfs/CreationForm.react');
 
 var numrexp = /[0-9]+/g;
@@ -84,13 +85,17 @@ var ZoneFilter = React.createClass({
     var scope = this;
     var currfilter = scope.state.filters.reduce(function(a,b){
       if(b.id === selection.id)
-        return b.filter[0];
+        return b;
       else
         return a;
     },[]);
-    var filteredZones = scope.currentFilter(scope.props.zones,currfilter);
-    scope.setState({selection:[selection.id],exclusions:currfilter},function(){
-      scope.props.zoneFilter(filteredZones);
+    var filteredZones = scope.currentFilter(scope.props.zones,currfilter.filter[0]);
+    Object.keys(currfilter.dates).forEach(function(d){
+        currfilter.dates[d] = new Date(currfilter.dates[d]);
+    });
+    var filteredDates = currfilter.dates;
+    scope.setState({selection:[selection.id],exclusions:currfilter.filter[0]},function(){
+      scope.props.zoneFilter(filteredZones,filteredDates);
     });
   },
   colortype : function(name,route){
@@ -104,20 +109,49 @@ var ZoneFilter = React.createClass({
   filterNameInputChange : function(d){
     return validInput(d);
   },
+
+  renderSummary : function(){
+    var scope = this;
+    var zones=scope.state.exclusions;
+    var dates=scope.props.dates;
+    var dataAmount = 0;
+    dataAmount += Object.keys(zones).map(function(d){
+      return zones[d].length;
+    }).reduce(function(p,c){ return p + c;},0);
+    dataAmount += Object.keys(dates).length;
+    if(dataAmount > 0)
+      return (
+        <FarezoneFilterSummary
+          zones={zones}
+          dates={dates}
+          />
+      );
+    else
+      return (<span></span>);
+  },
+
   render : function(){
     var scope = this;
-    if(!this.props.route || !((Object.keys(scope.props.zones).length >0) && (Object.keys(scope.props.colors).length > 0)) )
+    var rzones;
+    if(!((Object.keys(scope.props.zones).length >0) && (Object.keys(scope.props.colors).length > 0)) )
       return <div></div>;
-
-    var rzones = (<div className={'row'}>{
-      Object.keys(scope.props.zones[scope.props.route]).map(function(d,i){
-        var name = d;
-        return (<div onClick={scope.zoneFilter.bind(null,name,scope.props.route)} style={{backgroundColor:scope.colortype(name,scope.props.route)}} id={'fare_zone'+name} className={'col-md-3'}>
-          <div className={'col-md-1'} style={{backgroundColor:scope.props.colors[d],width:'15px',height:'15px'}}></div>
-          <p>{d}</p>
-        </div>);
-      })
-    }</div>);
+    if(!scope.props.route){
+      rzones = {};
+    }
+    else{
+      rzones = (<div className={'row'}>
+                  <p>Current Route Zones</p>
+                  {
+                  Object.keys(scope.props.zones[scope.props.route]).map(function(d,i){
+                    var name = d;
+                    return (<div onClick={scope.zoneFilter.bind(null,name,scope.props.route)} style={{backgroundColor:scope.colortype(name,scope.props.route)}} id={'fare_zone'+name} className={'col-md-3'}>
+                      <div className={'col-md-1'} style={{backgroundColor:scope.props.colors[d],width:'15px',height:'15px'}}></div>
+                      <p>{d}</p>
+                    </div>);
+                  })
+              }
+              </div>);
+    }
     var allowable = [];
     var currentZones = this.currentFilter(scope.props.zones);
     var zonelist = currentZones.toString();
@@ -125,8 +159,10 @@ var ZoneFilter = React.createClass({
     var filterSelect = scope.state.filters.map(function(d){
       return {id:d.id,'text':d.filtername};
     });
+    console.log('current filter',this.state.filters);
     return (
       <div>
+        <h5>FareZone Filters</h5>
         <Select2Component
           id='FilterSelector'
           dataSet={filterSelect}
@@ -143,8 +179,8 @@ var ZoneFilter = React.createClass({
         handleChange={this.filterNameInputChange}
         saveAction={this.saveFilterAction}
         />
-        <p>Current Route Zones</p>
         {rzones}
+        {scope.renderSummary()}
       </div>
     );
   },

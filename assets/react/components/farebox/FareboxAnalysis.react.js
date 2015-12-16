@@ -116,7 +116,6 @@ var FareboxAnalysis = React.createClass({
             farebox : FareboxStore.getFarebox(this.props.marketarea.id),
             filters:{},
             filter :[],
-            colors:{},
             zones:[],
             zfilter:{},
             routeFilter:null,
@@ -257,22 +256,19 @@ var FareboxAnalysis = React.createClass({
         }
     },
     calendarClick : function(d){
-      var scope = this,
-          colors = this.state.colors;
+      var scope = this;
       console.log('data',d); //d is a YYYY-MM-DD string\
-      var filters = this.state.filters;
+      var filters = _.cloneDeep(this.state.filters);
       if(filters[d]){
         scope.filterClear(d);
       }else{
         var data = d.split('-');
         var date = new Date(data[0],data[1]-1,data[2]);
         filters[d] = date;
-        colors[d] = d3.select('#d'+d).attr('fill');
-        console.log(colors[d]);
         scope.calcData(true);
+        this.setState({filters:filters,filter:Object.keys(filters)});
+        console.log('filters',filters,Object.keys(filters));
       }
-      console.log('filters',filters,Object.keys(filters));
-      this.setState({filters:filters,filter:Object.keys(filters),colors:colors});
     },
     _renderCalendars:function(){
         var scope = this;
@@ -308,18 +304,12 @@ var FareboxAnalysis = React.createClass({
     },
     filterClear : function(id){
       this.calcData(true);
-      var colors = this.state.colors;
       if(!id){ //if no id is given clear them all
-        Object.keys(colors).forEach(function(d){
-          d3.select('#d'+d).attr('fill',colors[d]);
-        });
         this.setState({filters:{},filter:[]});
       }else{
-        var filters = this.state.filters;
+        var filters = _.cloneDeep(this.state.filters);
         delete filters[id];
-        d3.select('#d'+id).attr('fill',colors[id]);
-        delete colors[id];
-        this.setState({filters:filters,filter:Object.keys(filters),colors:colors});
+        this.setState({filters:filters,filter:Object.keys(filters)});
       }
     },
     calcData : function(reset,range){
@@ -341,10 +331,10 @@ var FareboxAnalysis = React.createClass({
     delRoute : function(){
       this.setState({route:null,zfilter:{},zones:{}});
     },
-    zoneFilter : function(zonefilter){
+    zoneFilter : function(zonefilter,datefilter){
       console.log('zonefilter',zonefilter);
       this.calcData(true);
-      this.setState({zfilter:zonefilter});
+      this.setState({zfilter:zonefilter,filters:datefilter});
 
     },
     onSet : function(range){
@@ -450,7 +440,6 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-        console.log('filters',this.state.filters);
         return (
     	   <div>
                 <div className="row">
@@ -468,6 +457,8 @@ var FareboxAnalysis = React.createClass({
                               setRoute={this.setRoute}
                               removeRoute={this.delRoute}
                              />
+                         </section>
+                         <section className="widget">
                            <ZoneFilter
                              route = {this.state.route}
                              zoneFilter={this.zoneFilter}

@@ -58,6 +58,7 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
   getFarezoneFilters : function(){
     if(Object.keys(_filterSets).length > 0){
       waiting = false;
+      console.log('farezoneFiltersets',_filterSets);
       return _filterSets;
     }else if(!waiting){
       waiting = true;

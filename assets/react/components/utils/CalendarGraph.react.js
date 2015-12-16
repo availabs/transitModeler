@@ -2,6 +2,7 @@
 'use strict';
 var React = require('react'),
     d3 = require('d3'),
+    _ = require('lodash'),
     colorbrewer = require('colorbrewer'),
 
     //-- Stores
@@ -34,22 +35,25 @@ var GraphContainer = React.createClass({
 
 
     componentWillReceiveProps:function(nextProps){
-        if(!this.props.data && nextProps.data){
-            //console.log('receive1',this.props.divId,Object.keys(nextProps.data).length);
-            this._updateData(nextProps.data);
-        }
-        else if(nextProps.data && Object.keys(nextProps.data).length !== Object.keys(this.props.data).length){
-            //console.log('receive2',this.props.divId,Object.keys(nextProps.data).length,Object.keys(this.props.data).length);
-            this._updateData(nextProps.data);
-        }
+        // if(!this.props.data && nextProps.data){
+        //     //console.log('receive1',this.props.divId,Object.keys(nextProps.data).length);
+        //     this._updateData(nextProps.data);
+        // }
+        // else if((nextProps.data && Object.keys(nextProps.data).length !== Object.keys(this.props.data).length) ||
+        //         (!_.isEqual(this.props.filters,nextProps.filters))){
+        //     //console.log('receive2',this.props.divId,Object.keys(nextProps.data).length,Object.keys(this.props.data).length);
+        //     this._updateData(nextProps);
+        // }
     },
 
     _updateData:function(newData){
         var scope = this;
-        var showData = this.props.data;
+        var showData = this.props.data,filters = {};
         if(newData){
-            showData = newData;
+            showData = newData.data;
+            filters  = newData.filters;
         }
+
         console.log('_updateData1' ,this.props.divId,   showData);
 
         if(showData && Object.keys(showData).length > 0 ){
@@ -71,10 +75,14 @@ var GraphContainer = React.createClass({
                     return d in showData;
                 })
                 .attr("fill", function(d,i) {
-                    // if(i < 10){
-                    //     console.log(d,scope.props.data[d],DataScale(scope.props.data[d]),DataScale(max/2),max,max/2)
-                    // }
-                    return DataScale(showData[d]);
+                  if(filters[d]){
+                    return '#f33';
+                  }
+                  if(scope.props.data[d]){
+                    console.log(d);
+                    return DataScale(showData[d]) || '#fff';
+                  }
+                  return '#fff';
                 })
                 .select("title")
                     .text(function(d) { return d + ": " + showData[d]; });
@@ -119,22 +127,13 @@ var GraphContainer = React.createClass({
           .enter().append("rect")
             .attr("class", "day") //day rectangles
             .on('click',function(d){
-              scope.props.onClick(d);
-              var rect = d3.select(this);
-
-                rect.attr('fill',function(){
-                  if(scope.props.filters[d]){
-                    return '#f33';
-                  }
-                  return DataScale(scope.props.data[d]) || '#fff';
-                });
-
+                scope.props.onClick(d);
             })
             .attr('fill',function(d){
-                if(scope.props.filters[format(d)]){
+                if(scope.props.filters[d]){
                   return '#f33';
                 }
-                if(scope.props.data[format(d)]){
+                if(scope.props.data[d]){
                   console.log(d);
                   return DataScale(scope.props.data[d]);
                 }
@@ -198,6 +197,18 @@ var GraphContainer = React.createClass({
             </div>
 
         );
+    },
+
+    componentDidUpdate : function(prevProps){
+      if(!prevProps.data && this.props.data){
+          //console.log('receive1',this.props.divId,Object.keys(nextProps.data).length);
+          this._updateData(this.props);
+      }
+      else if((this.props.data && Object.keys(this.props.data).length !== Object.keys(prevProps.data).length) ||
+              (!_.isEqual(this.props.filters,prevProps.filters))){
+          //console.log('receive2',this.props.divId,Object.keys(nextProps.data).length,Object.keys(this.props.data).length);
+          this._updateData(this.props);
+      }
     }
 });
 
