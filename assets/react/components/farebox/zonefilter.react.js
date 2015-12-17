@@ -133,7 +133,7 @@ var ZoneFilter = React.createClass({
     return validInput(d);
   },
 
-  renderSummary : function(){
+  isActiveFilter : function() {
     var scope = this;
     var zones=scope.state.exclusions;
     var dates=scope.props.dates;
@@ -143,6 +143,17 @@ var ZoneFilter = React.createClass({
     }).reduce(function(p,c){ return p + c;},0);
     dataAmount += Object.keys(dates).length;
     if(dataAmount > 0)
+      return true;
+    else {
+      return false;
+    }
+  },
+
+  renderSummary : function(){
+    var scope = this;
+    var zones=scope.state.exclusions;
+    var dates=scope.props.dates;
+    if(scope.isActiveFilter())
       return (
         <FarezoneFilterSummary
           zones={zones}
@@ -182,6 +193,19 @@ var ZoneFilter = React.createClass({
     var filterSelect = scope.state.filters.map(function(d){
       return {id:d.id,'text':d.filtername};
     });
+    var form;
+    if(scope.isActiveFilter())
+      form = (
+        <CreationForm
+          buttonText={'Save Filter'}
+          id={'filterForm'}
+          values={{'filter_name':'filtername'}}
+          handleChange={this.filterNameInputChange}
+          saveAction={this.saveFilterAction}
+          invalidMessages={{'filter_name':'Invalid Filter Name'}}
+          />
+      );
+
     console.log('current filter',this.state.filters);
     return (
       <div>
@@ -195,14 +219,7 @@ var ZoneFilter = React.createClass({
           placeholder={'Previous filters'}
           val={(scope.state.filterId)?[scope.state.filterId]:[]}
         />
-      <CreationForm
-        buttonText={'Save Filter'}
-        id={'filterForm'}
-        values={{'filter_name':'filtername'}}
-        handleChange={this.filterNameInputChange}
-        saveAction={this.saveFilterAction}
-        invalidMessages={{'filter_name':'Invalid Filter Name'}}
-        />
+      {(form)?form:<span></span>}
         {rzones}
         {scope.renderSummary()}
       </div>

@@ -46,6 +46,11 @@ var FareboxRoutes = React.createClass({
       timeRange:[],
     };
   },
+  componentWillReceiveProps : function(nextProps){
+    if(this.state.selection[0] !== nextProps.routeId){
+      this.setState({selection:[nextProps.routeId]});
+    }
+  },
   update : function(zones,e,selection){
     var scope = this;
     if(selection){
@@ -118,7 +123,7 @@ var FareboxAnalysis = React.createClass({
             filter :[],
             zones:[],
             zfilter:{},
-            routeFilter:null,
+            routeF:null,
         };
     },
 
@@ -372,11 +377,11 @@ var FareboxAnalysis = React.createClass({
       var rid = e.target.getAttribute('data-key'); //get the route from the row
 
       scope.forceRender = true;
-      if(this.state.routeFilter === rid){
-          this.setState({routeFilter:null});
+      if(this.state.route === rid){
+          this.setState({route:null});
       }
       else{
-          this.setState({routeFilter:rid});
+          this.setState({route:rid});
       }
     },
     setStopColors : function(colormap){
@@ -481,6 +486,7 @@ var FareboxAnalysis = React.createClass({
                               stopsGeo={this.props.stopsGeo}
                               setRoute={this.setRoute}
                               removeRoute={this.delRoute}
+                              routeId={this.state.route}
                              />
                          </section>
                          <section className="widget">
