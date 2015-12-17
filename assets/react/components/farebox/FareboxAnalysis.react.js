@@ -47,7 +47,7 @@ var FareboxRoutes = React.createClass({
     };
   },
   componentWillReceiveProps : function(nextProps){
-    if(this.state.selection[0] !== nextProps.routeId){
+    if(nextProps.routeId && this.state.selection[0] !== nextProps.routeId){
       this.setState({selection:[nextProps.routeId]});
     }
   },
@@ -353,9 +353,11 @@ var FareboxAnalysis = React.createClass({
         p[c] = {zone:c,color:d3.scale.category20().range()[i%20]};
         return p;
       },{});
+      this.calcData(true);
       this.setState({route:id,zones:zones});
     },
     delRoute : function(){
+      this.calcData(true);
       this.setState({route:null,zfilter:{},zones:{}});
     },
     zoneFilter : function(zonefilter,datefilter){
@@ -377,6 +379,7 @@ var FareboxAnalysis = React.createClass({
       var rid = e.target.getAttribute('data-key'); //get the route from the row
 
       scope.forceRender = true;
+      this.calcData(true);
       if(this.state.route === rid){
           this.setState({route:null});
       }
@@ -445,6 +448,7 @@ var FareboxAnalysis = React.createClass({
             {name:'Color Key',key:'color'},
             {name:'Full Day',key:'fullDay',summed:true}
         ];
+        console.log('TableData',TableData);
         var calendars = this._renderCalendars();
         var routes = emptyGeojson;
         var stops = {type:"FeatureCollection",features:[]};
