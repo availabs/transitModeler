@@ -268,6 +268,12 @@ var MarketAreaMap = React.createClass({
                         }else if(scope.props.largeStops){
                           r = 10;
                         }
+                        var color;
+                        if(scope.props.mode){
+                          color = (scope.props.mode==='stop_alighting')?"#0a0" :'#a00';
+                        }else{
+                          color = (d.properties.color)?d.properties.color:'#fff';
+                        }
                         var options = {
 
 
@@ -277,7 +283,7 @@ var MarketAreaMap = React.createClass({
                             fillOpacity: 0.9,
                             stroke:false,
                             className:'busStop',
-                            fillColor: scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00',
+                            fillColor: color,
                             radius: r
                         };
                         return L.circleMarker(latlng, options);
