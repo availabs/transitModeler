@@ -126,7 +126,7 @@ var Sliders = React.createClass({
                 {deletebutton}
               </div>
             </div>
-            
+
           </div>
           <div className='row'>
 
@@ -142,10 +142,10 @@ var Sliders = React.createClass({
                 range={scope.state.range}
                 forceRender={true}
                 maxRange={max}
-                rangeTicks = {0}
+                rangeTicks = {3}
                 />
             </div>
-            
+
           </div>
 
 

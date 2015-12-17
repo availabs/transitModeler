@@ -500,6 +500,7 @@ var FareboxAnalysis = React.createClass({
                              zones = {zoneInfo.zones}
                              colors = {zoneInfo.colors}
                              dates = {this.state.filters}
+                             marketarea={this.props.marketarea}
                              />
                         </section>
                     </div>

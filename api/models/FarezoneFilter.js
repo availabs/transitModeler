@@ -11,5 +11,7 @@ module.exports = {
     filter:'array',
     id:'integer',
     dates:'json',
+    maid:'integer',
+    stateid:'string'
   }
 };

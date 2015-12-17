@@ -19,13 +19,17 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 
     //--Store Globals--------------------
+    MarketAreaStore = require('./MarketAreaStore'),
     waiting = false,
     _filterSets = {},
     _currentFilterSet = {};
 
 
-function requireFilters(){
-  SailsWebApi.read({type:'farezonefilter',options:{sort:'id%20ASC'}});
+function requireFilters(maid){
+
+  SailsWebApi.read({type:'farezonefilter',options:{
+    where:'{"maid":'+maid+'}',
+    sort:'id%20ASC'}});
 }
 function deleteLocalFilter(filter){
   var ix = -1;
@@ -56,13 +60,16 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
   },
 
   getFarezoneFilters : function(){
-    if(Object.keys(_filterSets).length > 0){
+    var ma= MarketAreaStore.getCurrentMarketArea();
+    if(!ma)
+      return [];
+    if(_filterSets[ma.id] && Object.keys(_filterSets[ma.id]).length > 0){
       waiting = false;
-      console.log('farezoneFiltersets',_filterSets);
-      return _filterSets;
-    }else if(!waiting){
+      console.log('farezoneFiltersets',_filterSets[ma.id]);
+      return _filterSets[ma.id];
+    }else if(!waiting && ma.id ){
       waiting = true;
-      requireFilters();
+      requireFilters(ma.id);
       return [];
     }else{
       return [];
@@ -80,15 +87,23 @@ function saveFilter(filter){
     console.log('CREATING FILTER');
     delete filter.id;
     SailsWebApi.create('farezonefilter',filter,function(){
-      requireFilters();
+      requireFilters(filter.maid);
     });
   }
   else if(filter.id && filter.id >= 0){
     console.log('UPDATING FILTER');
     SailsWebApi.update('farezonefilter',filter,function(){
-      requireFilters();
+      requireFilters(filter.maid);
     });
   }
+}
+
+function setFilters(filters){
+  var ma = MarketAreaStore.getCurrentMarketArea();
+  if(!ma)
+    return console.log('FAREZONE FILTER ADDS: error - no market area');
+  _filterSets[ma.id] = filters;
+  return true;
 }
 
 FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
@@ -109,8 +124,9 @@ FarezoneFilterStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
     case ActionTypes.RECEIVE_FAREZONEFILTERS:
       //console.log('Receive farezone filters',action.data);
-      _filterSets = action.data ;
-      FarezoneFilterStore.emitChange();
+      var worked = setFilters(action.data);
+      if(worked)
+        FarezoneFilterStore.emitChange();
     break;
 
     case ActionTypes.DELETE_FAREZONEFILTER:

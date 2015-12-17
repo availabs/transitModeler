@@ -96,6 +96,8 @@ var ZoneFilter = React.createClass({
                 filter:[this.state.exclusions],
                 dates: this.props.dates,
                 id : (this.state.dirty) ? -1:this.state.filterId,
+                stateid : this.props.marketarea.stateFips,
+                maid : this.props.marketarea.id,
               };
     if(data.filtername && data.filtername.length >= 1){
       console.log('Tried To Save',data);
@@ -208,7 +210,7 @@ var ZoneFilter = React.createClass({
           />
       );
 
-    console.log('current filter',this.state.filters);
+    console.log('current filter',this.props.marketarea);
     return (
       <div>
         <h5>FareZone Filters</h5>
