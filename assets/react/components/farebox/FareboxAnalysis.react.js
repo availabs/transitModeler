@@ -165,7 +165,6 @@ var FareboxAnalysis = React.createClass({
         return route === id;
       };
     },
-
     filterByTime : function(timeRange){
       var scope = this;
       return function(d){
@@ -237,6 +236,7 @@ var FareboxAnalysis = React.createClass({
         //get the number of days that farebox corresponds to.
         fareboxFilters.zone = scope.filterByZones();
         var totalDays = scope._getNumDays();
+        fareboxFilters.run_date = scope._validDate;
         var data = FareboxStore.queryFarebox('hours',fareboxFilters).map(function(d){
           var key = d.key.split(';');
           return {x:key[0]+':00',y:(d.value/totalDays), color:colors[key[1]], group:key[1]};
@@ -440,6 +440,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
+        console.log('Time Distribution',totalHours);
         return (
     	   <div>
                 <div className="row">
