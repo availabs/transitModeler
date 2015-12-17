@@ -201,6 +201,7 @@ var ZoneFilter = React.createClass({
         values={{'filter_name':'filtername'}}
         handleChange={this.filterNameInputChange}
         saveAction={this.saveFilterAction}
+        invalidMessages={{'filter_name':'Invalid Filter Name'}}
         />
         {rzones}
         {scope.renderSummary()}

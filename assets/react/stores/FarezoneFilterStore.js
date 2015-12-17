@@ -25,7 +25,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 
 function requireFilters(){
-  SailsWebApi.read('farezonefilter');
+  SailsWebApi.read({type:'farezonefilter',options:{sort:'id%20ASC'}});
 }
 function deleteLocalFilter(filter){
   var ix = -1;
@@ -76,16 +76,16 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
 });
 
 function saveFilter(filter){
-  if(!filter.id || filter.id >= 0){
+  if(!filter.id || filter.id < 0){
     console.log('CREATING FILTER');
-    SailsWebApi.update('farezonefilter',filter,function(){
+    delete filter.id;
+    SailsWebApi.create('farezonefilter',filter,function(){
       requireFilters();
     });
   }
-  else if(filter.id && filter.id < 0){
+  else if(filter.id && filter.id >= 0){
     console.log('UPDATING FILTER');
-    delete filter.id;
-    SailsWebApi.create('farezonefilter',filter,function(){
+    SailsWebApi.update('farezonefilter',filter,function(){
       requireFilters();
     });
   }

@@ -177,6 +177,28 @@ var FareboxAnalysis = React.createClass({
         return true;
       };
     },
+    filterByDate : function(date){
+      var scope = this;
+      var _validDate = function(date){
+        var filters = scope.state.filters,retval = true;
+        var keys = Object.keys(filters);
+        if(keys.length === 0){
+          return true;
+        }
+        retval = keys.map(function(d){
+            var fdate = filters[d];
+            var val =  fdate.toDateString() === date.toDateString();
+            return val;
+        }).reduce(function(p,c){return p || c;});
+        return retval;
+      };
+      if(!date){
+        return _validDate;
+      }
+      else{
+        return _validDate(date);
+      }
+    },
     _onChange:function(){
         this.calcData(true);
         this.setState(this._getStateFromStore());
@@ -202,7 +224,7 @@ var FareboxAnalysis = React.createClass({
             ).map(function(line){
               //need to filter by farezones
                 var run_dates = FareboxStore.queryFarebox('run_date',{'line':scope.filterByRoute(line.key)},true);
-                run_dates = run_dates.filter(function(d){return scope._validDate(d.key);});
+                run_dates = run_dates.filter(function(d){return scope.filterByDate(d.key);});
                 //filtering by Line
                 var daySum = run_dates
                 .map(function(d){
@@ -236,7 +258,7 @@ var FareboxAnalysis = React.createClass({
         //get the number of days that farebox corresponds to.
         fareboxFilters.zone = scope.filterByZones();
         var totalDays = scope._getNumDays();
-        fareboxFilters.run_date = scope._validDate;
+        fareboxFilters.run_date = scope.filterByDate();
         var data = FareboxStore.queryFarebox('hours',fareboxFilters).map(function(d){
           var key = d.key.split(';');
           return {x:key[0]+':00',y:(d.value/totalDays), color:colors[key[1]], group:key[1]};
@@ -332,8 +354,10 @@ var FareboxAnalysis = React.createClass({
       this.setState({route:null,zfilter:{},zones:{}});
     },
     zoneFilter : function(zonefilter,datefilter){
+      var scope = this;
       console.log('zonefilter',zonefilter);
       this.calcData(true);
+      datefilter = datefilter || scope.state.filters;
       this.setState({zfilter:zonefilter,filters:datefilter});
 
     },
