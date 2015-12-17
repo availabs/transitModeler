@@ -44,7 +44,6 @@ var ZoneFilter = React.createClass({
       return{
         exclusions : {},
         filters:FareZoneFilterStore.getFarezoneFilters(),
-        selection : [],
         filterId : null,
       };
   },
@@ -55,7 +54,7 @@ var ZoneFilter = React.createClass({
     }
     if(flag && !this.state.dirty){
       console.log('!!!!!!!!!!!SETTING DATA DIRTY!!!!!!!!!!!');
-      this.setState({dirty:true});
+      this.setState({dirty:true,filterId:null});
     }
   },
   zoneFilter : function(id,line){
@@ -72,12 +71,15 @@ var ZoneFilter = React.createClass({
       target.style('background-color','gray');
     }
     var filteredZones = scope.currentFilter(scope.props.zones,excludes);
+    var partialState = {exclusions:excludes};
     var dirty = false;
     if(originalFilter && !_.isEqual(excludes,originalFilter) && !scope.state.dirty){
       dirty = true;
       console.log('!!!!!!!!!!!SETTING DATA DIRTY!!!!!!!!!!!');
+      partialState.filterId=null;
     }
-    scope.setState({exclusions:excludes,dirty:dirty},function(){
+    partialState.dirty = dirty;
+    scope.setState(partialState,function(){
       scope.props.zoneFilter(filteredZones);
     });
   },
