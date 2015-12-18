@@ -37,7 +37,25 @@ function _addJobs(rawData){
 }
 
 function _addHistory(rawData){
-    _history = rawData;
+    var wasHistory = true;
+    if(_history.length === 0){
+      _history = rawData;
+    }
+    else if(_history.length === 1 && rawData.length === 1){
+      _history = rawData;
+    }
+    else if (rawData.length === 1){
+      wasHistory = false;
+      _history.forEach(function(d){
+        if(rawData[0].id === d.id){
+          d = rawData[0];
+          wasHistory = true;
+        }
+      });
+    }
+    if(!wasHistory){
+      _addJobs(rawData);
+    }
 }
 
 

@@ -12,12 +12,12 @@ var ActionTypes = Constants.ActionTypes;
 module.exports = {
 
   setActiveYear: function(data) {
-    
+
     AppDispatcher.handleViewAction({
       type: ActionTypes.SET_ACTIVE_DATA_YEAR,
       year: data
     });
-  
+
   },
 
 };

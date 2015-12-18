@@ -25,7 +25,7 @@ module.exports = {
     },
 
   	type:'STRING',
-  	
+
     info:{
   		type:'array'
   	},
@@ -33,7 +33,7 @@ module.exports = {
     pid:'string',
 
     status:'string',
-    
+
     progress:{
       type:'integer',
       defaultsTo:0
@@ -50,6 +50,8 @@ module.exports = {
         //console.log('Job Update Cancelling');
         if(typeof values.pid != 'undefined' && values.pid != null){
           console.log('Job Update Killing', values.pid);
+          values.isFinished = true;
+          values.finished = Date();
           kill(values.pid, 'SIGKILL');
         }
       }
@@ -58,4 +60,3 @@ module.exports = {
   }
 
 };
-

@@ -83,7 +83,7 @@ var DatasourcesStore = assign({}, EventEmitter.prototype, {
       newestjob = jobs[jobs.length-1].id;
     }
     else{
-      _refresh = !_refresh && jobs.reduce(function(p,c){return p.isFinished && c.isFinished;});
+      _refresh = !_refresh && jobs.reduce(function(p,c){return {isFinished:p.isFinished && c.isFinished};}).isFinished;
       newestjob = jobs[jobs.length-1].id;
     }
     if(_refresh && newestjob !== _lastjob){
