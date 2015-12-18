@@ -228,7 +228,7 @@ var TimeSlider = React.createClass({
          .attr('y','0')
          .attr('x',-margin.left/2)
          .style('text-anchor','start')
-         .text(maxRange.toFixed(1));
+         .text(maxRange && maxRange.toFixed(1));
       var gBrush = group.append('g')
                       .attr('class','brush')
                       .style({

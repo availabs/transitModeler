@@ -69,14 +69,10 @@ var SurveyGraph = React.createClass({
                 //.showValues(false)       //...instead, show the bar value right on top of each bar.
                 .transitionDuration(350)
 
-                // chart.discretebar.dispatch.on("elementClick", function(e) {
-                //     console.log(e);
-                //     var filter = {};
-                //     filter[scope.props.groupName] = e.point.key
-                //     console.log(filter,e);
-                //     scope.props.filterFunction(filter);
-                // });
-                //.showControls(false)
+                chart.discretebar.dispatch.on("elementClick", function(e) {
+                    scope.props.filterFunction(e.point.key);
+                });
+                // .showControls(false)
 
                 if(scope.props.colors && (typeof scope.props.colors !== 'string')){
                   chart.color(function(d){

@@ -49,6 +49,8 @@ var FareboxRoutes = React.createClass({
   componentWillReceiveProps : function(nextProps){
     if(nextProps.routeId && this.state.selection[0] !== nextProps.routeId){
       this.setState({selection:[nextProps.routeId]});
+    }else if(!nextProps.routeId){
+      this.setState({selection:[]});
     }
   },
   update : function(zones,e,selection){
@@ -399,6 +401,15 @@ var FareboxAnalysis = React.createClass({
           this.setState({route:rid});
       }
     },
+    graphClick : function(rid){
+      this.calcData(true);
+      if(this.state.route === rid){
+          this.setState({route:null});
+      }
+      else{
+          this.setState({route:rid});
+      }
+    },
     setStopColors : function(colormap){
       var scope = this;
       scope.props.stopsGeo.features.forEach(function(d){
@@ -488,7 +499,7 @@ var FareboxAnalysis = React.createClass({
         var totalHours = scope._getHours(colors);
 
         var graphs =[
-                    {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:Label},
+                    {type:FareboxGraph,data:fullDay,filterFunction:scope.graphClick,height:'250',colors:colors, label:Label},
         ];
         graphs = graphs.map(function(d){
           var retval = function(){
