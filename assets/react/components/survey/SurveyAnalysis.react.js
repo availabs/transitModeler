@@ -29,6 +29,9 @@ var SurveyAnalysis = React.createClass({
             surveyData : SurveyStore.getData(this.props.marketarea.id),
             filters:{},
             type:'unweighted',
+            stops:true,
+            tracts:true,
+            routes:true,
         };
     },
 
@@ -162,10 +165,40 @@ var SurveyAnalysis = React.createClass({
             return retval;
         });
     },
-
+    _renderODSummary : function(){
+      var scope = this;
+      var survey = scope.state.currentSurvey;
+      if(!survey)
+        return (<span></span>);
+      var component = Object.keys(survey)
+      .map(function(d){
+        return (<div className='row'><div className='col-lg-6'>{d}</div><div className='col-lg-6'>{survey[d]}</div></div>);
+      });
+      return <div style={{overflow:'hidden'}}>{component}</div>;
+    },
+    surveyClick : function(data){
+      console.log(data);
+      this.setState({currentSurvey:data});
+    },
+    toggleMap : function(layer){
+      //console.log('toggle layer',layer)
+      var newState = {};
+      if(this.state[layer]){
+          d3.selectAll('.'+layer)
+              .style('display','none');
+          newState[layer] = false;
+          this.setState(newState);
+      }else{
+           d3.selectAll('.'+layer)
+              .style('display','block');
+          newState[layer] = true;
+          this.setState(newState);
+      }
+    },
     render: function() {
-       //console.log('survey data',this.state.survey)
+       console.log(this.state.surveyData);
        //console.log('Filters',this.state.filters,this._renderSurveys());
+
         return (
         	<div>
 
@@ -179,7 +212,33 @@ var SurveyAnalysis = React.createClass({
                                 tracts ={this.props.tracts}
                                 survey= {this._filterGeo()}
                                 type={this.state.type}
+                                surveyClick={this.surveyClick}
+                                neverReZoom={true}
                                 routeColors={this.props.marketarea.routecolors} />
+
+                            <section className="widget">
+                              <div className='row'>
+
+                                <div className='col-lg-3'></div>
+                                <div className='col-lg-8'>
+                                <div className='btn-group' data-toggle='buttons' >
+                                  <label className='btn btn-sm btn-info' onClick={this.toggleMap.bind(null,'routes')}>
+                                    <input type='checkbox'/>
+                                      <span>Routes</span>
+                                  </label>
+                                <label className='btn btn-sm btn-info' onClick={this.toggleMap.bind(null,'stops')}>
+                                    <input type='checkbox'/>
+                                      <span>Stops</span>
+                                  </label>
+                                  <label className='btn btn-sm btn-info' onClick={this.toggleMap.bind(null,'tracts')}>
+                                    <input type='checkbox'/>
+                                    <span>Tracts</span>
+                                  </label>
+                                </div>
+                                </div>
+                                <div className='col-lg-1'></div>
+                              </div>
+                            </section>
                         </div>
                         <br/>
 
@@ -187,9 +246,13 @@ var SurveyAnalysis = React.createClass({
                             {this.optionButtons()}
                             <SurveyFilters
                               data={this.state.filters}
-                              buttonclick={this.removeFilter}      />
-                          </section>
+                              buttonclick={this.removeFilter}  />
 
+
+                          </section>
+                          <section className="widget">
+                          {this._renderODSummary()}
+                          </section>
 
                     </div>
                     <div className="col-lg-7">
@@ -202,7 +265,7 @@ var SurveyAnalysis = React.createClass({
 
                             </section>
                         </div>
-                        Filter:{JSON.stringify(this.state.filters)}
+
                     </div>
                 </div>
         	</div>

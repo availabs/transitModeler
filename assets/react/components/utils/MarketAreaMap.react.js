@@ -90,11 +90,11 @@ var MarketAreaMap = React.createClass({
             tractlayerID++;
             prevTractLength = tracts.features.length;
         }
-        if(_.difference(currRoutes,prevRoutes) !== 0 || _.differenece(prevRoutes,currRoutes) !==0){
+        if(!_.isEqual(currRoutes,prevRoutes) ){
             routeLayerID++;
             prevRoutes = currRoutes;
         }
-        if(_.difference(stops,prevStops) !== 0 || _.difference(prevStops,stops) !== 0){
+        if(!_.isEqual(stops,prevStops) ){
             stopslayerID++;
             prevStops = stops;
         }
@@ -110,6 +110,7 @@ var MarketAreaMap = React.createClass({
             surveyLayer:{
                 id:surveyLayerID,
                 geo:survey,
+                bringToFront:true,
                 options:{
                     pointToLayer: function (d, latlng) {
                         //console.log('s',d)
@@ -123,7 +124,7 @@ var MarketAreaMap = React.createClass({
                             stroke:false,
                             className:'survey',
                             fillColor:'#00a',
-                            radius: 5
+                            radius: 7
                         };
                         return L.circleMarker(latlng, options);
                     },
@@ -132,7 +133,7 @@ var MarketAreaMap = React.createClass({
                         layer.on({
 
                             click: function(e){
-                                console.log('station_click',e.target.feature.properties);
+                                scope.props.surveyClick(e.target.feature.properties);
                             },
                             mouseover: function(e){
                                 e.target.setStyle({weight:6,fillColor:'#a00',fillOpacity:0.8,stroke:true});
@@ -166,11 +167,12 @@ var MarketAreaMap = React.createClass({
             tractsLayer:{
                 id:tractlayerID,
                 geo:tracts,
+                bringToBack:true,
                 options:{
                     zoomOnLoad:true,
                     style:function (feature) {
                         return {
-                            className: 'tract_' + feature.properties.geoid,
+                            className: 'tracts tract_' + feature.properties.geoid,
                             fillColor:(!feature.properties.type)?'rgb(69, 237, 139)':'rgb(186, 18, 116)',
                             weight:1,
                             opacity: scope.props.displayTracts ? 0.5 : 0,
@@ -211,7 +213,7 @@ var MarketAreaMap = React.createClass({
                     bringToFront:true,
                     style:function (feature,i) {
                         return {
-                            className: 'route_'+feature.properties.short_name,
+                            className: 'routes route_'+feature.properties.short_name,
                             weight:7,
                             opacity:0.3,
                             color : scope.props.routeColors && scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name]  : '#000'
@@ -282,7 +284,7 @@ var MarketAreaMap = React.createClass({
                             opacity: 0.8,
                             fillOpacity: 0.9,
                             stroke:false,
-                            className:'busStop',
+                            className:'stops busStop',
                             fillColor: color,
                             radius: r
                         };
