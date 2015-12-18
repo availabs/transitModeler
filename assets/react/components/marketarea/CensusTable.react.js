@@ -60,7 +60,7 @@ var CensusTable= React.createClass({
             </tr>
           );
         });
-        data.push([null,null,'Total','100%',total]);
+        data.push([null,null,'Total','100',total.toString()]);
 
         return(
             <div id="tableDiv">
@@ -68,6 +68,7 @@ var CensusTable= React.createClass({
                   data={data}
                   keys={[2,3,4]}
                   filename={category_name}
+                  format={{4:'numeric'}}
                   />
                 <h4>Category:{category_name}</h4>
                 <table className="table table-striped table-hover" id="overview-table">

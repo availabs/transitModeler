@@ -26,7 +26,11 @@ var CsvLink = React.createClass({
     var scope = this;
     this.props.data.forEach(function(rec){
       var line = scope.props.keys.map(function(k){
-                    if(scope.props.format)
+                    if(scope.props.format[k] === 'numeric'){
+                      // console.log((rec[k]).replace(',',''));
+                      return parseFloat((rec[k]).replace(',','')).toString();
+                    }
+
                     return rec[k].toString();
                   }).join(',');
       if(navigator.msSaveBlob){ //IF WE R IN IE :(
