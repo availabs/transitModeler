@@ -25,6 +25,7 @@ crossFares = {
 		crossFares.dimensions['zone'] = crossFares.trips.dimension(function(d){ return d.line+';'+d.boarding_zone+';'+d.alighting_zone;}),
 		crossFares.dimensions['trip'] = crossFares.trips.dimension(function(d){ var t =new Date(d.run_date); return d.line +','+d.trip+','+t.getHours()+':'+t.getMinutes();}),
 		crossFares.dimensions['hours'] = crossFares.trips.dimension(function(d){var t = new Date(d.run_date); return t.getHours()+';'+d.line;}),
+		crossFares.dimensions['direction'] = crossFares.trips.dimension(function(d){return d.direction}),
 
 		crossFares.groups['run_date'] = crossFares.dimensions['run_date'].group(d3.time.day).reduceSum(function(d){return +d['total_transactions']}),
 		crossFares.groups['run_year'] = crossFares.dimensions['run_date'].group(d3.time.year).reduceSum(function(d){return +d['total_transactions']}),

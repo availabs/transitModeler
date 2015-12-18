@@ -123,6 +123,7 @@ var FareboxAnalysis = React.createClass({
             filter :[],
             zones:[],
             zfilter:{},
+            direction:null,
             routeF:null,
         };
     },
@@ -204,6 +205,11 @@ var FareboxAnalysis = React.createClass({
         return _validDate(date);
       }
     },
+    filterByDirection : function(dir){
+      return function(d){
+        return d === dir;
+      };
+    },
     _onChange:function(){
         this.calcData(true);
         this.setState(this._getStateFromStore());
@@ -219,6 +225,9 @@ var FareboxAnalysis = React.createClass({
             console.log('time range',timeRange);
             fareboxFilter.zone = scope.filterByZones();
             fareboxFilter.run_time = scope.filterByTime(timeRange);
+            if(scope.state.direction){
+              fareboxFilter.direction = scope.filterByDirection(scope.state.direction);
+            }
             var data = FareboxStore.queryFarebox('line',fareboxFilter);
             var finalData = data.filter(
               function(d){
@@ -250,13 +259,16 @@ var FareboxAnalysis = React.createClass({
     _getNumDays : function(){
       return Object.keys(this.state.filters).length || this.state.farebox.groups.run_date.size();
     },
-    _getHours : function(colors) {
+    _getHours : function(colors,flag) {
       var scope = this;
       if(scope.state.farebox.dimensions.hours){ //if hours have been specified
         var fareboxFilters = {};
         if(scope.state.route){ //if there is a route filter
           //filter the routes to only contain elements from the filter list
           fareboxFilters.line = scope.filterByRoute(scope.state.route);
+        }
+        if(scope.state.direction){
+          fareboxFilters.direction = scope.filterByDirection(scope.state.direction);
         }
         //filter the data by the date it was collected
         // scope.filterByTime();
@@ -430,12 +442,24 @@ var FareboxAnalysis = React.createClass({
       });
       return {zones:Farezones,colors:zoneMap};
     },
+    setDirection : function(dir){
+      this.calcData(true);
+      this.setState({direction:dir});
+    },
     render: function() {
         //console.log(this.state.farebox,this.state.farebox.all)
         var processData;
         var scope = this,
             fullDay = scope.processor();
         var colors = this.props.marketarea.routecolors;
+        var Label = (function(){
+          if(!scope.state.direction)
+            return 'Full';
+          else if(scope.state.direction === '1')
+            return 'Inbound';
+          else if(scope.state.direction === '0')
+            return 'Outbound';
+        })();
         var TableData = fullDay[0].values.map(function(d,i){
             return {
                 color: (<div style={{width:'20px',height:'20px',backgroundColor:colors[d.key]}}></div>),
@@ -443,12 +467,13 @@ var FareboxAnalysis = React.createClass({
                 fullDay:Math.round(d.value)
             };
         }),
+
         cols = [
             {name:'Bus Line',key:'line'},
             {name:'Color Key',key:'color'},
-            {name:'Full Day',key:'fullDay',summed:true}
+            {name:Label,key:'fullDay',summed:true}
         ];
-        console.log('TableData',TableData);
+
         var calendars = this._renderCalendars();
         var routes = emptyGeojson;
         var stops = {type:"FeatureCollection",features:[]};
@@ -461,10 +486,9 @@ var FareboxAnalysis = React.createClass({
         var zoneInfo = scope.getZones(this.props.stopsGeo); //get zone information
         scope.setStopColors(zoneInfo.colors); //set the color of the stops with the colormap
         var totalHours = scope._getHours(colors);
-        console.log('totals',totalHours);
 
         var graphs =[
-                    {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:'Full Day'},
+                    {type:FareboxGraph,data:fullDay,height:'250',colors:colors, label:Label},
         ];
         graphs = graphs.map(function(d){
           var retval = function(){
@@ -473,7 +497,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-        console.log('Time Distribution',totalHours);
+
         return (
     	   <div>
                 <div className="row">
@@ -508,8 +532,14 @@ var FareboxAnalysis = React.createClass({
                         <div className='row'>
 
                             <section className="widget" style={{overflow:'auto'}}>
+                              <div className='btn-group' data-toggle='buttons'>
+                                <a type='button' onClick={scope.setDirection.bind(null,null)} className={'btn btn-default '+((!this.state.direction)?'active':'')}>Full</a>
+                                <a type='button' onClick={scope.setDirection.bind(null,'1')} className={'btn btn-default '+((this.state.direction === '1')?'active':'')}>Inbound</a>
+                                <a type='button' onClick={scope.setDirection.bind(null,'0')} className={'btn btn-default '+((this.state.direction === '0')?'active':'')}>Outbound</a>
+                              </div>
                                 <GraphDisplay items={graphs} height={500}/>
                                 <TimeSlider
+                                  id={'Total'}
                                   onSet={this.onSet}
                                   width={500}
                                   data={totalHours}

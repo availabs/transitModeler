@@ -17,14 +17,14 @@ module.exports = {
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
-			var sql = 'SELECT line,run,trip,pattern,boarding_zone,alighting_zone,run_date,total_transactions '+
-					  'FROM farebox_data '+
-					  'where line in '+JSON.stringify( ma.routes.filter( function(d){return d;} ) ).replace(/\"/g,"'").replace("[","(").replace("]",")")+
-					  ' order by run_date';
+			var sql = 'SELECT fb.line,fb.run,fb.trip,fb.pattern,fb.boarding_zone,fb.alighting_zone,fb.run_date,fb.total_transactions,pd.direction '+
+					  ' FROM farebox_data as fb LEFT OUTER JOIN pattern_direction as pd ON fb.line=pd.line AND replace(fb.pattern,\'"\',\'\')=pd.bus_pattern ' +
+					  ' where fb.line in '+JSON.stringify( ma.routes.filter( function(d){return d;} ) ).replace(/\"/g,"'").replace("[","(").replace("]",")")+
+					  ' order by fb.run_date';
 
-			// console.log('------------get farebox----------------')
-			// console.log(sql)
-			// console.log('------------/get farebox/----------------')
+			console.log('------------get farebox----------------');
+			console.log(sql);
+			console.log('------------/get farebox/----------------');
 
 			Farebox.query(sql,{},function(err,data){
 				if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
@@ -54,10 +54,10 @@ module.exports = {
 			    dateArray = dateArray.split('_');
 
 			    if(files[0].filename.split('.')[0] !== 'paterson_october'){
-				   	
+
 
 				   	if( dateArray.length !== 3){
-				 		var msg = 'Invalid filename must be month_day_year.csv ex. "7_25_2013.csv" got: '+files[0].filename; 
+				 		var msg = 'Invalid filename must be month_day_year.csv ex. "7_25_2013.csv" got: '+files[0].filename;
 				 		console.log(1,msg)
 				 		return res.json({error:msg});
 				 	}
@@ -66,13 +66,13 @@ module.exports = {
 				   	day = dateArray[1];
 
 				 	if(isNaN(year) || isNaN(month) || isNaN(day)){
-				 		var msg = 'Invalid filename must be month_day_year.csv ex. "7_25_2013.csv" got: '+files[0].filename; 
+				 		var msg = 'Invalid filename must be month_day_year.csv ex. "7_25_2013.csv" got: '+files[0].filename;
 				 		console.log(2,msg)
 				 		return res.json({error:msg});
 				 	}
-				
+
 				}
- 	
+
 		 		fs.readFile(files[0].fd, "utf8", function(error, data) {
 			    	var lines = data.split('\n');
 			    	var names = ['line','run','trip','pattern','time_period','boarding_zone','alighting_zone','total_transactions'];
@@ -85,25 +85,25 @@ module.exports = {
 			    		var cols = d.split(',');
 
 		    			if( ( cols[0] !== '"LINE"' && cols[0] !== 'LINE' )  ){
-			    			
+
 			    			names.forEach(function(d,i){
 			    				if( cols[i] ){
 			    					row[d] = cols[i];
 			    				}
 
 			    			});
-			    			
+
 			    			if(row.time_period){
 			    				if( Object.keys(time_periods).indexOf(row.time_period) >= 0 ) {
-			    					
+
 			    					row['processing_code'] = cols[30];
-			    					
+
 			    					if( date_codes[row.processing_code] ){
 			    						dateArray = date_codes[row.processing_code].split('_');
 			    						year = dateArray[2],
 									   	month = dateArray[0]-1,
 									   	day = dateArray[1];
-									   	
+
 									   	var hour = time_periods[row.time_period],
 									   		minutes = 0;
 
@@ -119,17 +119,17 @@ module.exports = {
 					    			var ampm = timeString.substr(timeString.length-1,1),
 					    				hour = timeString.length === 5 ? timeString.substr(0,2) : timeString.substr(0,1);
 					    				minutes = timeString.length === 5 ? timeString.substr(2,2) : timeString.substr(1,2);
-				    				
+
 				    				if(ampm === 'p'){
 				    					hour =  12 + parseInt(hour);
 				    				}
 				    				row.run_date = new Date(year, month, day, hour, minutes)
 				    					//console.log(row.time_period,year, month, day, hour, minutes,row.run_date.getTime(),row.run_date.toDateString())
-				    				
+
 				    				output.push(row);
 				    			}
 
-				    			
+
 				    		}
 			    		}
 			    	});
@@ -140,7 +140,7 @@ module.exports = {
 			    	});
 
 			    	var sql = 'Insert into farebox_data  ("'+names.join('","')+'",run_date) values ';
-			    	
+
 			    	var values = output.map(function(d){
 			    		return "('"+d.line+"','"+d.run+"','"+d.trip+"','"+d.pattern+"','"+d.time_period+"',"+d.boarding_zone+","+d.alighting_zone+","+d.total_transactions+",'"+d.run_date.toUTCString()+"')"
 			    	}).join(',');
@@ -154,7 +154,7 @@ module.exports = {
 			    	})
 
 		 		}) // end file open
-			 	
+
 			}//end callback
 		)//end upload
 	}

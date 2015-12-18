@@ -228,7 +228,7 @@ var TimeSlider = React.createClass({
          .attr('y','0')
          .attr('x',-margin.left/2)
          .style('text-anchor','start')
-         .text(maxRange);
+         .text(maxRange.toFixed(1));
       var gBrush = group.append('g')
                       .attr('class','brush')
                       .style({
@@ -286,7 +286,7 @@ var TimeSlider = React.createClass({
 
   render: function(){
     return (<div>
-              <div id={'__TimeSlider__Title__' + this.props.id}><span></span></div>
+              <div id={'__TimeSlider__Title__' + this.props.id}><span>{this.props.title}</span></div>
               <br/>
               <div id={'__TimeSlider__' + this.props.id}>  </div>
            </div>);
