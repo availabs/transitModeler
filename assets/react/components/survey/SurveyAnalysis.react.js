@@ -5,7 +5,7 @@ var React = require('react'),
 
     // -- Components
     MarketAreaMap = require('../utils/MarketAreaMap.react'),
-
+    DataTable     = require('../utils/DataTable.react.js'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
@@ -170,11 +170,23 @@ var SurveyAnalysis = React.createClass({
       var survey = scope.state.currentSurvey;
       if(!survey)
         return (<span></span>);
-      var component = Object.keys(survey)
+
+
+      var componentData = Object.keys(survey)
       .map(function(d){
-        return (<div className='row'><div className='col-lg-6'>{d}</div><div className='col-lg-6'>{survey[d]}</div></div>);
+        return ({name:d, value:survey[d]});
       });
-      return <div style={{overflow:'hidden'}}>{component}</div>;
+      return (
+        <div>
+          <h4>OD Survey Response</h4>
+          <DataTable
+            pagination={true}
+            length={10}
+            data={componentData}
+            columns={[{key:'name',name:'Name'},{key:'value',name:'Value'}]}
+            />
+        </div>
+      );
     },
     surveyClick : function(data){
       console.log(data);
