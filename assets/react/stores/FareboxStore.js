@@ -46,7 +46,10 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     if(maId){
       if(!_farebox[maId] ){
         console.log('loading farebox');
-        sailsWebApi.loadFarebox(maId);
+        console.time('farebox load');
+        sailsWebApi.loadFarebox(maId,function(){
+          console.timeEnd('farebox load');
+        });
         _farebox[maId] = 'loading';
       }
     }
@@ -54,7 +57,7 @@ var FareboxStore = assign({}, EventEmitter.prototype, {
     if(!_farebox[maId] || _farebox[maId] === 'loading'){ //if current data isn't loaded
       _crossFares.initialized = false;
     }
-    if(_farebox[maId] && _farebox[maId] !=='loading'){
+    if(_farebox[maId] && _farebox[maId] !=='loading' && !_crossFares.initialized){
       _crossFares.init(_farebox[maId]);
     }
     return _crossFares;

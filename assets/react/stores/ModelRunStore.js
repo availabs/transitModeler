@@ -63,11 +63,12 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
       _activeRuns.push(id);
       _runData[id] = 'loading';
       _loadingModel = true;
-      sailsWebApi.getModelRun(id);
+      console.time('model load');
+      sailsWebApi.getModelRun(id,function(){console.timeEnd('model load');});
       ModelRunStore.emitChange();
     }
   },
-  
+
   delActiveModelRun : function(id){
     var ix = _activeRuns.indexOf(id);
     if(ix >=0){

@@ -186,8 +186,9 @@ module.exports = {
       });
   },
 
-  loadFarebox:function(marketareaId){
+  loadFarebox:function(marketareaId,cb){
       d3.json('/datasources/farebox/'+marketareaId,function(data){
+        cb();
         ServerActionCreators.receiveDataWithId('farebox',marketareaId,data);
       });
   },
@@ -249,9 +250,10 @@ module.exports = {
 
   },
 
-  getModelRun:function(id){
+  getModelRun:function(id,cb){
     d3.json('/triptable/'+id+'/modelrun',function(err,data){
       //console.log('sailsWebApi getModelRun',id,'error',err,'data',data)
+      cb();
       ServerActionCreators.receiveDataWithId('full_model_run',id,data);
     });
   },
@@ -280,7 +282,7 @@ module.exports = {
       if(cb){cb(data);}
     });
   },
-  
+
   create: function(type,data,cb){
 
     d3.json('/'+type).post(JSON.stringify(data),function(err,resData){
