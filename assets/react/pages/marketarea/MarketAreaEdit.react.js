@@ -379,6 +379,7 @@ var MarketAreaNew = React.createClass({
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
+        console.log('marketarea colors',this.state.marketarea.routecolors)
 
         counties.features = this.props.stateCounties.features;
 
@@ -419,7 +420,9 @@ var MarketAreaNew = React.createClass({
                             routes={this.state.routesGeo}
                             tracts ={tracts}
                             counties={counties}
-                            toggleTracts={this.toggleTracts}/>
+                            toggleTracts={this.toggleTracts}
+                            routeColors={this.state.marketarea.routecolors}
+                            />
                         {this.renderMessage()}
 
 
