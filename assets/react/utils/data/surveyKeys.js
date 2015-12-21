@@ -1,14 +1,14 @@
 //['busroute','captivity','accessmode','vehicleavail','tickettype','tripfreq','triptenure','qualservchg','gender','age','race']
 
 module.exports = {
-	
+
 	'captivity':{
 		1 : 'No Choice',
 		2 : 'Best Choice',
 		3 : 'Not Usual Choice',
 		999 : 'NR',
 	},
-	
+
 	'accessmode':{
 		1 : 'Walked',
 		2 : 'Drove',
@@ -27,6 +27,7 @@ module.exports = {
 	},
 
 	'vehicleavail':{
+		0 : 'System',
 		1 : 'Yes',
 		2 : 'No',
 		999 : 'NR',
@@ -74,7 +75,7 @@ module.exports = {
 		6 : 'Not applicable',
 		999 : 'NR'
 	},
-	
+
 	'gender':{
 		1 : 'Male',
 		2 : 'Female',
@@ -88,6 +89,16 @@ module.exports = {
 		4 : '35-44 years',
 		5 : '45-54 years',
 		6 : '55-61 years',
-		7 : '62 or over'
-	}
+		7 : '62 or over',
+		999 : 'NR',
+	},
+	'race':{
+		1 : 'White',
+		2 : 'Black',
+		3 : 'American Indian, Eskimo or Aleut',
+		4 : 'Asian or Pacific Islander',
+		5 : 'Multi-Racial',
+		6 : 'Other',
+		999 : 'NR',
+	},
 }

@@ -174,7 +174,7 @@ var SurveyAnalysis = React.createClass({
 
       var componentData = Object.keys(survey)
       .map(function(d){
-        return ({name:d, value:survey[d]});
+        return ({name:d, value:(SurveyKeys[d])?SurveyKeys[d][survey[d]]:survey[d]});
       });
       return (
         <div>
