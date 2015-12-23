@@ -56,6 +56,9 @@ var MarketAreaNew = React.createClass({
             message:null
         };
     },
+    componentDidMount : function(){
+      MarketAreaActionsCreator.setCurrentMarketArea(null);
+    },
     //function to set the set of routes for the gtfs dataSet
     //does so by setting the state of this component.
     setRouteList:function(id,data){
@@ -292,6 +295,7 @@ var MarketAreaNew = React.createClass({
             </section>
         );
     },
+
     render: function() {
 
         //var routesGeo = this.state.routesGeo || emptyGeojson;
@@ -331,9 +335,6 @@ var MarketAreaNew = React.createClass({
             	<h2 className="page-title">
                     Create Market Area
                     <br />
-                    <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
-
-
                 </h2>
 
                 <div className="row">
@@ -344,7 +345,8 @@ var MarketAreaNew = React.createClass({
                             routes={this.state.routesGeo}
                             tracts ={tracts}
                             counties={counties}
-                            toggleTracts={this.toggleTracts} />
+                            toggleTracts={this.toggleTracts}
+                            routeColors={this.state.marketarea.routecolors} />
                         {this.renderMessage()}
 
 
@@ -356,6 +358,11 @@ var MarketAreaNew = React.createClass({
                             </div>
                         </section>
                         {this.renderStats()}
+                        <section className='widget'>
+                                <div className='row'>
+                                  <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
+                                </div>
+                              </section>
                         <section className="widget">
                             <div className="body no-margin">
                                 <button className="btn btn-lg btn-danger btn-block" onClick={this.createMarketArea}>
