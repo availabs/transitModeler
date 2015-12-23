@@ -2,7 +2,7 @@
 'use strict';
 var React = require('react'),
     Link = require('react-router').Link,
-
+    MarketAreaActionsCreator = require('../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../actions/ModelingActionsCreator'),
     // -- Components
     JobSidebar = require('./job/JobSidebar.react');
@@ -13,6 +13,9 @@ var MenuItem = React.createClass({
     linkClick : function(text){
       if(text ==='Modeling'){
         ModelingActionsCreator.removeActiveModels();
+      }
+      if(text !== 'MarketAreaIndex' && text !== 'ModelAnalysis'){
+        MarketAreaActionsCreator.setCurrentMarketArea(null);
       }
     },
     render:function(){

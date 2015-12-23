@@ -56,9 +56,6 @@ var MarketAreaNew = React.createClass({
             message:null
         };
     },
-    componentDidMount : function(){
-      MarketAreaActionsCreator.setCurrentMarketArea(null);
-    },
     //function to set the set of routes for the gtfs dataSet
     //does so by setting the state of this component.
     setRouteList:function(id,data){
