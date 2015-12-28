@@ -125,6 +125,7 @@ var CensusOverview = React.createClass({
                             activeVariable={this.props.activeVariable}
                             censusData={this.props.censusData}
                             activeCategory={this.state.activeCensusCategory}
+                            gtfsSettings={(this.props.datasources[this.props.marketarea.origin_gtfs])?this.props.datasources[this.props.marketarea.origin_gtfs].settings : {}}
                             stops={this.props.stopsGeo}
                             routes={this.props.routesGeo}
                             routeColors={this.props.marketarea.routecolors} />

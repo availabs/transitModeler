@@ -48,17 +48,19 @@ var GtfsDisplay = React.createClass({
         var rows = Object.keys(this.props.datasources.gtfs).map(function(key){
 
             var dataset= scope.props.datasources.gtfs[key];
-            console.log(dataset.tableName);
+            console.log(dataset);
             //console.log(key,dataset);
             return (
                 <tr>
                     <td>{dataset.stateFips}</td>
+                    <td>{dataset.settings.agency}</td>
+                    <td>{(new Date(dataset.settings.started)).toLocaleDateString()}</td>
                     <td>{dataset.tableName}</td>
                     <td>
                       {scope.renderButton(dataset) }
                     </td>
                     <td>
-                        <button onClick={scope.setDataset.bind(null,dataset)} className="btn btn-danger btn-sm delete" data-toggle="modal" data-target="#deleteModal" data-backdrop="false">
+                        <button onClick={scope.setDataset.bind(null,dataset)} className="btn btn-danger btn-sm delete" disabled={dataset.settings.readOnly} data-toggle="modal" data-target="#deleteModal" data-backdrop="false">
                             <i className="fa fa-trash"></i>
                             <span>Delete</span>
                         </button>
@@ -80,6 +82,8 @@ var GtfsDisplay = React.createClass({
                     <thead>
                         <tr>
                             <td>State Fips</td>
+                            <td>Agency</td>
+                            <td>Origin Date</td>
                             <td>TableName</td>
                             <td></td>
                         </tr>

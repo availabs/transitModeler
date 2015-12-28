@@ -46,21 +46,40 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
 
  	    		if(newJob.status != 'Cancelled'){
             //if job is not cancelled, in this version of the app we want to only add to the datasource tableName
-            var ds = {
-              type:'gtfs',
-              tableName:gtfsEntry.tableName,
-              stateFips:34,
-              settings:[{readOnly:true,uploaded:true}],
+            var onFinish = function(data){
+              console.log('GTFS START',data);
+              var ds = {
+                type:'gtfs',
+                tableName:gtfsEntry.tableName,
+                stateFips:34,
+                settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name}],
+              };
+              console.log(ds);
+              Datasource.create(ds).exec(function(err,newEntry){
+                if(err){console.log('Error Creating DataSource',err);}
+                Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+                   .exec(function(err,updated_job){
+                     if(err){console.log('job_update error',error);}
+                     sails.sockets.blast('job_updated',updated_job);
+                   });
+              });
             };
-            console.log(ds);
-            Datasource.create(ds).exec(function(err,newEntry){
-              if(err){console.log('Error Creating DataSource',err);}
-              Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-                 .exec(function(err,updated_job){
-                   if(err){console.log('job_update error',error);}
-                   sails.sockets.blast('job_updated',updated_job);
-                 });
+            var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
+            Datasource.query(query,{},function(err,data){
+              if(err){
+                query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
+                Datasource.query(query,{},function(err,data){
+                  if(err){
+                    console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
+                  }
+                  onFinish(data.rows[0]);
+                });
+              }
+              else{
+                onFinish(data.rows[0]);
+              }
             });
+
  			    // 	var sql = "SELECT agency.agency_name,min(calendar_dates.date) as start_date,max(calendar_dates.date) as end_date FROM "+gtfsEntry.tableName+".calendar_dates,"+gtfsEntry.tableName+".agency group by agency.agency_name";
  			    // 	console.log(sql);
  			   //  	Datasource.query(sql,{},function(err,data){
