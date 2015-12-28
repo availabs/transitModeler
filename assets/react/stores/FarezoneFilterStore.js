@@ -58,11 +58,25 @@ var FarezoneFilterStore = assign({}, EventEmitter.prototype, {
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
-
+  marketAreaWait : function(){
+    var scope = this;
+    return function(){
+      var ma = MarketAreaStore.getCurrentMarketArea();
+      if(ma){
+        waiting = true;
+        requireFilters(ma.id);
+        MarketAreaStore.removeChangeListener(scope.marketAreaWait());
+      }
+    };
+  },
   getFarezoneFilters : function(){
+    var scope = this;
     var ma= MarketAreaStore.getCurrentMarketArea();
-    if(!ma)
+    if(!ma){
+      MarketAreaStore.addChangeListener(scope.marketAreaWait());
       return [];
+    }
+
     if(_filterSets[ma.id] && Object.keys(_filterSets[ma.id]).length > 0){
       waiting = false;
       console.log('farezoneFiltersets',_filterSets[ma.id]);

@@ -12,6 +12,7 @@ module.exports = {
     id:'integer',
     dates:'json',
     maid:'integer',
-    stateid:'string'
+    stateid:'string',
+    description:'string',
   }
 };

@@ -9,8 +9,15 @@ var MarketAreaNew = React.createClass({
     getInitialState:function(){
         var iState = {},
         scope=this;
-        Object.keys(this.props.values).forEach(function(key){
-          iState[key]  =  idGen(scope.props.values[key]);
+        var theValues;
+        if(this.props.useDefault){
+          theValues = this.props.DefaultValues;
+        }
+        else{
+          theValues = this.props.values;
+        }
+        Object.keys(theValues).forEach(function(key){
+          iState[key]  =  (scope.props.useDefault)?theValues[key]:idGen(theValues[key]);
         });
 
         return iState;
@@ -42,7 +49,14 @@ var MarketAreaNew = React.createClass({
     },
     _form : function(){
         var scope = this;
-        var fields = Object.keys(this.props.values).map(function(key){
+        var theValues;
+        if(this.props.useDefault){
+          theValues = this.props.DefaultValues;
+        }
+        else{
+          theValues = this.props.values;
+        }
+        var fields = Object.keys(theValues).map(function(key){
             return ( <div className="modal-body">
                                         <h4>{key}</h4>
                                         <input type="text" id={key} className='form-control' value={scope.state[key]} onChange={scope._handleChange}/>
