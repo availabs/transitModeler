@@ -4,6 +4,7 @@ var React = require('react'),
 
 	// -- Components
 	Select2Component = require('../utils/Select2.react'),
+	NameDescriptionEdit = require('../../components/utils/NameDescriptionEdit.react'),
 
 	// -- Actions
 	ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
@@ -36,6 +37,7 @@ var ModelRunSelector = React.createClass({
 		//console.log(e,selection);
 		this.setState({selection:[selection.id]});
 	},
+
 	render: function() {
 	  	var scope = this;
 		//	console.log('r',ix++,'data',scope.props.model_runs);
@@ -48,7 +50,7 @@ var ModelRunSelector = React.createClass({
 	  	var names = marketModelKeys.map(function(key){//create a list consisting of
 				//compose a name from its time,type,and acs datasource
 
-	  		var name =  scope.state.model_runs[key].info.time+' '+scope.state.model_runs[key].info.type+' '+(scope.state.model_runs[key].info.datasources.acs || scope.state.model_runs[key].info.datasources.acs_source);
+	  		var name = (scope.state.model_runs[key].name) ? scope.state.model_runs[key].name :  scope.state.model_runs[key].info.time+' '+scope.state.model_runs[key].info.type+' '+(scope.state.model_runs[key].info.datasources.acs || scope.state.model_runs[key].info.datasources.acs_source);
 
 				return {
 	  			"id" : scope.state.model_runs[key].id ,
@@ -57,7 +59,13 @@ var ModelRunSelector = React.createClass({
 	  	});
 			//create a select box from the generated name
 		var loading =  <img src={"/img/loading.gif"} style={{width:60,height:60}} />;
-
+		var NandD = {name:'',description:''};
+		var model;
+		if(scope.state.selection[0]){
+			NandD.name=scope.state.model_runs[scope.state.selection[0]].name;
+			NandD.description=scope.state.model_runs[scope.state.selection[0]].description;
+			model = scope.state.model_runs[scope.state.selection[0]];
+		}
 	    return (
 	    	<div className='row'>
 	    		<div className='col-xs-8' id="sliderGuide">
@@ -76,6 +84,11 @@ var ModelRunSelector = React.createClass({
 
 		                    <div className="input-group-btn">
 		                        <button type="button" className="btn btn-default" onClick={this._loadModelRun}><i className="fa fa-plus"></i></button>
+														<NameDescriptionEdit
+															name={NandD.name}
+															model={model}
+															description={NandD.description}
+																	/>
 		                    </div>
 
 		                </div>

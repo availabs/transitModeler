@@ -102,7 +102,7 @@ function spawnModelRun(job,triptable_id){
 module.exports = {
 
 	finishedModels: function(req,res){
-		var sql = 'SELECT id,"user",info FROM triptable where "isFinished" = true';
+		var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true';
 		///console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
@@ -110,7 +110,7 @@ module.exports = {
 				res.json({message:'tt query Error',error:err,sql:sql});
 				return;
 			}
-			//console.log('finished models',data)
+			console.log('finished models',data);
 			res.send(data.rows);
 		});
 
@@ -385,7 +385,21 @@ module.exports = {
 					//default code block
 			}
 		});
-	}
+	},
+	update : function(req,res){
+
+		var model = req.body;
+		console.log(model);
+
+		model.info = JSON.stringify(model.info);
+		Triptable.update({id:model.id},model).exec(function(err, model){
+			console.log('ERROR',err,'\nModel',model);
+			if(err) return res.json({err:err},500);
+			res.json(model);
+
+		});
+
+	},
 
 };//end module.exports
 

@@ -14,11 +14,11 @@ var React = require('react'),
     TimeSliders = require('../../components/utils/TimeSliders.react'),
     TimeGraph = require('../../components/utils/TimeGraph.react'),
     ModelSummary= require('../../components/modelAnalysis/ModelSummary.react'),
-    
+
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
-    
+
     // -- Stores
     FareboxStore =  require('../../stores/FareboxStore.js'),
     TripTableStore = require('../../stores/TripTableStore.js'),
@@ -183,14 +183,7 @@ var MarketAreaIndex = React.createClass({
     selectModel : function(id){
       this.setState({model_id:id});
     },
-    // _getFilteredFareZones : function(){
-    //   var scope = this;
-    //   var zones = scope.props.stopsGeo.features.filter(function(d){
-    //     return d.properties.fare_zone;
-    //   }).map(function(d){return parseInt(d.properties.fare_zone.split(' ')[1]);});
-    //   zones = _.uniq(zones);
-    //   return (zones.length !== 0)?zones:null;
-    // },
+
     _getFareboxTimes : function(){
       var scope =this;
       if(scope.state.useFarebox && scope.state.farebox.dimensions.hours){//if hours are defined
@@ -403,7 +396,7 @@ var MarketAreaIndex = React.createClass({
             <div className="body no-margin" style={{overflow:'hidden'}}>
               <div className="row">
                 <div className="col-lg-8" style={{paddingTop:10}}>
-                      
+
                   <ModelRunSelector
                     marketarea={this.props.marketarea}
                     model_runs={this.state.model_runs}
@@ -412,10 +405,10 @@ var MarketAreaIndex = React.createClass({
                     />
 
                 </div>
-                <div className="col-lg-4" > 
-                   
-                 
-                  
+                <div className="col-lg-4" >
+
+
+
                     <div className="row">
                       <div className='col-xs-6'>
                         {this._fareboxButton()}
@@ -428,18 +421,17 @@ var MarketAreaIndex = React.createClass({
                         />
                       </div>
                     </div>
-                    
+
 
                 </div>
               </div>
             </div>
           </section>
         </div>
-      )
+      );
     },
 
     renderAnalysis:function(){
-      console.log('render analysis')
       var hourRange;
       if(this.state.timeRange){
         hourRange = this.state.timeRange.map(function(d){return d.getHours();});
@@ -499,10 +491,10 @@ var MarketAreaIndex = React.createClass({
 
           </div>
         </div>
-      )
+      );
     },
     renderEmpty:function(){
-      var loading =  <img src={"/img/loading.gif"} style={{width:60,height:60}} />
+      var loading =  <img src={"/img/loading.gif"} style={{width:60,height:60}} />;
       return (
         <div className="col-lg-12" style={{padding:0,margin:0}}>
           <section className="widget">
@@ -511,15 +503,15 @@ var MarketAreaIndex = React.createClass({
             </div>
           </section>
         </div>
-      )
+      );
     },
     render: function() {
-        
+
         return (
           <div className="content container">
             <MarketareaNav marketarea={this.props.marketarea}/>
             {this.renderHeader()}
-            {Object.keys(this.props.loadedModels.loadedModels).length > 0 ? this.renderAnalysis() : this.renderEmpty()  }  
+            {Object.keys(this.props.loadedModels.loadedModels).length > 0 ? this.renderAnalysis() : this.renderEmpty()  }
           </div>
 
         );

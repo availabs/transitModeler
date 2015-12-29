@@ -150,6 +150,13 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
       ModelRunStore.addActiveModelRun(action.id);
     break;
 
+    case ActionTypes.UPDATE_MODEL:
+      sailsWebApi.update('triptable/update',action.data,function(data){
+        console.log('RESPONSE DATA',data);
+        sailsWebApi.getModelRuns();
+      });
+    break;
+
     default:
       // do nothing
   }

@@ -12,7 +12,7 @@ var React = require('react'),
     RouteListTable = require('../../components/marketarea/RouteListTable.react'),
     RoutesSelector = require('../../components/marketarea/RoutesSelector.react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
-
+    DescriptionArea = require('../../components/utils/DescriptionArea.react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
@@ -45,6 +45,7 @@ var MarketAreaNew = React.createClass({
                 routecolors:{},
                 stateFips:'34',
                 geounit:'tracts',
+                description:'',
             },
             routesGeo:{type:'FeatureCollection',features:[]},
             stopsGeo:{type:'FeatureCollection',features:[]},
@@ -292,7 +293,12 @@ var MarketAreaNew = React.createClass({
             </section>
         );
     },
-
+    onDescChange : function(text){
+      console.log(text);
+      var ma = this.state.marketarea;
+      ma.description = text;
+      this.setState({marketarea:ma});
+    },
     render: function() {
 
         //var routesGeo = this.state.routesGeo || emptyGeojson;
@@ -360,6 +366,14 @@ var MarketAreaNew = React.createClass({
                                   <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
                                 </div>
                               </section>
+                        <section className='widget'>
+                          <div className='row'>
+                          <DescriptionArea
+                            text={this.state.marketarea.description}
+                            onChange={this.onDescChange}
+                            />
+                        </div>
+                        </section>
                         <section className="widget">
                             <div className="body no-margin">
                                 <button className="btn btn-lg btn-danger btn-block" onClick={this.createMarketArea}>

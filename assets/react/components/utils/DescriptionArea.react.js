@@ -36,15 +36,24 @@ var ZoneFilter = React.createClass({
   },
   render : function(){
     var scope = this;
-
+    var area =(<textarea
+      className='form-control'
+      rows='5' id='description'
+      placeholder={'Enter a Description'}
+      value={scope.state.text}
+      onChange={scope._onChange}/>);
+    var input = (
+      <input
+        className='form-control'
+        placeholder={'Enter a Name'}
+        rows='5'
+        value={scope.state.text}
+        onChange={scope._onChange}
+        />
+    );
     return (
       <div className='col-lg-12'>
-        <textarea
-          className='form-control'
-          rows='5' id='description'
-          placeholder={'Enter a Description'}
-          value={scope.state.text}
-          onChange={scope._onChange}/>
+        {((scope.props.type==='input')?input:area)}
       </div>
     );
   },
