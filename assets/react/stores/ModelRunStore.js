@@ -36,6 +36,12 @@ function addModelRuns(rawData){
   });
 }
 
+function insertModelRun(data){
+  data.forEach(function(d){
+    _modelRuns[d.id] = d;
+  });
+}
+
 var ModelRunStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
@@ -119,6 +125,8 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
 
 });
 
+
+
 ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
@@ -151,10 +159,15 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.UPDATE_MODEL:
-      sailsWebApi.update('triptable/update',action.data,function(data){
-        console.log('RESPONSE DATA',data);
+      sailsWebApi.updateModelRun(action.data,function(){
         sailsWebApi.getModelRuns();
       });
+    break;
+
+    case ActionTypes.UPDATED_MODEL:
+      action.data[0].info = JSON.parse(action.data[0].info);
+      insertModelRun(action.data);
+      ModelRunStore.emitChange();
     break;
 
     default:

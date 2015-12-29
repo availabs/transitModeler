@@ -392,7 +392,7 @@ module.exports = {
 		console.log(model);
 
 		model.info = JSON.stringify(model.info);
-		Triptable.update({id:model.id},model).exec(function(err, model){
+		Triptable.update({id:model.id},{name:model.name,description:model.description}).exec(function(err, model){
 			console.log('ERROR',err,'\nModel',model);
 			if(err) return res.json({err:err},500);
 			res.json(model);

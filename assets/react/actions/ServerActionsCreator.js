@@ -27,7 +27,7 @@ module.exports = {
       rawMessage: createdMessage
     });
   },
-  
+
   //-----------------------------------
   // GeoData
   //-----------------------------------
@@ -42,7 +42,7 @@ module.exports = {
   // Data Sources
   //-----------------------------------
   receiveRawCensus:function(marketareaId,year,rawData){
-    
+
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_RAW_CENSUS_DATA,
       marketareaId: marketareaId,
@@ -51,9 +51,9 @@ module.exports = {
     });
 
   },
-  
+
   receiveCtpp:function(marketareaId,rawData){
-    
+
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_CTPP_DATA,
       marketareaId: marketareaId,
@@ -64,7 +64,7 @@ module.exports = {
 
 
   receiveLodes:function(marketareaId,rawData){
-    
+
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_LODES_DATA,
       marketareaId: marketareaId,
@@ -84,16 +84,23 @@ module.exports = {
       user:data
     })
   },
-  
+
   //------------------------------------
   // CRUD Handlers
   //------------------------------------
 
   receiveData: function(type,data) {
-    
-    //handles Create,Read & Update
-    var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
-    ///console.log(actiontype,data);
+
+      var actiontype;
+      if(type.type){
+        actiontype = type.type;
+      }
+      else{
+        //handles Create,Read & Update
+        actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
+        ///console.log(actiontype,data);
+
+      }
 
     AppDispatcher.handleServerAction({
       type: ActionTypes[actiontype],
@@ -111,7 +118,7 @@ module.exports = {
       Id:id
     });
   },
-  
+
   deleteData:function(type,id){
     var actiontype = 'DELETE_'+type.toUpperCase()
     AppDispatcher.handleServerAction({

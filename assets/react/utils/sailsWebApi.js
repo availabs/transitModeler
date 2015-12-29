@@ -257,6 +257,16 @@ module.exports = {
       ServerActionCreators.receiveDataWithId('full_model_run',id,data);
     });
   },
+
+  updateModelRun : function(data,cb){
+    d3.json('/triptable/update')
+      .post(JSON.stringify(data),function(err,data){
+        if(err)
+          console.log(err);
+        ServerActionCreators.receiveData({type:'UPDATED_MODEL'},data);
+        cb();
+      });
+  },
   //---------------------------------------------------
   // Datasources Editing
   //---------------------------------------------------

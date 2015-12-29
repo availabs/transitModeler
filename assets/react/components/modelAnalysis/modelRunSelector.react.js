@@ -29,13 +29,32 @@ var ModelRunSelector = React.createClass({
 		};
 	},
 	componentWillReceiveProps : function(nextProps){
-		if(!this.props.model_runs || !_.isEqual(this.props.model_runs, nextProps.model_runs) ){
+		if(!_.isEqual(this.props.model_runs, nextProps.model_runs) ){
 			this.setState({model_runs:nextProps.model_runs});
 		}
 	},
 	setSelection : function(e,selection){
 		//console.log(e,selection);
 		this.setState({selection:[selection.id]});
+	},
+	renderDescription : function(description){
+
+		if(description){
+			return (
+				<div className='row'>
+				<div className='col-lg-2'>
+					Description
+				</div>
+					<div className='col-lg-8'>{description}</div>
+				<div className='col-lg-2'></div>
+				</div>
+			);
+		}
+		else{
+			return (
+				<span></span>
+			);
+		}
 	},
 
 	render: function() {
@@ -70,6 +89,7 @@ var ModelRunSelector = React.createClass({
 	    	<div className='row'>
 	    		<div className='col-xs-8' id="sliderGuide">
 		    		<div className="form-group">
+							<div className='row'>
 		                <div className="input-group input-group">
 
 		                    <Select2Component
@@ -82,6 +102,7 @@ var ModelRunSelector = React.createClass({
 		                      val={this.state.selection}
 		                      placeholder="Select a Model to Analyze" />
 
+
 		                    <div className="input-group-btn">
 		                        <button type="button" className="btn btn-default" onClick={this._loadModelRun}><i className="fa fa-plus"></i></button>
 														<NameDescriptionEdit
@@ -93,6 +114,9 @@ var ModelRunSelector = React.createClass({
 
 		                </div>
 		            </div>
+								{scope.renderDescription(NandD.description)}
+
+							</div>
 		        </div>
 		        <div className='col-xs-4'>
 		            {this.props.loading ?  loading :'' }

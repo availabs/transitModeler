@@ -94,7 +94,7 @@ module.exports = {
     RECEIVE_MODEL_RUNS:null,
     RECEIVE_FULL_MODEL_RUNS:null,
     UPDATE_MODEL:null,
-
+    UPDATED_MODEL:null,
     // -- Jobs
     RECEIVE_JOBS:null,
     RECEIVE_ACTIVE_JOBS:null,
