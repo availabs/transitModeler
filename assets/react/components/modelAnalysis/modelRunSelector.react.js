@@ -4,7 +4,7 @@ var React = require('react'),
 
 	// -- Components
 	Select2Component = require('../utils/Select2.react'),
-	NameDescriptionEdit = require('../../components/utils/NameDescriptionEdit.react'),
+	ModelAnalysisEditAdd = require('../../components/utils/NameDescriptionEdit.react'),
 
 	// -- Actions
 	ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
@@ -102,15 +102,12 @@ var ModelRunSelector = React.createClass({
 		                      val={this.state.selection}
 		                      placeholder="Select a Model to Analyze" />
 
-
-		                    <div className="input-group-btn">
-		                        <button type="button" className="btn btn-default" onClick={this._loadModelRun}><i className="fa fa-plus"></i></button>
-														<NameDescriptionEdit
-															name={NandD.name}
-															model={model}
-															description={NandD.description}
-																	/>
-		                    </div>
+												<ModelAnalysisEditAdd
+													name={NandD.name}
+													addClick={this._loadModelRun}
+													model={model}
+													description={NandD.description}
+															/>
 
 		                </div>
 		            </div>

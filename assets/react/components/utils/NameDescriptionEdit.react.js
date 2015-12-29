@@ -89,7 +89,9 @@ var ZoneFilter = React.createClass({
 	},
   render : function(){
       return (
-        <div style={{padding:'0',margin:'0'}}><button type="button" className="btn btn-default" data-toggle="modal" data-target={"#myModalModelEdit"} data-backdrop="static"><i className='fa fa-edit'></i></button>
+        <div className="input-group-btn">
+          <button type="button" className="btn btn-default" onClick={this.props.addClick}><i className="fa fa-plus"></i></button>
+          <button type="button" disabled={!this.props.model} className="btn btn-default" data-toggle="modal" data-target={"#myModalModelEdit"} data-backdrop="static"><i className='fa fa-edit'></i></button>
         {this.renderModal()}
         </div>
       );
