@@ -280,6 +280,7 @@ module.exports = {
   deleteGtfs : function(ds,cb){
     var url = '/datasources/gtfs/delete/'+ds.id;
     d3.json(url,function(err,data){
+      if(err) console.error(err);
       GtfsActionsCreator.deleteDataSource(ds);
     });
   },

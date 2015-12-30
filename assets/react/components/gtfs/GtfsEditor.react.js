@@ -266,12 +266,12 @@ var MarketAreaNew = React.createClass({
       reqObj.gtfsId = this.state.currentGtfs;
       return reqObj;
     },
-    _cloneAndSave:function(name,fips,setting){
+    _cloneAndSave:function(name,fips,settings){
       var obj = {};
       var reqObj = this._buildSave();
       obj.name = name;
       obj.fips=fips;
-      obj.setting=setting;
+      obj.settings=settings;
       obj.savedata=reqObj;
       GtfsActionsCreator.uploadEdit(obj);
     },
@@ -411,11 +411,13 @@ var MarketAreaNew = React.createClass({
             var route = nextState.schedules[nextState.currentRoute],
             trip = route.trips[nextState.currentTrip];
             stopTraj = trip.stops;
-            this._requestData(stopTraj);
+            if(trip.stops.length >= 2)
+              this._requestData(stopTraj);
         }
         else if (nextState.TripObj && (nextState.TripObj !== this.state.TripObj)){
             stopTraj = nextState.TripObj.getStops();
-            this._requestData(stopTraj);
+            if(stopTraj.length >= 2)
+              this._requestData(stopTraj);
         }
 
     },
@@ -752,7 +754,7 @@ var MarketAreaNew = React.createClass({
         });
         return (
         	<div>
-            	
+
                 <div className="row">
                 	<div className="col-lg-9">
 
@@ -809,6 +811,7 @@ var MarketAreaNew = React.createClass({
                         Edited={this.state.edited}
                         onSave={this._saveEdits}
                         cloneSave={this._cloneAndSave}
+                        fips={this.props.marketarea.stateFips}
                         gtfs = {gtfs}/>
 
                       <Download

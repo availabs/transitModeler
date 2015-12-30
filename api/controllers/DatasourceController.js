@@ -410,6 +410,7 @@ module.exports = {
 			console.log('made it');
 			Datasource.query(query,{},function(err,data){ //query the database for them
 				if(err){
+					console.log('query',query,err);
 					res.send(JSON.stringify(err),500);
 					return;
 				}
@@ -417,6 +418,7 @@ module.exports = {
 				var victimQuery = 'Select route_short_name FROM "'+victim.tableName+'".routes'; //select the routes from only the victim
 				Datasource.query(victimQuery,{},function(err,data){
 					if(err){
+						console.error(err);
 						res.send(JSON.stringify(err),500);
 						return;
 					}
@@ -429,12 +431,14 @@ module.exports = {
 							if(d.origin_gtfs === victimId){
 								gtfsid = 1;
 							}
-							return {routes:d.routes,id:d.id,origin_gtfs:gtfsid};}); //we only currently care about its id and its routes
+							return {routes:d.routes,id:d.id,origin_gtfs:gtfsid};
+						}); //we only currently care about its id and its routes
 						data.forEach(function(d){d.routes = _.difference(d.routes,marketareaVics);}); //for each market area remove the appropriate routes
 						var temp = data.map(function(d){return 'UPDATE marketarea SET routes=\''+JSON.stringify(d.routes)+'\',origin_gtfs='+d.origin_gtfs+' WHERE id='+d.id;});
 						var q = (temp.length === 0) ? '' : temp.reduce(function(p,c){return p+';'+c;}); //create query string to update them
 						MarketArea.query(q,{},function(err,data){
 							if(err){
+								console.error(err);
 								res.send(JSON.stringify(err),500);
 								return;
 							}
@@ -445,6 +449,7 @@ module.exports = {
 							console.log(cleaningQuery);
 							Datasource.query(cleaningQuery,{},function(err,data){ //execute query
 								if(err){
+									console.error(err);
 									res.send(JSON.stringify(err),500);
 								}
 								res.json(data);

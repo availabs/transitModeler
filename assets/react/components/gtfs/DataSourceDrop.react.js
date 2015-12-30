@@ -28,16 +28,28 @@ var MarketAreaNew = React.createClass({
         var classes = "btn btn-lg btn-block";
         var datasources = this.props.data;
         var gtfsDataOptions = [];
+        var description='';
         console.log('datasources',datasources);
         if(datasources){
           gtfsDataOptions = Object.keys(datasources).map(function(d){
             return {id:d,'text':datasources[d].tableName}; //get a list of the ids and their tablenames
           });
+          if(this.state.gtfsSelection){
+            description = (<section className="widget">
+              <div className='row'>
+                <h4>Data Description</h4>
+                {datasources[this.state.gtfsSelection].settings.description}
+              </div>
+            </section>);
+          }
         }
+
         console.log('Market Area',this.props.marketarea);
 
         return (
+          <div>
             <section className="widget">
+
                 <div className="body no-margin" >
                     <Select2Component
                       id="dataSelector"
@@ -48,10 +60,9 @@ var MarketAreaNew = React.createClass({
                       placeholder={"Select a Gtfs DataSource"}
                       val={this.state.gtfsSelection}/>
                 </div>
-
-
-
             </section>
+            {description}
+            </div>
         );
     }
 });
