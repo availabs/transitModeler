@@ -13,10 +13,14 @@ var React = require('react'),
     RoutesSelector = require('../../components/marketarea/RoutesSelector.react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
     DescriptionArea = require('../../components/utils/DescriptionArea.react'),
-    // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
 
     // -- Stores
+    UserStore                = require('../../stores/UserStore'),
+    // -- Actions
+    UserActionsCreator       = require('../../actions/UserActionsCreator'),
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
+
+
 
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
@@ -231,6 +235,15 @@ var MarketAreaNew = React.createClass({
     createdMa:function(data){
         //console.log('marketarea create callback',data)
         if(data.id){
+          var message = {
+            actiondesc:data.description,
+            actiontitle:'Created new Market Area: '+data.name,
+            stateFips : data.stateFips,
+            userid : UserStore.getSessionUser().id,
+            maid : data.id,
+          };
+          UserActionsCreator.userAction(message);
+
             this.transitionTo('MarketAreaIndex', {marketareaID: data.id});
         }else{
             this.setState({message:'Create Failed:'+data});

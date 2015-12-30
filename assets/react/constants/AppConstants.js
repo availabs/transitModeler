@@ -34,7 +34,7 @@ module.exports = {
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
     DELETE_USER:null,
-
+    USER_ACTION:null,
 
     //--------GtfsEditor--------------------------------------
     SET_WAYPOINTS:null,
@@ -76,6 +76,7 @@ module.exports = {
     SAVE_FAREZONEFILTER:null,
     DELETE_THIS_FAREZONEFILTER:null,
     DELETE_FAREZONEFILTER:null,
+    SET_FARESTOPCOLORS:null,
 
     RECEIVE_MODELSETTINGSS:null,
     SET_MODELSETTINGS:null,
@@ -85,6 +86,7 @@ module.exports = {
     DELETE_MODELSETTINGS:null,
     COMMIT_MODEL_EDITS:null,
     UNDO_MODEL_EDITS:null,
+    ADD_MODEL_SETTINGS:null,
     ADD_MODEL_SETTINGS_GROUP:null,
 
     // -- Modeling

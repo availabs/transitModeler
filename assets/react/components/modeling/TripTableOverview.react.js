@@ -4,6 +4,8 @@ var React = require('react'),
 
     DescriptionArea = require('../../components/utils/DescriptionArea.react'),
     // -- Actions
+    UserActionsCreator     = require('../../actions/UserActionsCreator'),
+    UserStore              = require('../../stores/UserStore'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
 
 var TripTableOverview = React.createClass({
@@ -41,6 +43,14 @@ var TripTableOverview = React.createClass({
         console.log('--------------------------')
         console.log('Run Model',tripTableCreate);
         console.log('--------------------------')
+        var message = {
+          actiondesc:this.state.model_description,
+          actiontitle:'Creating New Model '+this.state.model_name,
+          maid: this.props.marketarea.id,
+          stateFips: this.props.marketarea.stateFips,
+          userid: UserStore.getSessionUser().id,
+        };
+        UserActionsCreator.userAction(message);
 
         ModelingActionsCreator.runModel(tripTableCreate);
     },

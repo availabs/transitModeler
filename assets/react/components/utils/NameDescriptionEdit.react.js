@@ -8,6 +8,8 @@ var React = require('react'),
     FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator'),
     DescriptionArea = require('./DescriptionArea.react'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator'),
+    UserActionsCreator     = require('../../actions/UserActionsCreator'),
+    UserStore              = require('../../stores/UserStore'),
     FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react');
 
 
@@ -56,6 +58,14 @@ var ZoneFilter = React.createClass({
     var model = this.props.model;
     model.name = this.state.name;
     model.description = this.state.description;
+    var message = {
+      actiondesc:model.description,
+      actiontitle:'Updating Model Info on '+model.name,
+      maid:this.props.marketarea.id,
+      stateFips:this.props.marketarea.stateFips,
+      userid: UserStore.getSessionUser().id,
+    };
+    UserActionsCreator.userAction(message);
     ModelingActionsCreator.updateModel(model);
 	},
 	renderModal : function(){

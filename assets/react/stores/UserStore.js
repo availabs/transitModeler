@@ -9,7 +9,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
-
+    SailsWebApi = require('../utils/sailsWebApi'),
     ActionTypes = Constants.ActionTypes,
     CHANGE_EVENT = 'change';
 
@@ -20,9 +20,9 @@ var _editUserID = null,
 function _addUsers(rawData) {
   //console.log('stores/UserStore/_addUsers',rawData);
   rawData.forEach(function(user) {
-    
+
       _users[user.id] = user;
-    
+
   });
 };
 
@@ -41,7 +41,7 @@ var UserStore = assign({}, EventEmitter.prototype, {
   emitChange: function() {
     this.emit(CHANGE_EVENT);
   },
-  
+
   /**
    * @param {function} callback
    */
@@ -49,7 +49,7 @@ var UserStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
@@ -96,6 +96,14 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
       UserStore.emitChange();
     break;
 
+    case ActionTypes.USER_ACTION:
+      console.log('Attempted USER AcTion',action.data);
+      if(action.data.id)
+        SailsWebApi.update('useraction',action.data);
+      else {
+        SailsWebApi.create('useraction',action.data);
+      }
+    break;
     default:
       // do nothing
   }

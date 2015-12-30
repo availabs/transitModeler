@@ -9,6 +9,12 @@ var React = require('react'),
     FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator'),
     FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react'),
     DescriptionArea = require('../../components/utils/DescriptionArea.react'),
+    UserComment     = require('../../components/utils/UserComment.react'),
+
+
+    UserActionsCreator = require('../../actions/UserActionsCreator'),
+    UserStore          = require('../../stores/UserStore'),
+
     CreationForm = require('../gtfs/CreationForm.react');
 
 
@@ -99,6 +105,13 @@ var ZoneFilter = React.createClass({
               };
     if(data.filtername && data.filtername.length >= 1){
       console.log('Tried To Save',data);
+      UserActionsCreator.userAction({
+        actiondesc:data.description,
+        actiontitle:((this.state.dirty) ?'Creating':'Updating')+' Farezone Filter: '+data.filtername,
+        maid:this.props.marketarea.id,
+        stateFips:this.props.marketarea.stateFips,
+        userid:UserStore.getSessionUser().id,
+      });
       FarezoneActionsCreator.saveFilter(data);
     }
     else

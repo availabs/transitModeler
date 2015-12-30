@@ -19,8 +19,9 @@ Router = require('react-router'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
-
+    UserActionsCreator       = require('../../actions/UserActionsCreator'),
     // -- Stores
+    UserStore    = require('../../stores/UserStore'),
     GeoDataStore = require('../../stores/GeodataStore'),
     MarketAreaStore = require('../../stores/MarketAreaStore');
 
@@ -59,8 +60,10 @@ var MarketAreaNew = React.createClass({
               counties:(pma.counties !== undefined)? pma.counties:[],
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
               routecolors:(pma.routecolors !== null)? pma.routecolors:{},
+              center : pma.center || [],
               stateFips:'34',
               geounit:'tracts',
+              description:(pma.description) || '',
             },
             routesGeo:emptyGeojson,
             stopsGeo:emptyGeojson,
@@ -310,6 +313,14 @@ var MarketAreaNew = React.createClass({
     updatedMa:function(data){
 
         if(data.id){
+          var message = {
+            actiontitle:'Updated Market Area ' + data.name,
+            actiondesc:data.description,
+            userid: UserStore.getSessionUser().id,
+            maid: data.id,
+            stateFips: data.stateFips,
+          };
+            UserActionsCreator.userAction(message);
             this.setState({bMessage:'Update Again',marketarea:data});
             GeoDataStore.purgeMarketTracts();
             SailsWebApi.read('marketarea');

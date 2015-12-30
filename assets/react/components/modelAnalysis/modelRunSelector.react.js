@@ -107,6 +107,7 @@ var ModelRunSelector = React.createClass({
 													addClick={this._loadModelRun}
 													model={model}
 													description={NandD.description}
+													marketarea={this.props.marketarea}
 															/>
 
 		                </div>

@@ -31,10 +31,11 @@ var React = require('react'),
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
     GtfsActionsCreator       = require('../../actions/GtfsActionsCreator'),
+    UserActionsCreator       = require('../../actions/UserActionsCreator'),
     // -- Stores
     MarketAreaStore          = require('../../stores/MarketAreaStore'),
-    GtfsStore                = require('../../stores/GtfsStore');
-
+    GtfsStore                = require('../../stores/GtfsStore'),
+    UserStore                = require('../../stores/UserStore');
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 var idGen = require('../utils/randomId');
 var check = function(obj){
@@ -267,12 +268,18 @@ var MarketAreaNew = React.createClass({
       return reqObj;
     },
     _cloneAndSave:function(name,fips,settings){
-      var obj = {};
+      var obj = {},message={};
       var reqObj = this._buildSave();
       obj.name = name;
       obj.fips=fips;
       obj.settings=settings;
       obj.savedata=reqObj;
+      message.actiontitle='Created Gtfs: '+obj.name;
+      message.actiondesc = obj.settings.description;
+      message.maid       = this.props.marketarea.id;
+      message.stateFips  = this.props.marketarea.stateFips;
+      message.userid     = UserStore.getSessionUser().id;
+      UserActionsCreator.userAction(message);
       GtfsActionsCreator.uploadEdit(obj);
     },
     _saveEdits:function(){
