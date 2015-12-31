@@ -1,49 +1,29 @@
-/*globals require,module,console*/
+/*global require,module,console*/
 'use strict';
-/**
- * This file is provided by Facebook for testing and evaluation purposes
- * only. Facebook reserves all rights not expressly granted.
- *
- */
 
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
-    Constants = require('../constants/AppConstants'),
+    UserConstants = require('../constants/AppConstants').ActionTypes,
+    SailsWebApi   = require('../utils/sailsWebApi'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
-    SailsWebApi = require('../utils/sailsWebApi'),
-    ActionTypes = Constants.ActionTypes,
+
     CHANGE_EVENT = 'change';
 
-var _editUserID = null,
-    _users = {},
+var USERS = [],
+    SESSION_USER = {},
     _userActions = [],
     _actionsLoading = false,
-    _sessionUser = {};
-
-function _addUsers(rawData) {
-  //console.log('stores/UserStore/_addUsers',rawData);
-  rawData.forEach(function(user) {
-
-      _users[user.id] = user;
-
-  });
-}
-
-function _deleteUser(id){
-  //console.log('stores/userstore/deleteuser',id)
-  delete _users[id];
-  _editUserID = null;
-}
-
-function _setEditUserID(id){
-    _editUserID = id;
-}
+    EDIT_TARGET = null;
 
 function requireActions(){
   SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'100'}});
 }
 
 function assignActions(actions){
+  var _users = {};
+  USERS.forEach(function(d){
+    _users[d.id] = d;
+  });
   actions.forEach(function(d){
     d.user = _users[d.userid];
   });
@@ -51,74 +31,79 @@ function assignActions(actions){
 
 var UserStore = assign({}, EventEmitter.prototype, {
 
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  },
+    emitChange: function() {
+        this.emit(CHANGE_EVENT);
+    },
+    addChangeListener: function(callback) {
+        this.on(CHANGE_EVENT, callback);
+    },
+    removeChangeListener: function(callback) {
+        this.removeListener(CHANGE_EVENT, callback);
+    },
 
-  /**
-   * @param {function} callback
-   */
+    getUser: function(id) {
+        return USERS[id];
+    },
+    getAllUsers: function() {
+        return USERS;
+    },
+    getSessionUser:function() {
+        return SESSION_USER;
+    },
+    getEditTarget: function() {
+        return EDIT_TARGET;
+    },
+    getUserActions : function(){
+      if(_userActions.length === 0){
+        requireActions();
+        _actionsLoading = true;
+        return [];
+      }else{
+        return _userActions;
+      }
 
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  },
-
-  get: function(id) {
-    return _users[id];
-  },
-
-  getAll: function() {
-    return _users;
-  },
-
-  getEditUserId:function(){
-    return _editUserID;
-  },
-  getSessionUser:function(){
-    return _sessionUser;
-  },
-  getUserActions : function(){
-    if(_userActions.length === 0){
-      requireActions();
-      _actionsLoading = true;
-      return [];
-    }else{
-      return _userActions;
-    }
-
-  },
+    },
 });
 
 UserStore.dispatchToken = AppDispatcher.register(function(payload) {
-  var action = payload.action;
+    var action = payload.action;
+    switch(action.type) {
 
-  switch(action.type) {
+    case UserConstants.SET_SESSION_USER:
+        SESSION_USER = action.user;
+        UserStore.emitChange();
+        break;
 
-    case ActionTypes.SET_SESSION_USER:
-      _sessionUser = action.user;
-      UserStore.emitChange();
-    break;
+    case UserConstants.RECEIVE_USERS:
+        USERS = action.users;
+        UserStore.emitChange();
+        break;
 
-    case ActionTypes.RECEIVE_USERS:
-      _addUsers(action.data);
-      UserStore.emitChange();
-    break;
+    case UserConstants.SET_EDIT_TARGET:
+        EDIT_TARGET = action.user;
+        UserStore.emitChange();
+        break;
 
-    case ActionTypes.SELECT_USER:
-      _setEditUserID(action.userID);
-      UserStore.emitChange();
-    break;
+    case UserConstants.DELETE_USER:
+        USERS = USERS.filter(function(d) { return d.id != action.user.id; });
+        EDIT_TARGET = null;
+        UserStore.emitChange();
+        break;
 
-    case ActionTypes.DELETE_USER:
-      _deleteUser(action.Id);
-      UserStore.emitChange();
-    break;
+    case UserConstants.CREATE_USER:
+        USERS.push(action.user);
+        EDIT_TARGET = null;
+        UserStore.emitChange();
+        break;
 
-    case ActionTypes.USER_ACTION:
+    case UserConstants.UPDATE_USER:
+        USERS = USERS.filter(function(d) { return d.id != action.user.id; });
+        USERS.push(action.user);
+        EDIT_TARGET = action.user;
+        UserStore.emitChange();
+        break;
+
+    case UserConstants.USER_ACTION:
       console.log('Attempted USER AcTion',action.data);
       if(action.data.id)
         SailsWebApi.update('useraction',action.data,function(){
@@ -129,18 +114,15 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
           requireActions();
         });
       }
-    break;
+      break;
 
-    case ActionTypes.RECEIVE_USERACTIONS:
+    case UserConstants.RECEIVE_USERACTIONS:
       console.log('received user actions from server',action.data);
       _userActions = action.data;
       assignActions(_userActions);
       _actionsLoading = false;
       UserStore.emitChange();
-    break;
-
-    default:
-      // do nothing
+      break;
   }
 
 });

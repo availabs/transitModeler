@@ -34,8 +34,26 @@ module.exports = {
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
     DELETE_USER:null,
+    UPDATE_USER: null,
+    SET_EDIT_TARGET: null,
+    GET_ALL_USERS: null,
+
+    //------User Actions--------------------------------------
     USER_ACTION:null,
     RECEIVE_USERACTIONS:null,
+
+    //------Groups--------------------------------------------
+    CREATE_GROUP: null,
+    DELETE_GROUP: null,
+    UPDATE_GROUP: null,
+    GET_ALL_GROUPS: null,
+    SET_GROUP_EDIT_TARGET: null,
+
+    //------SysAdmin------------------------------------------
+    RELOAD_ROUTES: null,
+    DISMISS_MESSAGES: null,
+    SEND_MESSAGE: null,
+
     //--------GtfsEditor--------------------------------------
     SET_WAYPOINTS:null,
     SET_EDITOR_SAVE:null,
@@ -102,6 +120,10 @@ module.exports = {
     RECEIVE_ACTIVE_JOBS:null,
     //Component actions
     SEND_MAIL:null,
+    //Loading constants
+    LOADING_START: null,
+    LOADING_STOP: null,
+
   }),
 
 

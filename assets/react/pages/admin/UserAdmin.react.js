@@ -1,139 +1,62 @@
+/*globals require,module*/
 'use strict';
 
 var React = require('react'),
-    
-    // -- Components 
-    WidgetHeader = require('../../components/WidgetHeader.react'),
+
     UserTable = require('../../components/user/UserTable.react'),
     UserForm = require('../../components/user/UserForm.react'),
-    
-    // -- Action Creators
-    UserActionsCreator = require('../../actions/UserActionsCreator'),
 
-    // -- Stores
-    UserStore = require('../../stores/UserStore');
+    GroupAdminStore = require("../../stores/GroupAdminStore"),
+    UserStore = require('../../stores/UserStore'),
 
-    // -- Misc
-var panelData = [
-    {
-      title:"Create Account",
-      name:'createAccount',
-      expanded:'true',
-      formData:{
-        buttonText:'Create Account',
-        formType:'create'
-      }
-    },
-    {
-      title:"Edit Account",
-      name:'editAccount',
-      expanded:'false',
-      formData:{
-        buttonText:'Upadate Account',
-        formType:'update'
-      }
-    }
-];
+    UserActions = require('../../actions/UserActions');
 
-
-function getStateFromStores(){
+function getState() {
+    var groups = [{ value: "default", display: "user group", style: { display: "none"} }];
     return {
-        users: UserStore.getAll(),
-        editUser: UserStore.getEditUserId()
-    }
-};
+        user: UserStore.getSessionUser(),
+        users: UserStore.getAllUsers(),
+        editTarget: UserStore.getEditTarget(),
+        groups: groups.concat(GroupAdminStore.getAllGroups().map(function(d) {
+            return { value: d.name, display: d.name };
+        }))
+    };
+}
 
-
-var AccordianPanel = React.createClass({
-    render: function(){
-    
-        var id = '#'+this.props.data.name;
-        var display = 'panel-collapse collapse ';
-        
-        if(this.props.data.expanded == 'true'){
-            display += 'in';
-        }
-
-        return (
-            <div className="panel">
-                <div className="panel-heading">
-                    <a className="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href={id} aria-expanded={this.props.data.expanded}>
-                        {this.props.data.title}
-                    </a>
-                </div>
-
-                <div id={this.props.data.name} className={display} aria-expanded={this.props.data.expanded}>
-                    <div className="panel-body">
-                        <UserForm data={this.props.data.formData} />
-                    </div>
-                </div>
-            </div>
-        )
-    }
-})
-
-
-var EditAccordian = React.createClass({
-    
-    render: function(){
-
-        var panels = this.props.panelData.map(function(panel,i){
-            return (
-                <AccordianPanel key={i} data={panel} />
-            )
-        })
-        return(
-            <div className="panel-group" id="accordion2">
-                {panels}
-            </div>
-        )
-
-    }
-});
-
-
-
-var UserPage = React.createClass({
+module.exports = React.createClass({
 
     getInitialState: function() {
-        return getStateFromStores();
-    },
-    
-    componentDidMount: function() {
-        UserStore.addChangeListener(this._onChange);
+        return getState();
     },
 
+    componentDidMount: function() {
+        GroupAdminStore.addChangeListener(this.onChange);
+        UserStore.addChangeListener(this.onChange);
+
+        UserActions.getAllUsers();
+    },
     componentWillUnmount: function() {
-        UserStore.removeChangeListener(this._onChange);
+        GroupAdminStore.removeChangeListener(this.onChange);
+        UserStore.removeChangeListener(this.onChange);
+    },
+
+    onChange: function() {
+        this.setState(getState());
     },
 
     render: function() {
-
         return (
-            <div className="content container">
-                <h2 className="page-title">Users <small>Management</small></h2>
-                <div className="row">
-                    <div className="col-lg-9">
-                        <section className="widget whitesmoke">
-                            <WidgetHeader />
-                            <div className="body">
-                               <UserTable users={this.state.users} editUser={this.state.editUser} /> 
-                            </div>
-                        </section>                        
-                    </div>
-                    <div className="col-lg-3">
-                       <EditAccordian panelData={panelData} /> 
-                    </div>
+            <div>
+
+                <div className="col-lg-10">
+                    <UserTable users={ this.state.users }/>
                 </div>
+                <div className="col-lg-2">
+                    <UserForm users={ this.state.users } user={ this.state.user }
+                        editTarget={ this.state.editTarget } groups={ this.state.groups }/>
+                </div>
+
             </div>
         );
-    },
-    
-    _onChange: function() {
-        var data = getStateFromStores();
-        this.setState(data);
     }
-
 });
-
-module.exports = UserPage;

@@ -29,7 +29,7 @@ var JobHistory = React.createClass({
         return (
           <section className='feed-item'>
           <div className='feed-item-body' style={{margin:5}}>
-            <div className='row' style={{fontSize:'12',fontWeight:'bold'}}>{d.user.username}</div>
+            <div className='row' style={{fontSize:'12',fontWeight:'bold'}}>{(d.user)?d.user.username:''}</div>
             <div className='row text'>{'Action : '+d.actiontitle}</div>
             <div className='row text'>{'Description : '+d.actiondesc}</div>
             <div className='row time pull-left'>{(new Date(d.createdAt)).toString()}</div>

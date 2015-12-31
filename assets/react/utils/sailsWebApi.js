@@ -8,7 +8,9 @@
 var io = require('./sails.io.js')();
 var d3 = require('d3');
 var ServerActionCreators = require('../actions/ServerActionsCreator');
+var UserActions          = require('../actions/UserActions');
 var GtfsActionsCreator = require('../actions/GtfsActionsCreator');
+var GroupAdminActions  = require('../actions/GroupAdminActions');
 var Router = require('./hereApi');
 
 //---------------------------------------------------
@@ -33,11 +35,12 @@ function listenToSockets(sessionUser){
 module.exports = {
 
   init:function(user){
-    ServerActionCreators.setSessionUser(user);
+    UserActions.setSessionUser(user);
+    UserActions.getAllUsers();
+    GroupAdminActions.getAllGroups();
     this.getStateGeodata(34);
     this.getModelRuns();
     this.read('marketarea');
-    this.read('user');
     this.read('regression');
     this.read('datasource');
     listenToSockets();
