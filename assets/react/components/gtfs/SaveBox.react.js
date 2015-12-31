@@ -5,6 +5,7 @@ var React = require('react'),
     CreationForm     = require('./CreationForm.react');
     // -- Actions
     // -- Stores
+var spaces = /\s+/g;
 var MarketAreaNew = React.createClass({
     getInitialState: function(){
       return {
@@ -24,7 +25,7 @@ var MarketAreaNew = React.createClass({
       this.setState({modal:false});
     },
     _saveChange : function(){
-      this.props.cloneSave(this.state.name,this.props.fips,{description:this.state.desc});
+      this.props.cloneSave(this.state.name.trim().replace(spaces,'_'),this.props.fips,{description:this.state.desc});
       this.setState({modal:false,name:'',desc:''});
     },
     nameChange : function(e){

@@ -48,6 +48,7 @@ var MarketAreaNew = React.createClass({
                 origin_gtfs:null,
                 routecolors:{},
                 stateFips:'34',
+                center:[],
                 geounit:'tracts',
                 description:'',
             },
@@ -93,11 +94,14 @@ var MarketAreaNew = React.createClass({
                 });
                 return matches.length === 0;                          //if no matches return it;
             }).map(function(d){return d.properties.geoid;});
+            var ma = this.state.marketarea;
+            ma.center = Geoprocessing.center(data);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
               tractsFilter:tractsFilter.keys,
               outerTractsFilter:nonSelectTracts,
+              marketarea:ma,
               });
         }else if(data.features.length === 0){ //if there are no stops simply set to empty lists
             //console.log('remove last layer')

@@ -182,11 +182,14 @@ var MarketAreaNew = React.createClass({
             console.log('Finished Processing tracts',new Date());
             console.log(tractsFilter,countyFilter);
             var nonSelectTracts = this.getNonZone(filterTracts,tractsFilter.keys);
+            var ma = this.state.marketarea;
+            ma.center = Geoprocessing.center(data);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
               tractsFilter:tractsFilter.keys,
               outerTractsFilter:nonSelectTracts,
+              marketarea:ma,
               });
         }else if(data.features.length === 0){
             console.log('remove last layer');
