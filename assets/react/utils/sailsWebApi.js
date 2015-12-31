@@ -295,14 +295,26 @@ module.exports = {
   },
 
   create: function(type,data,cb){
-
-    d3.json('/'+type).post(JSON.stringify(data),function(err,resData){
+    var url = '';
+    if(type.type)
+      url = type.type;
+    else {
+      url = type;
+    }
+    d3.json('/'+url).post(JSON.stringify(data),function(err,resData){
       if(err){
         console.log('Create Err',err);
       }
+      var retype;
+      if(type.type){
+        retype = type.returnType;
+      }
+      else{
+        retype = type;
+      }
       //console.log('create',type,resData);
       //add new user back to store through
-      ServerActionCreators.receiveData(type,[resData]);
+      ServerActionCreators.receiveData(retype,[resData]);
       if(cb) {cb(resData);}
     });
   },

@@ -35,7 +35,7 @@ module.exports = {
     SET_SESSION_USER:null,
     DELETE_USER:null,
     USER_ACTION:null,
-
+    RECEIVE_USERACTIONS:null,
     //--------GtfsEditor--------------------------------------
     SET_WAYPOINTS:null,
     SET_EDITOR_SAVE:null,

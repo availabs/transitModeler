@@ -1,3 +1,4 @@
+/*globals require,module,console*/
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -15,6 +16,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var _editUserID = null,
     _users = {},
+    _userActions = [],
+    _actionsLoading = false,
     _sessionUser = {};
 
 function _addUsers(rawData) {
@@ -24,7 +27,7 @@ function _addUsers(rawData) {
       _users[user.id] = user;
 
   });
-};
+}
 
 function _deleteUser(id){
   //console.log('stores/userstore/deleteuser',id)
@@ -34,7 +37,17 @@ function _deleteUser(id){
 
 function _setEditUserID(id){
     _editUserID = id;
-};
+}
+
+function requireActions(){
+  SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'100'}});
+}
+
+function assignActions(actions){
+  actions.forEach(function(d){
+    d.user = _users[d.userid];
+  });
+}
 
 var UserStore = assign({}, EventEmitter.prototype, {
 
@@ -67,8 +80,17 @@ var UserStore = assign({}, EventEmitter.prototype, {
   },
   getSessionUser:function(){
     return _sessionUser;
-  }
+  },
+  getUserActions : function(){
+    if(_userActions.length === 0){
+      requireActions();
+      _actionsLoading = true;
+      return [];
+    }else{
+      return _userActions;
+    }
 
+  },
 });
 
 UserStore.dispatchToken = AppDispatcher.register(function(payload) {
@@ -99,11 +121,24 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.USER_ACTION:
       console.log('Attempted USER AcTion',action.data);
       if(action.data.id)
-        SailsWebApi.update('useraction',action.data);
+        SailsWebApi.update('useraction',action.data,function(){
+          requireActions();
+        });
       else {
-        SailsWebApi.create('useraction',action.data);
+        SailsWebApi.create('useraction',action.data,function(){
+          requireActions();
+        });
       }
     break;
+
+    case ActionTypes.RECEIVE_USERACTIONS:
+      console.log('received user actions from server',action.data);
+      _userActions = action.data;
+      assignActions(_userActions);
+      _actionsLoading = false;
+      UserStore.emitChange();
+    break;
+
     default:
       // do nothing
   }
