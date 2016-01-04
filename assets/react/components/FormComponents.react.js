@@ -30,7 +30,7 @@ exports.CheckboxGroup = React.createClass({
 exports.InlineCheckbox = React.createClass({
     render: function() {
         return (
-            <div className="checkbox">
+            <div className="checkbox-inline">
                 <label>
                     { this.props.children }
                     { this.props.label }

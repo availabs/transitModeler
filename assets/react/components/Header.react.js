@@ -1,6 +1,6 @@
 var React = require('react'),
     Link = require('react-router').Link,
-    
+
     // -- Stores
     UserStore = require('../stores/UserStore');
 
@@ -25,7 +25,7 @@ var Message = React.createClass({
 var MessagesMenu = React.createClass({
     getInitialState: function() {
       return {
-        messages: [{sender:{name:'Alex Muro',img:''},text:'Hey, John! How is it going? ...'}], 
+        messages: [{sender:{name:'Alex Muro',img:''},text:'Hey, John! How is it going? ...'}],
       };
     },
     render: function(){
@@ -87,11 +87,14 @@ var Header = React.createClass({
         this.setState(getSessionUserfromStore());
     },
     render: function() {
-        var adminLinks = '';
+        var userAdminLinks = '',groupAdminLinks = '';
         if(this.state.sessionUser.admin){
-            adminLinks = <li role="presentation"><Link to="userAdmin"><i className="fa fa-users"></i>User Admin</Link></li>
-            
+            userAdminLinks = <li role="presentation"><Link to="userAdmin"><i className="fa fa-users"></i>User Admin</Link></li>;
         }
+        if(this.state.sessionUser.admin && this.state.sessionUser.userGroup.type ==='sysAdmin'){
+          groupAdminLinks = <li role='presentation'><Link to='groupAdmin'><i className='fa fa-users'></i>Group Admin</Link></li>;
+        }
+        console.log('session user',this.state.sessionUser);
         return (
             <header className="page-header">
                 <div className="navbar">
@@ -99,25 +102,25 @@ var Header = React.createClass({
                         <li><h2 className='page-title' style={{marginTop:5}}>{this.props.marketarea ? this.props.marketarea.name : ''}</h2></li>
                     </ul>
                     <ul className="nav navbar-nav navbar-right pull-right">
-                        
+
                         <li className="hidden-xs dropdown">
                             <a href="#" title="Account" id="account" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i className="fa fa-user"></i>
                             </a>
                             <ul id="account-menu" className="dropdown-menu account" role="menu">
                                 <li role="presentation" className="account-picture">
-                                    
+
                                     {this.state.sessionUser.name}
                                 </li>
                                 <li role="presentation">
                                     <a href="" className="link">
                                             <i className="fa fa-user"></i>
                                             Profile
-                                        
+
                                     </a>
                                 </li>
-                                {adminLinks}
-                                
+                                {userAdminLinks}
+                                {groupAdminLinks}
                             </ul>
                         </li>
                         <li className="visible-xs">

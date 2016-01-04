@@ -203,6 +203,7 @@ function SailsCRUD() {
     return crud;
 
     function send(data, cb) {
+        console.log(URL,data);
         var xhr = d3.xhr(URL).response(response);
 
         if (typeof data === "function") {
