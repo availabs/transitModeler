@@ -6,10 +6,10 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
     name:'string',
     settings:'json',
   }
-  
+
 };

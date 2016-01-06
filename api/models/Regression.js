@@ -6,13 +6,12 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
   	name:'string',
   	constant:'float',
   	censusVariables:'array',
   	marketarea:'integer'
   }
-  
-};
 
+};

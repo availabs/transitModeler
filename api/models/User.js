@@ -7,7 +7,6 @@
  */
 
 module.exports = {
-
   schema: true,
   autosubscribe: ['create','destroy', 'update'],
   attributes: {
@@ -58,6 +57,10 @@ module.exports = {
       defaultsTo: false
     },
 
+    marketareas:{
+      collection:'marketarea',
+      via:'users',
+    },
 
     toJSON: function() {
       var obj = this.toObject();
@@ -89,11 +92,24 @@ module.exports = {
       return next({err: ["Password doesn't match password confirmation."]});
     }
 
-    require('bcryptjs').hash(values.password, 10, function passwordEncrypted(err, encryptedPassword) {
-      if (err) return next(err);
-      values.encryptedPassword = encryptedPassword;
-      // values.online= true;
-      next();
+    console.log('made it',values);
+    Usergroup.find({name:values.group}).exec(function(err,data){
+      if(err){console.error(err);}
+      var isSys;
+      data.forEach(function(d){
+        if(d.type==='sysAdmin'){
+          isSys = true;
+        }
+      });
+      if(isSys){
+        console.log('Invalid Permissions Request',data);
+        return next({err:["Invalid Permissions"]});
+      }
+      require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
+          if (err) return next(err);
+          values.encryptedPassword = encryptedPassword;
+          next();
+      });
     });
   },
 
@@ -105,11 +121,26 @@ module.exports = {
         if (values.password && values.password != values.confirmation) {
             return next({err: ["Password doesn't match password confirmation."]});
         }
-        require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
-            if (err) return next(err);
-            values.encryptedPassword = encryptedPassword;
-            next();
+        Usergroup.find({name:values.group}).exec(function(err,data){
+          if(err){console.error(err);}
+          var isSys;
+          data.forEach(function(d){
+            if(d.type==='sysAdmin'){
+              isSys = true;
+            }
+          });
+          if(isSys){
+            console.log('Invalid Permissions Request');
+            return next({err:["Invalid Permissions"]});
+          }
+          require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
+              if (err) return next(err);
+              values.encryptedPassword = encryptedPassword;
+              next();
+          });
         });
+
     },
+
 
 };

@@ -9,13 +9,22 @@ module.exports = {
            user: user
        });
    },
-   getAllUsers: function() {
+   getAllUsers: function(id) {
+      if(!id){
        SailsWebApi.getAllUsers(function(users) {
            AppDispatcher.handleViewAction({
                type: UserConstants.RECEIVE_USERS,
                users: users
            });
        });
+     }else{
+       SailsWebApi.getAllUsers(id,function(users){
+         AppDispatcher.handleViewAction({
+           type: UserConstants.RECEIVE_USERS,
+           users: users
+         });
+       });
+     }
    },
    setEditTarget: function(user) {
        AppDispatcher.handleViewAction({

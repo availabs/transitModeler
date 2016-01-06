@@ -8,7 +8,7 @@ var kill = require('tree-kill');
 
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
   	start:{
   		type:'datetime',

@@ -6,7 +6,7 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
     actiondesc : 'STRING',
     actiontitle : 'STRING',

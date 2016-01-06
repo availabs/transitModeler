@@ -24,7 +24,13 @@ module.exports = {
 // USER ACTIONS
     getAllUsers: function(cb) {
         checkLoading(true);
-        soCRUD('user').read(wrapCB(cb));
+        if(arguments.length === 1)
+          soCRUD('user').read(wrapCB(cb));
+        if(arguments.length === 2){
+          var id = arguments[0];
+          cb = arguments[1];
+          soCRUD('user').read(id,wrapCB(cb));
+        }
     },
     createUser: function(user, cb) {
         checkLoading(true);

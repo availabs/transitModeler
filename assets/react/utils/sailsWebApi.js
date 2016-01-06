@@ -288,6 +288,17 @@ module.exports = {
     });
   },
   //---------------------------------------------------
+  // Sharing is careing
+  //---------------------------------------------------
+  shareMarketArea : function(maid,uid,cb){
+    var url = '/marketarea/'+maid+'/users/add/'+uid;
+    d3.json(url,function(err,data){
+      console.log('error',err,'Data',data);
+      if(cb && !err)
+        cb(data);
+    });
+  },
+  //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------
   get : function(type,id,cb){

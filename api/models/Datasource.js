@@ -6,7 +6,7 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
   	type:'string',
   	tableName:'string',
@@ -14,4 +14,3 @@ module.exports = {
   	settings:'array'
   }
 };
-

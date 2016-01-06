@@ -7,7 +7,6 @@
 */
 
 module.exports = {
-
   attributes: {
   	name:'STRING',
   	geounit: 'STRING',
@@ -19,6 +18,10 @@ module.exports = {
 	stateFips:'STRING',
   routecolors:'json',
   description:'STRING',
+  users: {
+      collection:'user',
+      via:'marketareas',
+    }
   }
 
 };

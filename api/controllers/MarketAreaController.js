@@ -103,4 +103,32 @@ module.exports = {
 		});
 	},
 
+  find : function(req,res){
+
+      User.findOne(req.session.User.id)
+          .populate('marketareas')
+          .exec(function(err,user){
+            if(err){
+              console.log(err);
+              return res.send(JSON.stringify(err),500);
+            }
+            res.send(JSON.stringify(user.marketareas));
+      });
+  },
+
+  create : function(req,res){
+    console.log('Attempted Creation',req.body);
+    MarketArea.create(req.body).exec(function(err,MA){
+        if(err){
+          console.log(err);
+          return res.send(JSON.stringify(err),500);
+        }
+        MA.users.add(req.session.User.id);
+        MA.save(function(){
+          res.send(MA.toJSON());
+        });
+
+    });
+
+  },
 };

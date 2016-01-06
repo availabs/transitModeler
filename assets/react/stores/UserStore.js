@@ -10,6 +10,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     CHANGE_EVENT = 'change';
 
 var USERS = [],
+    USERGROUPS={},
     SESSION_USER = {},
     _userActions = [],
     _actionsLoading = false,
@@ -27,6 +28,13 @@ function assignActions(actions){
   actions.forEach(function(d){
     d.user = _users[d.userid];
   });
+}
+function buildGroups(){
+    console.log('USERS',USERS);
+    USERS.forEach(function(d){
+      USERGROUPS[d.group] = USERGROUPS[d.group] || [];
+      USERGROUPS[d.group][d.id]  =  d;
+    });
 }
 
 var UserStore = assign({}, EventEmitter.prototype, {
@@ -61,7 +69,14 @@ var UserStore = assign({}, EventEmitter.prototype, {
       }else{
         return _userActions;
       }
-
+    },
+    getCurrentGroupUsers : function(){
+      if(!USERGROUPS[SESSION_USER.group])
+      {
+        return [];
+      }
+      return Object.keys(USERGROUPS[SESSION_USER.group])
+            .map(function(d){return USERGROUPS[SESSION_USER.group][d];});
     },
 });
 
@@ -76,6 +91,7 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case UserConstants.RECEIVE_USERS:
         USERS = action.users;
+        buildGroups();
         UserStore.emitChange();
         break;
 

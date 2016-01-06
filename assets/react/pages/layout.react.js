@@ -67,7 +67,7 @@ var App = React.createClass({
     getInitialState: function(){
         return this.getState();
     },
-    
+
     _onChange: function() {
         this.setState(this.getState());
     },
@@ -136,7 +136,6 @@ var App = React.createClass({
             maMenu = [{text:'Loading'}];
         }
         maMenu.push({text:'New Marketarea',icon:'fa fa-plus',action:'MarketAreaNew',type:'Route'});
-
         return {
             menu: [
                 {text:'Dashboard',icon:'fa fa-home',action:'dashboard',type:'Route'},

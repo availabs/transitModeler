@@ -10,7 +10,7 @@ module.exports = {
     filtername:'string',
     filter:'array',
     id:'integer',
-    dates:'json',
+    dates:'array',
     maid:'integer',
     stateid:'string',
     description:'string',
