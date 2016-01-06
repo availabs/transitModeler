@@ -35,6 +35,7 @@ function marketAreasToMenuItems(marketareas){
 var App = React.createClass({
 
     getState : function(){
+      console.log('REGS',RegressionStore.getAll());
         return {
             menu:this._populateMenu( MarketAreaStore.getAll() ).menu,
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
@@ -74,6 +75,7 @@ var App = React.createClass({
 
     componentDidMount: function() {
         JobStore.addChangeListener(this._onChange);
+        RegressionStore.addChangeListener(this._onChange);
         MarketAreaStore.addChangeListener(this._onChange);
         DatasourcesStore.addChangeListener(this._onChange);
         GeodataStore.addChangeListener(this._onChange);
@@ -84,6 +86,7 @@ var App = React.createClass({
 
     componentWillUnmount: function() {
         JobStore.removeChangeListener(this._onChange);
+        RegressionStore.removeChangeListener(this._onChange);
         MarketAreaStore.removeChangeListener(this._onChange);
         DatasourcesStore.removeChangeListener(this._onChange);
         GeodataStore.removeChangeListener(this._onChange);
