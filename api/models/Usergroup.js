@@ -23,7 +23,11 @@ module.exports = {
             type: 'string',
             enum: ['transitAuth', 'state', 'sysAdmin'],
             required: true
-        }
+        },
+        datasources:{
+          collection:'datasource',
+          via:'groups',
+        },
 
     }
 };

@@ -71,6 +71,7 @@ module.exports = {
     RECEIVE_SURVEYS:null,
     RECEIVE_FAREBOXS:null,
     DELETE_DATASOURCE:null,
+    DELETE_ACS:null,
 
     SET_GTFS: null,
     REFRESH_DATASOURCES:null,

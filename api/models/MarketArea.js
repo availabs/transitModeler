@@ -7,6 +7,7 @@
 */
 
 module.exports = {
+  migrate:'safe',
   attributes: {
   	name:'STRING',
   	geounit: 'STRING',

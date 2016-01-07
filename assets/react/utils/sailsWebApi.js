@@ -278,6 +278,13 @@ module.exports = {
     .post(JSON.stringify(newData),function(err,data){
        if(err){  console.log('SAILS WEB API / loadAcs / error',err);  }
        //console.log('SAILS WEB API  / loadACS',data);
+
+    });
+  },
+  deleteAcs:function(id){
+    d3.json('/acs/delete/'+id,function(err,data){
+      if(err){console.log('SAILS WEB API / deleteAcs / error',err);}
+      ServerActionCreators.deleteData('acs',id);
     });
   },
   deleteGtfs : function(ds,cb){

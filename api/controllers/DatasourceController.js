@@ -1,3 +1,4 @@
+/*globals require,console,module,Datasource,Usergroup,Job*/
 'use strict';
 /**
  * DatasourcesController
@@ -29,11 +30,11 @@ var getCensusData = function(marketarea,table,cb){
       if (err) { return console.log(err,sql);}
       return cb(data.rows);
     });
-}
+};
 
 var preserveProperties = function(feature) {
   return feature.properties;
-}
+};
 
 var topojson = require('topojson');
 
@@ -41,16 +42,69 @@ module.exports = {
 
 	find:function(req,res){
 		var user = req.session.User;
-		crudHelper(Datasource,'find',{groupname:user.group},req,res);
+		if(user.userGroup.type==='sysAdmin'){
+			Datasource.find().exec(function(err,data){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}else{
+					res.send(data);
+				}
+			});
+		}else{
+			Usergroup.findOne({name:user.group}).populate('datasources').exec(function(err,group){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}else{
+					res.send(group.datasources);
+				}
+			});
+		}
 	},
 	create:function(req,res){
-		crudHelper(Datasource,'create','groupname',req,res);
+		var user = req.session.User;
+		Datasource.create(req.body).exec(function(err,ds){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}else{
+				ds.groups.add(user.userGroup.id);
+				ds.save(function(err){
+					if(err){
+						console.log(err);
+						res.send(err);
+					}else{
+						res.send(ds);
+					}
+				});
+			}
+		});
+		// crudHelper(Datasource,'create','groupname',req,res);
 	},
 	update:function(req,res){
-		crudHelper(Datasource,'update','groupname',req,res);
+		res.send('Unfulfilled Feature');
+		// crudHelper(Datasource,'update','groupname',req,res);
 	},
 	destroy:function(req,res){
-		crudHelper(Datasource,'destroy','groupname',req,res);
+		var user = req.session.User;
+		var id = req.param('id');
+		Datasource.findOne(id).populate('groups').exec(function(err,ds){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}else{
+				ds.groups.remove(user.userGroup.id);
+				ds.save(function(err){
+					if(err){
+						console.log(err);
+						res.send(err);
+					}else{
+						res.send(ds);
+					}
+				});
+			}
+		});
 	},
 	getACS:function(req,res){
 		if(!req.param('year')){
@@ -306,23 +360,32 @@ module.exports = {
 	},
 	//---------------------ACS Create Delete-----------------------------------------
 	deleteACS:function(req,res){
-
-		Datasource.findOne(req.param('id')).exec(function(err,found){
-
-			var query = 'DROP TABLE public."'+found.tableName+'"';
-
-
-			Datasource.query(query,{} ,function(err, result) {
-				if(err) { console.error('error running query:',query, err); }
-
-				Datasource.destroy(found.id).exec(function(err,destroyed){
-					if(err) { console.log(err); res.json({error:err}); }
-
-					res.json({'message':'Record '+found.id+' deleted.'})
-
-				});
-
+		var user = req.session.User;
+		Datasource.findOne(req.param('id')).populate('groups').exec(function(err,found){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}
+			// var query = 'DROP TABLE public."'+found.tableName+'"';
+			found.groups.remove(user.userGroup.id);
+			found.save(function(err){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}
+					res.json({'message':'Record '+found.id+' deleted.'});
 			});
+
+			// Datasource.query(query,{} ,function(err, result) {
+			// 	if(err) { console.error('error running query:',query, err); }
+
+				// Datasource.destroy(found.id).exec(function(err,destroyed){
+				// 	if(err) { console.log(err); res.json({error:err}); }
+
+
+				// });
+
+			// });
 
 		});
 
@@ -337,16 +400,15 @@ module.exports = {
 		console.log('Datasource.loadData',state,dataSource,year,sumlevel);
 
 		Datasource //Check to see if this data set has been loaded
-		.find({ stateFips:state})
+		.find({ stateFips:state}).populate('groups')
 		.exec(function(err,data){
 			console.log(err,data);
-
 			data = data.filter(function(d){
-				return d.stateFips == state && d.settings.year == year &&
-								d.settings.level == sumlevel && d.group === user.group;
+				return d.stateFips == state && d.settings[0].year == year &&
+								d.settings[0].level == sumlevel;
 			});
-			console.log(err,data);
-			if(data.length > 0){// the data source does exist, refuse to load.
+
+			if(data.length > 0 ){// the data source does exist, refuse to load.
 				var flashMessage = [{
 					name:"Data Exists",
 					message: "This dataset has already been loaded"
@@ -355,10 +417,21 @@ module.exports = {
 				req.session.flash = {
 					err: flashMessage
 				};
-
-
-				res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
-
+				var inGroup = data[0].groups.filter(function(d){return d.id === user.userGroup.id;});
+				if(inGroup.length > 0){
+						res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
+				}else{
+					data[0].groups.add(user.userGroup.id);
+					data[0].save(function(err){
+						console.log('MADE IT TO SAVE');
+						if(err){
+							console.log(err);
+							res.json({responseText:'Error adding ACS data'});
+						}else{
+							res.json({responseText:'Successfully added ACS data'});
+						}
+					});
+				}
 			}else{//the data source doesn't exists
 
 				Job.create({
@@ -493,7 +566,6 @@ function spawnACSJob(job,user){
 				type:'acs',
 		  	stateFips:job.info[0].state,
 			 	settings:[settings],
-				groupname:user.group,
 	  	};
 
   	terminal.stdout.on('data', function (data) {
@@ -531,7 +603,7 @@ function spawnACSJob(job,user){
 	terminal.on('exit', function (code) {
 		code = code*1;
 	    console.log('child process exited with code ' + code);
-	    if(code == 0){
+	    if(code === 0){
 
 	    	Job.findOne(job.id).exec(function(err,newJob){
 	    		if(err){ console.log('Job check err',err);}
@@ -541,11 +613,14 @@ function spawnACSJob(job,user){
 			    	Datasource.create(acsEntry)
 				    .exec(function(err,newEntry){
 				    	if(err){ console.log('Datasource create error',err);}
-
-					    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-						.exec(function(err,updated_job){
-							if(err){ console.log('job update error',err); }
-							sails.sockets.blast('job_updated',updated_job);
+							newEntry.groups.add(user.userGroup.id);
+							newEntry.save(function(err){
+								if(err){console.log(err);}
+								Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+								.exec(function(err,updated_job){
+								if(err){ console.log('job update error',err); }
+								sails.sockets.blast('job_updated',updated_job);
+							});
 						});
 					});
 				}else{

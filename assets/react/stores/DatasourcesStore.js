@@ -129,6 +129,11 @@ DatasourcesStore.dispatchToken = AppDispatcher.register(function(payload) {
       _deleteDataset(action.data);
       DatasourcesStore.emitChange();
     break;
+    case ActionTypes.DELETE_ACS:
+      console.log(action.Id);
+      delete _DataSets.acs[action.Id];
+      DatasourcesStore.emitChange();
+    break;
     default:
       // do nothing
   }

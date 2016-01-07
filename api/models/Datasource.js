@@ -12,9 +12,9 @@ module.exports = {
   	tableName:'string',
   	stateFips:'string',
   	settings:'array',
-    groupname:{
-      type:'STRING',
-      required:true,
+    groups:{
+      collection:'usergroup',
+      via:'datasources',
     }
   }
 };

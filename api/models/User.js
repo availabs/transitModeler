@@ -7,6 +7,7 @@
  */
 
 module.exports = {
+  migrate:'safe',
   schema: true,
   autosubscribe: ['create','destroy', 'update'],
   attributes: {
