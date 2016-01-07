@@ -1,17 +1,17 @@
 'use strict';
 var React = require('react'),
-    
-    // -- Components 
-    
+
+    // -- Components
+
     // -- actions
     UserActionsCreator = require('../../actions/UserActionsCreator');
 
 var RegressionRow = React.createClass({
-    
-    
+
+
 
     render: function(){
-        
+
         var vars = this.props.regression.censusVariables.map(function(v){
             return (
                 <div>
@@ -21,12 +21,12 @@ var RegressionRow = React.createClass({
         });
 
         var ma = '';
-        if(this.props.regression.marketarea){
+        if(this.props.regression.marketarea && this.props.marketareas[this.props.regression.marketarea]){
             ma =  this.props.marketareas[this.props.regression.marketarea].name;
         }
-        
+
         return (
-        
+
             <tr>
                 <td>{this.props.regression.name}</td>
                 <td>{ma}</td>
@@ -39,9 +39,9 @@ var RegressionRow = React.createClass({
                 </td>
             </tr>
         )
-        
+
     }
-    
+
 });
 
 
@@ -57,14 +57,14 @@ var RegressionTable = React.createClass({
     },
 
     render: function(){
-        
-    
+
+
         var scope = this,
             regressions = this.props.regressions;
-           
-        
+
+
         var rows = Object.keys(regressions).map(function(key){
-            
+
             return (
                 <RegressionRow key={key} regression={regressions[key]} marketareas={scope.props.marketareas} setRegression={scope.setRegression} />
             )
@@ -108,9 +108,9 @@ var RegressionTable = React.createClass({
                             <h4 className="modal-title" id="myModalLabel2">Delete Model</h4>
                         </div>
                         <div className="modal-body">
-                            <h4>Are you sure you want to delete regression {this.props.regressions[this.state.currentRegression] ? this.props.regressions[this.state.currentRegression].name : 'none' }?</h4>     
+                            <h4>Are you sure you want to delete regression {this.props.regressions[this.state.currentRegression] ? this.props.regressions[this.state.currentRegression].name : 'none' }?</h4>
                         </div>
-                        
+
                         <div className="modal-footer">
                            <br />
                             <button type="button" className="btn btn-danger" data-dismiss="modal">Cancel</button>

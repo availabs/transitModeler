@@ -10,6 +10,10 @@ module.exports = {
   attributes: {
     name:'string',
     settings:'json',
+    groupname:{
+      type:'STRING',
+      required:true,
+    },
   }
 
 };

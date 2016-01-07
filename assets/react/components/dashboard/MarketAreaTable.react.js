@@ -71,7 +71,7 @@ var MarketAreaTable = React.createClass({
     },
 
     _onChange:function(){
-
+        console.log('MAS',MarketAreaStore.getAll());
         this.setState({marketareas: MarketAreaStore.getAll(),
                        users      : UserStore.getCurrentGroupUsers()});
     },

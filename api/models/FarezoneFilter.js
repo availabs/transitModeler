@@ -6,13 +6,17 @@
 */
 
 module.exports = {
+  migrate:'safe',
   attributes: {
     filtername:'string',
     filter:'array',
-    id:'integer',
-    dates:'array',
+    dates:'json',
     maid:'integer',
     stateid:'string',
     description:'string',
+    groupname:{
+        type:'string',
+        required:true,
+    },
   }
 };

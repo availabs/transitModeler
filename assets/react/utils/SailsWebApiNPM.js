@@ -24,13 +24,7 @@ module.exports = {
 // USER ACTIONS
     getAllUsers: function(cb) {
         checkLoading(true);
-        if(arguments.length === 1)
-          soCRUD('user').read(wrapCB(cb));
-        if(arguments.length === 2){
-          var id = arguments[0];
-          cb = arguments[1];
-          soCRUD('user').read(id,wrapCB(cb));
-        }
+        soCRUD('user').read(wrapCB(cb));
     },
     createUser: function(user, cb) {
         checkLoading(true);
@@ -77,7 +71,7 @@ module.exports = {
                     return Math.floor(feature.id/1000) == +state;
                 });
             cb(geoJSON);
-        })
+        });
     },
 
 // COUNTY_ROADS ACTIONS
@@ -91,9 +85,9 @@ module.exports = {
             var geoJSON = topojson.feature(topology, topology.objects.geo);
             geoJSON.features.forEach(function(f) {
                 f.id = f.properties.linkID;
-            })
+            });
             cb(geoJSON);
-        })
+        });
     },
 
 // COUNTY_ROADS_DATA ACTIONS
@@ -167,7 +161,7 @@ function wrapCB(cb) {
             cb(data);
         }
         checkLoading(false);
-    }
+    };
 }
 
 function SailsCRUD() {
@@ -182,7 +176,7 @@ function SailsCRUD() {
     crud.create = function(data, cb) {
         method = "POST";
         send(data, cb);
-    }
+    };
     crud.read = function(id, cb) {
         if (typeof id === "function") {
             cb = id;
@@ -191,20 +185,20 @@ function SailsCRUD() {
         method = "GET";
         URL += id ? "/"+id : "";
         send(cb);
-    }
+    };
     crud.update = function(id, data, cb) {
         method = "PUT";
         URL += "/"+id;
         send(data, cb);
-    }
+    };
     crud.delete = function(id, cb) {
         method = "DELETE";
         URL += "/"+id;
         send(cb);
-    }
+    };
     crud.response = function(r) {
         response = r;
-    }
+    };
 
     return crud;
 

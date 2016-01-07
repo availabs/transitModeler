@@ -17,7 +17,7 @@ var USERS = [],
     EDIT_TARGET = null;
 
 function requireActions(){
-  SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'100'}});
+  SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'10'}});
 }
 
 function assignActions(actions){

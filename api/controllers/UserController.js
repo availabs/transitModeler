@@ -157,6 +157,28 @@ module.exports = {
 	},
 	login:function(req,res){
 		res.view();
-	}
-
+	},
+	find : function(req,res){
+		var u = req.session.User;
+		var group = u.group;
+		User.findOne(u.id).exec(function(err,user){
+			if(user.sysadmin){
+				User.find().populate('marketareas').exec(function(err,users){
+					if(err){
+						console.log(err);
+						res.send(err,500);
+					}
+					res.send(users);
+				});
+			}else{
+				User.find({group:group}).populate('marketareas').exec(function(err,users){
+					if(err){
+						console.log(err);
+						res.send(err,500);
+					}
+					res.send(users);
+				});
+			}
+		});
+	},
 };

@@ -10,21 +10,12 @@ module.exports = {
        });
    },
    getAllUsers: function(id) {
-      if(!id){
-       SailsWebApi.getAllUsers(function(users) {
-           AppDispatcher.handleViewAction({
-               type: UserConstants.RECEIVE_USERS,
-               users: users
-           });
-       });
-     }else{
-       SailsWebApi.getAllUsers(id,function(users){
+    SailsWebApi.getAllUsers(function(users) {
          AppDispatcher.handleViewAction({
-           type: UserConstants.RECEIVE_USERS,
-           users: users
+             type: UserConstants.RECEIVE_USERS,
+             users: users
          });
-       });
-     }
+     }); 
    },
    setEditTarget: function(user) {
        AppDispatcher.handleViewAction({
