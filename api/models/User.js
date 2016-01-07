@@ -62,6 +62,10 @@ module.exports = {
       collection:'marketarea',
       via:'users',
     },
+    jobs:{
+      collection:'job',
+      via:'creator',
+    },
 
     toJSON: function() {
       var obj = this.toObject();

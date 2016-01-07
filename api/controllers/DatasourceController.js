@@ -438,7 +438,9 @@ module.exports = {
 					isFinished:false,
 					type:'load ACS',
 					info:[{'state':state,'dataSource':dataSource,'year':year,'sumlevel':sumlevel}],
-					status:'Started'
+					status:'Started',
+					creator:user.id,
+					group:user.userGroup.id,
 				})
 				.exec(function(err,job){
 					if(err){console.log('create job error',err);

@@ -28,6 +28,9 @@ module.exports = {
           collection:'datasource',
           via:'groups',
         },
-
+        jobs:{
+          collection:'job',
+          via:'group'
+        }
     }
 };

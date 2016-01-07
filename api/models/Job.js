@@ -37,7 +37,13 @@ module.exports = {
     progress:{
       type:'integer',
       defaultsTo:0
-    }
+    },
+    creator:{
+      model:'user',
+    },
+    group:{
+      model:'usergroup',
+    },
   },
 
   beforeUpdate: function(values, next){
