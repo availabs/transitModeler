@@ -44,8 +44,6 @@ module.exports = {
 		crudHelper(Datasource,'find',{groupname:user.group},req,res);
 	},
 	create:function(req,res){
-		console.log(req.session.User);
-		console.log(req.session.User.group);
 		crudHelper(Datasource,'create','groupname',req,res);
 	},
 	update:function(req,res){
@@ -330,12 +328,13 @@ module.exports = {
 
 	},
 	loadACSData:function(req,res){
+		var user = req.session.User;
 		var state=req.param('state'),
 		dataSource=req.param('dataSource'),
 		year=req.param('startYear'),
 		sumlevel=req.param('sumLevel');
 
-		console.log('Datasource.loadData',state,dataSource,year,sumlevel)
+		console.log('Datasource.loadData',state,dataSource,year,sumlevel);
 
 		Datasource //Check to see if this data set has been loaded
 		.find({ stateFips:state})
@@ -343,8 +342,9 @@ module.exports = {
 			console.log(err,data);
 
 			data = data.filter(function(d){
-				return d.stateFips == state && d.settings.year == year && d.settings.level == sumlevel;
-			})
+				return d.stateFips == state && d.settings.year == year &&
+								d.settings.level == sumlevel && d.group === user.group;
+			});
 			console.log(err,data);
 			if(data.length > 0){// the data source does exist, refuse to load.
 				var flashMessage = [{
@@ -354,7 +354,7 @@ module.exports = {
 
 				req.session.flash = {
 					err: flashMessage
-				}
+				};
 
 
 				res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
@@ -368,10 +368,10 @@ module.exports = {
 					status:'Started'
 				})
 				.exec(function(err,job){
-					if(err){console.log('create job error',err)
+					if(err){console.log('create job error',err);
 						req.session.flash = {
 							err: err
-						}
+						};
 						res.json({responseText:'ACS Job Create Error'});
 						return;
 					}
@@ -382,19 +382,19 @@ module.exports = {
 						message: "job created "+job.id,
 					}];
 
-					spawnACSJob(job);
+					spawnACSJob(job,user);
 
 					req.session.flash = {
 						err: flashMessage
-					}
+					};
 
 					res.json({responseText:'ACS Job Created'});
 					return;
 
-				})
+				});
 			}
 
-		})//Check for data source
+		});//Check for data source
 	},
 
 	deleteGtfs : function(req,res){
@@ -480,7 +480,7 @@ module.exports = {
 };
 
 //--------------------------------------------------------
-function spawnACSJob(job){
+function spawnACSJob(job,user){
 	var terminal = require('child_process').spawn('bash');
 	var current_progress = 0;
 	var settings = {
@@ -489,11 +489,12 @@ function spawnACSJob(job){
   	 		level:job.info[0].sumlevel
   	 	},
   	 	acsEntry = {
-		tableName:'',
-		type:'acs',
-  	 	stateFips:job.info[0].state,
-	 	settings:[settings]
-  	}
+				tableName:'',
+				type:'acs',
+		  	stateFips:job.info[0].state,
+			 	settings:[settings],
+				groupname:user.group,
+	  	};
 
   	terminal.stdout.on('data', function (data) {
 	    data = data+'';
