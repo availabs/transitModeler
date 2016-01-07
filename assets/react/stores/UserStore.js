@@ -12,7 +12,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var USERS = [],
     USERGROUPS={},
     SESSION_USER = {},
-    _userActions = [],
+    _userActions = null,
     _actionsLoading = false,
     EDIT_TARGET = null;
 
@@ -62,7 +62,7 @@ var UserStore = assign({}, EventEmitter.prototype, {
         return EDIT_TARGET;
     },
     getUserActions : function(){
-      if(_userActions.length === 0){
+      if(_userActions === null){
         requireActions();
         _actionsLoading = true;
         return [];

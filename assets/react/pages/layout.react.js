@@ -35,7 +35,6 @@ function marketAreasToMenuItems(marketareas){
 var App = React.createClass({
 
     getState : function(){
-      console.log('REGS',RegressionStore.getAll());
         return {
             menu:this._populateMenu( MarketAreaStore.getAll() ).menu,
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
@@ -150,7 +149,7 @@ var App = React.createClass({
                         {text:'GTFS',type:'Route',action:'GtfsManager'},
                         {text:'ACS',type:'Route',action:'AcsManager'},
                         {text:'Regressions',type:'Route',action:'RegressionsManager'},
-                        {text:'Surveys',type:'Route',action:'SurveyManager'},
+                        //{text:'Surveys',type:'Route',action:'SurveyManager'},
                         {text:'Farebox',type:'Route',action:'FareboxManager'}
                     ]
                 },
