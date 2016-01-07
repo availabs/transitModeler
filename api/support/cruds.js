@@ -5,7 +5,6 @@ function(model,action,params,req,res){
     switch (action){
       case 'find':
       var where = params||'';
-      console.log(where);
       var modelaction = model[action](where);
       modelaction.exec(function(err,data){
           if(err){
@@ -16,6 +15,7 @@ function(model,action,params,req,res){
         });
         break;
       case 'create':
+        console.log(user.group);
     		crup[params] = user.group;
     		model[action](crup).exec(function(err,data){
     			if(err){

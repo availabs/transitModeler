@@ -11,6 +11,10 @@ module.exports = {
   	type:'string',
   	tableName:'string',
   	stateFips:'string',
-  	settings:'array'
+  	settings:'array',
+    groupname:{
+      type:'STRING',
+      required:true,
+    }
   }
 };

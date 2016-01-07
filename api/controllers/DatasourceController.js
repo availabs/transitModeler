@@ -7,6 +7,7 @@
  */
 var models = require('../../config/models'),
 	_ = require('lodash'),
+	crudHelper = require('../support/cruds'),
 	connections = require('../../config/connections');
 	var connection = connections.connections[models.models.connection];
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
@@ -38,6 +39,21 @@ var topojson = require('topojson');
 
 module.exports = {
 
+	find:function(req,res){
+		var user = req.session.User;
+		crudHelper(Datasource,'find',{groupname:user.group},req,res);
+	},
+	create:function(req,res){
+		console.log(req.session.User);
+		console.log(req.session.User.group);
+		crudHelper(Datasource,'create','groupname',req,res);
+	},
+	update:function(req,res){
+		crudHelper(Datasource,'update','groupname',req,res);
+	},
+	destroy:function(req,res){
+		crudHelper(Datasource,'destroy','groupname',req,res);
+	},
 	getACS:function(req,res){
 		if(!req.param('year')){
 			res.send('{status:"error",message:"Must send 4 digit [year] of data."}',500);

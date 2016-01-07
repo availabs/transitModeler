@@ -7,7 +7,7 @@
 var path = require('path');
 var password='transit';
 var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitModeler';
- function spawnJob(job){
+ function spawnJob(job,user){
  	var terminal = require('child_process').spawn('bash');
  	var current_progress = 0;
  	var gtfsEntry = {
@@ -53,6 +53,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
                 tableName:gtfsEntry.tableName,
                 stateFips:34,
                 settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name}],
+                groupname:user.group,
               };
               console.log(ds);
               Datasource.create(ds).exec(function(err,newEntry){
@@ -145,6 +146,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
 module.exports = {
   upload:function(req,res){
     console.log(req.file());
+    var user = req.session.User;
     dirname = path.resolve(sails.config.appPath,'/assets/images');
     req.file('files').upload({dirname:'assets/data/gtfs', maxBytes:500000000},
           function (err, files) {
@@ -180,7 +182,7 @@ module.exports = {
             message: "job created "+job.id,
           }];
 
-          spawnJob(job);
+          spawnJob(job,user);
 
           req.session.flash = {
             err: flashMessage
