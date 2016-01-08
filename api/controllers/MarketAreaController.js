@@ -116,6 +116,26 @@ module.exports = {
       });
   },
 
+  findOne : function(req,res){
+    User.findOne(req.session.User.id)
+        .populate('marketareas')
+        .exec(function(err,user){
+          if(err){
+            console.log(err);
+            return res.send(JSON.stringify(err),500);
+          }
+          console.log(user.marketareas.map(function(d){return d.id;}));
+          var ma = user.marketareas.filter(function(d){
+            return d.id === parseInt(req.param('id'));
+          });
+          if(ma.length > 0){
+            res.send(ma[0]);
+          }else{
+            res.send({});
+          }
+        });
+  },
+
   create : function(req,res){
     console.log('Attempted Creation',req.body);
     MarketArea.create(req.body).exec(function(err,MA){

@@ -51,18 +51,23 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
               var ds = {
                 type:'gtfs',
                 tableName:gtfsEntry.tableName,
-                stateFips:34,
                 settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name}],
-                groupname:user.group,
               };
               console.log(ds);
               Datasource.create(ds).exec(function(err,newEntry){
                 if(err){console.log('Error Creating DataSource',err);}
-                Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-                   .exec(function(err,updated_job){
-                     if(err){console.log('job_update error',error);}
-                     sails.sockets.blast('job_updated',updated_job);
-                   });
+                newEntry.groups.add(user.userGroup.id);
+                newEntry.save(function(err){
+                  if(err){
+                    console.log(err);
+                  }else{
+                    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+                       .exec(function(err,updated_job){
+                         if(err){console.log('job_update error',error);}
+                         sails.sockets.blast('job_updated',updated_job);
+                       });
+                  }
+                });
               });
             };
             var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
@@ -165,7 +170,9 @@ module.exports = {
           isFinished:false,
           type:'load GTFS',
           info:[{'file':files[0],'schemaName':schemaName}],
-          status:'Started'
+          status:'Started',
+          creator:user.id,
+          group:user.userGroup.id,
         })
         .exec(function(err,job){
           if(err){console.log('create job error',err);
