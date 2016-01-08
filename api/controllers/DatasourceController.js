@@ -1,4 +1,4 @@
-/*globals require,console,module,Datasource,Usergroup,Job*/
+/*globals require,console,module,Datasource,Usergroup,Job,UserAction,sails*/
 'use strict';
 /**
  * DatasourcesController
@@ -373,6 +373,17 @@ module.exports = {
 					console.log(err);
 					res.send(err,500);
 				}
+				var message = 	{groupname:user.group,
+													 actiondesc:'deleted ' + found.tableName,
+													 actiontitle:'deleted '+found.type,
+													 maid:-1,
+													 userid:user.id,
+												 };
+					UserAction.create(message).exec(function(err,data){
+						if(err){
+							console.log(err,data);
+						}
+					});
 					res.json({'message':'Record '+found.id+' deleted.'});
 			});
 
@@ -396,7 +407,12 @@ module.exports = {
 		dataSource=req.param('dataSource'),
 		year=req.param('startYear'),
 		sumlevel=req.param('sumLevel');
-
+		var message = {groupname:user.group,
+											 actiondesc:'loaded acs_'+state+'_'+year+'_'+sumlevel,
+											 actiontitle:'loaded acs',
+											 maid:-1,
+											 userid:user.id,
+										 };
 		console.log('Datasource.loadData',state,dataSource,year,sumlevel);
 
 		Datasource //Check to see if this data set has been loaded
@@ -428,6 +444,9 @@ module.exports = {
 							console.log(err);
 							res.json({responseText:'Error adding ACS data'});
 						}else{
+							UserAction.create(message).exec(function(err,data){
+																 if(err){console.log(err,data);}
+															 });
 							res.json({responseText:'Successfully added ACS data'});
 						}
 					});
@@ -457,7 +476,7 @@ module.exports = {
 						message: "job created "+job.id,
 					}];
 
-					spawnACSJob(job,user);
+					spawnACSJob(job,user,message);
 
 					req.session.flash = {
 						err: flashMessage
@@ -555,7 +574,7 @@ module.exports = {
 };
 
 //--------------------------------------------------------
-function spawnACSJob(job,user){
+function spawnACSJob(job,user,message){
 	var terminal = require('child_process').spawn('bash');
 	var current_progress = 0;
 	var settings = {
@@ -621,6 +640,9 @@ function spawnACSJob(job,user){
 								Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
 								.exec(function(err,updated_job){
 								if(err){ console.log('job update error',err); }
+								UserAction.create(message).exec(function(err,data){
+									if(err){console.log(err,data);}
+								});
 								sails.sockets.blast('job_updated',updated_job);
 							});
 						});

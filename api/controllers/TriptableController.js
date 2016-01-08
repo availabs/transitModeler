@@ -102,17 +102,29 @@ function spawnModelRun(job,triptable_id){
 module.exports = {
 
 	finishedModels: function(req,res){
-		var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true';
-		///console.log('finished models',sql);
-		Triptable.query(sql,{},function(err,data){
+		var user = req.session.User;
+		User.findOne(user.id).populate('marketareas').exec(function(err,data){
 			if(err){
-				console.log('tt query',sql,err);
-				res.json({message:'tt query Error',error:err,sql:sql});
-				return;
+				console.log(err);
+				res.send(err,500);
+			}else{
+				var MAs = data.marketareas.map(function(d){return d.id;});
+				MAs = '('+MAs.toString()+')';
+				var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true AND "marketareaId" in '+MAs;
+				console.log('finished models',sql);
+				Triptable.query(sql,{},function(err,data){
+					if(err){
+						console.log('tt query',sql,err);
+						res.json({message:'tt query Error',error:err,sql:sql});
+						return;
+					}
+					console.log('finished models',data);
+					res.send(data.rows);
+				});
 			}
-			console.log('finished models',data);
-			res.send(data.rows);
+
 		});
+
 
 	},
 	getModelRun:function(req,res){
