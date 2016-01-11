@@ -36,7 +36,7 @@ var MarketAreaIndex = React.createClass({
 
         return (
         	<div className="content container">
-            	
+
                 <MarketareaNav marketarea={this.props.marketarea}/>
 
                 <CensusOverview
@@ -45,6 +45,7 @@ var MarketAreaIndex = React.createClass({
                     censusData={this.props.censusData}
                     marketarea={this.props.marketarea}
                     routesGeo={this.props.routesGeo}
+                    datasources={this.props.datasources.gtfs}
                     stopsGeo={this.props.stopsGeo} />
 
         	</div>

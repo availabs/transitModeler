@@ -91,7 +91,12 @@ module.exports = {
 			data: settings,
 		});
 	},
-
+	updateModel : function(model){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.UPDATE_MODEL,
+			data: model,
+		});
+	},
   setMode:function(mode){
     //console.log('setMode',mode)
     AppDispatcher.handleViewAction({

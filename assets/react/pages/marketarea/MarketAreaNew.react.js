@@ -12,11 +12,15 @@ var React = require('react'),
     RouteListTable = require('../../components/marketarea/RouteListTable.react'),
     RoutesSelector = require('../../components/marketarea/RoutesSelector.react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
-
-    // -- Actions
-    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
+    DescriptionArea = require('../../components/utils/DescriptionArea.react'),
 
     // -- Stores
+    UserStore                = require('../../stores/UserStore'),
+    // -- Actions
+    UserActionsCreator       = require('../../actions/UserActionsCreator'),
+    MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
+
+
 
 
 var emptyGeojson = {type:'FeatureCollection',features:[]};
@@ -44,7 +48,9 @@ var MarketAreaNew = React.createClass({
                 origin_gtfs:null,
                 routecolors:{},
                 stateFips:'34',
+                center:[],
                 geounit:'tracts',
+                description:'',
             },
             routesGeo:{type:'FeatureCollection',features:[]},
             stopsGeo:{type:'FeatureCollection',features:[]},
@@ -88,11 +94,14 @@ var MarketAreaNew = React.createClass({
                 });
                 return matches.length === 0;                          //if no matches return it;
             }).map(function(d){return d.properties.geoid;});
+            var ma = this.state.marketarea;
+            ma.center = Geoprocessing.center(data);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
               tractsFilter:tractsFilter.keys,
               outerTractsFilter:nonSelectTracts,
+              marketarea:ma,
               });
         }else if(data.features.length === 0){ //if there are no stops simply set to empty lists
             //console.log('remove last layer')
@@ -230,6 +239,15 @@ var MarketAreaNew = React.createClass({
     createdMa:function(data){
         //console.log('marketarea create callback',data)
         if(data.id){
+          var message = {
+            actiondesc:data.description,
+            actiontitle:'Created new Market Area: '+data.name,
+            stateFips : data.stateFips,
+            userid : UserStore.getSessionUser().id,
+            maid : data.id,
+          };
+          UserActionsCreator.userAction(message);
+
             this.transitionTo('MarketAreaIndex', {marketareaID: data.id});
         }else{
             this.setState({message:'Create Failed:'+data});
@@ -292,6 +310,12 @@ var MarketAreaNew = React.createClass({
             </section>
         );
     },
+    onDescChange : function(text){
+      console.log(text);
+      var ma = this.state.marketarea;
+      ma.description = text;
+      this.setState({marketarea:ma});
+    },
     render: function() {
 
         //var routesGeo = this.state.routesGeo || emptyGeojson;
@@ -331,9 +355,6 @@ var MarketAreaNew = React.createClass({
             	<h2 className="page-title">
                     Create Market Area
                     <br />
-                    <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
-
-
                 </h2>
 
                 <div className="row">
@@ -344,7 +365,8 @@ var MarketAreaNew = React.createClass({
                             routes={this.state.routesGeo}
                             tracts ={tracts}
                             counties={counties}
-                            toggleTracts={this.toggleTracts} />
+                            toggleTracts={this.toggleTracts}
+                            routeColors={this.state.marketarea.routecolors} />
                         {this.renderMessage()}
 
 
@@ -356,6 +378,19 @@ var MarketAreaNew = React.createClass({
                             </div>
                         </section>
                         {this.renderStats()}
+                        <section className='widget'>
+                                <div className='row'>
+                                  <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
+                                </div>
+                              </section>
+                        <section className='widget'>
+                          <div className='row'>
+                          <DescriptionArea
+                            text={this.state.marketarea.description}
+                            onChange={this.onDescChange}
+                            />
+                        </div>
+                        </section>
                         <section className="widget">
                             <div className="body no-margin">
                                 <button className="btn btn-lg btn-danger btn-block" onClick={this.createMarketArea}>

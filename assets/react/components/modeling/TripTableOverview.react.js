@@ -2,12 +2,20 @@
 'use strict';
 var React = require('react'),
 
+    DescriptionArea = require('../../components/utils/DescriptionArea.react'),
     // -- Actions
+    UserActionsCreator     = require('../../actions/UserActionsCreator'),
+    UserStore              = require('../../stores/UserStore'),
     ModelingActionsCreator = require('../../actions/ModelingActionsCreator');
 
 var TripTableOverview = React.createClass({
 
-
+    getInitialState : function(){
+      return {
+        model_name: '',
+        model_description:'',
+      };
+    },
     _loadNewTripTable:function(){
         var scope = this;
         var settings = {};
@@ -28,11 +36,21 @@ var TripTableOverview = React.createClass({
         settings.marketarea = {id:this.props.marketarea.id,name:this.props.marketarea.name,zones:this.props.marketarea.zones,routes:this.props.marketarea.routes};
         var tripTableCreate  = {
             info:JSON.stringify(settings),
+            name:this.state.model_name,
+            description:this.state.model_description,
             marketareaId: this.props.marketarea.id
         };
         console.log('--------------------------')
         console.log('Run Model',tripTableCreate);
         console.log('--------------------------')
+        var message = {
+          actiondesc:this.state.model_description,
+          actiontitle:'Creating New Model '+this.state.model_name,
+          maid: this.props.marketarea.id,
+          stateFips: this.props.marketarea.stateFips,
+          userid: UserStore.getSessionUser().id,
+        };
+        UserActionsCreator.userAction(message);
 
         ModelingActionsCreator.runModel(tripTableCreate);
     },
@@ -69,8 +87,14 @@ var TripTableOverview = React.createClass({
             </div>
         );
     },
-
+    _onNameChange : function(text){
+      this.setState({model_name:text});
+    },
+    _onDescChange : function(text){
+      this.setState({model_description:text});
+    },
     renderRunModal:function(){
+      var scope = this;
         return (
             <div id="runModal" className="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
                 <div className="modal-dialog">
@@ -99,6 +123,25 @@ var TripTableOverview = React.createClass({
                                  <tr>
                                     <td>Number of Trips</td>
                                     <td className="ng-binding">{this.props.currentTripTable && this.props.currentTripTable.tt ? this.props.currentTripTable.tt.length : 0}</td>
+                                </tr>
+                                <tr>
+                                    <td>Model Name</td>
+                                    <td>
+                                      <DescriptionArea
+                                        text={scope.state.model_name}
+                                        onChange={scope._onNameChange}
+                                        type={'input'}
+                                      />
+                                      </td>
+                                </tr>
+                                <tr>
+                                    <td>Description</td>
+                                    <td>
+                                      <DescriptionArea
+                                        text={scope.state.model_description}
+                                        onChange={scope._onDescChange}
+                                      />
+                                    </td>
                                 </tr>
                             </tbody></table>
 

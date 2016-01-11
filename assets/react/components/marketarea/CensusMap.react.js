@@ -52,8 +52,8 @@ var CensusMap = React.createClass({
             })
 
         }else if(disp === 'percent'){
-            
-            
+
+
             return geo.features.map(function(feature){
                 if( tractData[feature.properties.geoid] ){
                      var total = 0;
@@ -67,10 +67,10 @@ var CensusMap = React.createClass({
     },
 
     _changeDisplay:function(disp){
-        
+
 
         if(disp !== this.state.disp){
-            
+
             odScale.domain(this._getDomain(disp));
             this.colorTracts()
             this.setState({display:disp})
@@ -85,9 +85,9 @@ var CensusMap = React.createClass({
                     <input type="radio" name="options" id="option1" /> Total
                 </label>
                 <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'percent')}>
-                    <input type="radio" name="options" id="option2" /> Percent 
+                    <input type="radio" name="options" id="option2" /> Percent
                 </label>
-                
+
             </div>
         )
         // <label className="btn btn-success" onClick={this._changeDisplay.bind(null,'density')}>
@@ -151,7 +151,7 @@ var CensusMap = React.createClass({
             category = this.props.censusData.getCategories()[category_name],
             tractData = this.props.censusData.getTractData(),
             activeVariable = this.props.activeVariable;
-           
+
         d3.selectAll('.tract')
         .attr('fill',function(d){
             var geoid = this.classList[1].split('_')[1]
@@ -218,7 +218,7 @@ var CensusMap = React.createClass({
                     onEachFeature: function (feature, layer) {
                         layer.on({
                             mouseover: function(e){
-                                
+
                                 this.setStyle({
                                     stroke:true,
                                     fillColor: d3.select('.geo_'+feature.properties.geoid).attr('fill')
@@ -366,7 +366,10 @@ var CensusMap = React.createClass({
         return (
             <div>
 
-                <LeafletMap layers={layers} height="750px" />
+                <LeafletMap layers={layers}
+                            height="750px"
+                            label={(this.props.gtfsSettings)?"Gtfs:: " + (new Date(this.props.gtfsSettings.started)).toLocaleDateString():''}
+                            />
 
                 <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle} customControls={this._customButtons()}/>
             </div>

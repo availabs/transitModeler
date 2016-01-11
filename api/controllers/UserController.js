@@ -33,7 +33,7 @@ module.exports = {
 			return;
 		}
 
-		// Try to find the user by there username address. 
+		// Try to find the user by there username address.
 		// findOneByusername() is a dynamic finder in that it searches the model by a particular attribute.
 		// User.findOneByusername(req.param('username')).done(function(err, user) {
 		User.findOneByUsername(req.param('username'), function foundUser(err, user) {
@@ -76,22 +76,45 @@ module.exports = {
 				req.session.authenticated = true;
 				req.session.User = user;
 
-				// Change status to online
-				user.online = true;
-				user.save(function(err, user) {
-					if (err) return next(err);
+				// // Change status to online
+				// user.online = true;
+				// user.save(function(err, user) {
+				// 	if (err) return next(err);
+				//
+				// 	// Inform other sockets (e.g. connected sockets that are subscribed) that this user is now logged in
+				// 	User.publishUpdate(user.id, {
+				// 		loggedIn: true,
+				// 		id: user.id,
+				// 		name: user.name,
+				// 		action: ' has logged in.'
+				// 	});
+				//
+				// 	//Redirect to their profile page (e.g. /views/user/show.ejs)
+				// 	res.redirect('/');
+				// });
+				Usergroup.findOne({ name: user.group })
+					.exec(function(error, result) {
 
-					// Inform other sockets (e.g. connected sockets that are subscribed) that this user is now logged in
-					User.publishUpdate(user.id, {
-						loggedIn: true,
-						id: user.id,
-						name: user.name,
-						action: ' has logged in.'
+						// Change status to online
+						user.online = true;
+						user.save(function(err, user) {
+							if (err) return next(err);
+
+							// Inform other sockets (e.g. connected sockets that are subscribed) that this user is now logged in
+							User.publishUpdate(user.id, {
+								loggedIn: true,
+								id: user.id,
+								userName: user.userName,
+								action: ' has logged in.'
+							});
+
+							req.session.User.userGroup = result;
+							console.info('UserGroup',result);
+							//Redirect to their profile page (e.g. /views/user/show.ejs)
+							res.redirect('/');
+						});
+
 					});
-
-					//Redirect to their profile page (e.g. /views/user/show.ejs)
-					res.redirect('/');
-				});
 			});
 		});
 	},
@@ -135,6 +158,5 @@ module.exports = {
 	login:function(req,res){
 		res.view();
 	}
-	
-};
 
+};

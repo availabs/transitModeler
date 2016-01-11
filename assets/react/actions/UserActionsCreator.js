@@ -6,7 +6,7 @@
 
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
 	Constants = require('../constants/AppConstants'),
-	
+
 	// --- Server API
     sailsWebApi = require('../utils/sailsWebApi.js');
 
@@ -20,29 +20,35 @@ module.exports = {
       userID: id
     });
   },
-  
+
   /*
   /Actions WILL Be Dispatched
   /Based on Server Response
   */
   createUser: function(data){
-    
+
     sailsWebApi.createUser(data);
   },
   updateUser: function(data){
-    
+
     sailsWebApi.updateUser(data);
   },
   deleteUser: function(id){
 
     sailsWebApi.deleteUser(id);
-  
+
   },
   deleteMarketArea:function(id){
-    sailsWebApi.delete('marketarea',id)
+    sailsWebApi.delete('marketarea',id);
   },
   deleteRegression:function(id){
-    sailsWebApi.delete('regression',id)
-  }
+    sailsWebApi.delete('regression',id);
+  },
+	userAction : function(data){
+		AppDispatcher.handleViewAction({
+			type: ActionTypes.USER_ACTION,
+			data:data,
+		});
+	},
 
 };

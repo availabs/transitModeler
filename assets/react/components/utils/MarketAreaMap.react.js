@@ -345,7 +345,9 @@ var MarketAreaMap = React.createClass({
                     mapId={this.props.mapId}
                     legendLayers={this.props.legendLayers}
                     height="500px"
-                    neverReZoom={this.props.neverReZoom} />
+                    neverReZoom={this.props.neverReZoom}
+                    label={(this.props.gtfsSettings)?"Gtfs:: " + (new Date(this.props.gtfsSettings.started)).toLocaleDateString():''}
+                    />
             </div>
 
         );

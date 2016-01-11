@@ -8,7 +8,7 @@ var React = require('react'),
     MarketareaNav = require('../../../components/marketarea/layout/marketareaNav.react'),
     MarketareaHeader = require('../../../components/marketarea/layout/marketareaHeader.react'),
     FareboxAnalysis = require('../../../components/farebox/FareboxAnalysis.react'),
-    
+
     // -- Actions
     MarketAreaActionsCreator = require('../../../actions/MarketAreaActionsCreator');
 
@@ -37,13 +37,14 @@ var MarketAreaIndex = React.createClass({
 
         return (
         	<div className="content container">
-            	
+
                 <MarketareaNav marketarea={this.props.marketarea}/>
-                
+
                 <FareboxAnalysis
                         marketarea={this.props.marketarea}
                         tracts = {this.props.tracts}
                         routesGeo ={this.props.routesGeo}
+                        datasources={this.props.datasources.gtfs}
                         stopsGeo = {this.props.stopsGeo} />
 
         	</div>

@@ -36,6 +36,12 @@ function addModelRuns(rawData){
   });
 }
 
+function insertModelRun(data){
+  data.forEach(function(d){
+    _modelRuns[d.id] = d;
+  });
+}
+
 var ModelRunStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
@@ -119,6 +125,8 @@ var ModelRunStore = assign({}, EventEmitter.prototype, {
 
 });
 
+
+
 ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
@@ -148,6 +156,18 @@ ModelRunStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.ADD_ACTIVE_MODEL_RUN:
       ModelRunStore.addActiveModelRun(action.id);
+    break;
+
+    case ActionTypes.UPDATE_MODEL:
+      sailsWebApi.updateModelRun(action.data,function(){
+        sailsWebApi.getModelRuns();
+      });
+    break;
+
+    case ActionTypes.UPDATED_MODEL:
+      action.data[0].info = JSON.parse(action.data[0].info);
+      insertModelRun(action.data);
+      ModelRunStore.emitChange();
     break;
 
     default:

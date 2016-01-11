@@ -15,11 +15,13 @@ Router = require('react-router'),
     RouteListTable = require('../../components/marketarea/RouteListTable.react'),
     RoutesSelector = require('../../components/marketarea/RoutesSelector.react'),
     GtfsSelector = require('../../components/marketarea/new/GtfsSelector.react'),
+    DescriptionArea = require('../../components/utils/DescriptionArea.react'),
 
     // -- Actions
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator'),
-
+    UserActionsCreator       = require('../../actions/UserActionsCreator'),
     // -- Stores
+    UserStore    = require('../../stores/UserStore'),
     GeoDataStore = require('../../stores/GeodataStore'),
     MarketAreaStore = require('../../stores/MarketAreaStore');
 
@@ -58,8 +60,10 @@ var MarketAreaNew = React.createClass({
               counties:(pma.counties !== undefined)? pma.counties:[],
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
               routecolors:(pma.routecolors !== null)? pma.routecolors:{},
+              center : pma.center || [],
               stateFips:'34',
               geounit:'tracts',
+              description:(pma.description) || '',
             },
             routesGeo:emptyGeojson,
             stopsGeo:emptyGeojson,
@@ -178,11 +182,14 @@ var MarketAreaNew = React.createClass({
             console.log('Finished Processing tracts',new Date());
             console.log(tractsFilter,countyFilter);
             var nonSelectTracts = this.getNonZone(filterTracts,tractsFilter.keys);
+            var ma = this.state.marketarea;
+            ma.center = Geoprocessing.center(data);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
               tractsFilter:tractsFilter.keys,
               outerTractsFilter:nonSelectTracts,
+              marketarea:ma,
               });
         }else if(data.features.length === 0){
             console.log('remove last layer');
@@ -309,6 +316,14 @@ var MarketAreaNew = React.createClass({
     updatedMa:function(data){
 
         if(data.id){
+          var message = {
+            actiontitle:'Updated Market Area ' + data.name,
+            actiondesc:data.description,
+            userid: UserStore.getSessionUser().id,
+            maid: data.id,
+            stateFips: data.stateFips,
+          };
+            UserActionsCreator.userAction(message);
             this.setState({bMessage:'Update Again',marketarea:data});
             GeoDataStore.purgeMarketTracts();
             SailsWebApi.read('marketarea');
@@ -361,6 +376,12 @@ var MarketAreaNew = React.createClass({
                 </div>
             </section>
         );
+    },
+    onDescChange : function(text){
+      console.log(text);
+      var ma = this.state.marketarea;
+      ma.description = text;
+      this.setState({marketarea:ma});
     },
     toggleTracts : function(feature){
       var ma = this.state.marketarea, tf = this.state.tractsFilter, otf = this.state.outerTractsFilter;
@@ -434,6 +455,19 @@ var MarketAreaNew = React.createClass({
                             </div>
                         </section>
                         {this.renderStats()}
+                        <section className='widget'>
+                                <div className='row'>
+                                  <input className='form-control col-lg-9' style={{background:'none',border:'none',fontSize:'16px'}} value={this.state.marketarea.name} onChange={this.editName} placeholder="Enter Name" />
+                                </div>
+                              </section>
+                        <section className='widget'>
+                          <div className='row'>
+                          <DescriptionArea
+                            text={this.state.marketarea.description}
+                            onChange={this.onDescChange}
+                            />
+                        </div>
+                        </section>
                         <section className="widget">
                             <div className="body no-margin">
                                 <button className="btn btn-lg btn-danger btn-block" onClick={this.updateMarketArea}>

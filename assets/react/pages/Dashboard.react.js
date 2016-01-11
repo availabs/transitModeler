@@ -2,6 +2,7 @@ var React = require('react'),
 
     //-- Components
     MarketAreaTable = require('../components/dashboard/MarketAreaTable.react'),
+    UserMessageDisplay = require('../components/dashboard/UserMessages.react'),
     JobDisplay = require('../components/job/JobDisplay.react');
 var SamplePage = React.createClass({
 
@@ -43,6 +44,9 @@ var SamplePage = React.createClass({
                         criteria={function(d){return d.isFinished;}}
                         length={5}
                         />
+                    </div>
+                    <div className='col-lg-6'>
+                      <UserMessageDisplay/>
                     </div>
                 </div>
         	</div>

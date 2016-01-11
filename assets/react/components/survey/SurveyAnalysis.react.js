@@ -226,6 +226,7 @@ var SurveyAnalysis = React.createClass({
                                 type={this.state.type}
                                 surveyClick={this.surveyClick}
                                 neverReZoom={true}
+                                gtfsSettings={(this.props.datasources[this.props.marketarea.origin_gtfs])?this.props.datasources[this.props.marketarea.origin_gtfs].settings : {}}
                                 routeColors={this.props.marketarea.routecolors} />
 
                             <section className="widget">

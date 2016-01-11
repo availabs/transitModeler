@@ -34,7 +34,25 @@ module.exports = {
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
     DELETE_USER:null,
+    UPDATE_USER: null,
+    SET_EDIT_TARGET: null,
+    GET_ALL_USERS: null,
 
+    //------User Actions--------------------------------------
+    USER_ACTION:null,
+    RECEIVE_USERACTIONS:null,
+
+    //------Groups--------------------------------------------
+    CREATE_GROUP: null,
+    DELETE_GROUP: null,
+    UPDATE_GROUP: null,
+    GET_ALL_GROUPS: null,
+    SET_GROUP_EDIT_TARGET: null,
+
+    //------SysAdmin------------------------------------------
+    RELOAD_ROUTES: null,
+    DISMISS_MESSAGES: null,
+    SEND_MESSAGE: null,
 
     //--------GtfsEditor--------------------------------------
     SET_WAYPOINTS:null,
@@ -76,6 +94,7 @@ module.exports = {
     SAVE_FAREZONEFILTER:null,
     DELETE_THIS_FAREZONEFILTER:null,
     DELETE_FAREZONEFILTER:null,
+    SET_FARESTOPCOLORS:null,
 
     RECEIVE_MODELSETTINGSS:null,
     SET_MODELSETTINGS:null,
@@ -85,20 +104,26 @@ module.exports = {
     DELETE_MODELSETTINGS:null,
     COMMIT_MODEL_EDITS:null,
     UNDO_MODEL_EDITS:null,
+    ADD_MODEL_SETTINGS:null,
     ADD_MODEL_SETTINGS_GROUP:null,
-    
+
     // -- Modeling
     RECEIVE_TRIPTABLE_LISTS:null,
     RECEIVE_TRIPTABLE:null,
     RECEIVE_TRIPTABLES:null,
     RECEIVE_MODEL_RUNS:null,
     RECEIVE_FULL_MODEL_RUNS:null,
-    
+    UPDATE_MODEL:null,
+    UPDATED_MODEL:null,
     // -- Jobs
     RECEIVE_JOBS:null,
     RECEIVE_ACTIVE_JOBS:null,
     //Component actions
     SEND_MAIL:null,
+    //Loading constants
+    LOADING_START: null,
+    LOADING_STOP: null,
+
   }),
 
 

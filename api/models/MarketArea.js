@@ -18,6 +18,7 @@ module.exports = {
 	origin_gtfs:'INTEGER',
 	stateFips:'STRING',
   routecolors:'json',
+  description:'STRING',
   }
 
 };

@@ -11,7 +11,7 @@ module.exports = {
   schema: true,
   autosubscribe: ['create','destroy', 'update'],
   attributes: {
-  	
+
   	name: {
   		type: 'string',
   		required: true
@@ -43,6 +43,11 @@ module.exports = {
       defaultsTo: false
     },
 
+    group: {
+      type : 'string',
+      required: true
+    },
+
     admin: {
       type: 'boolean',
       defaultsTo: false
@@ -52,7 +57,7 @@ module.exports = {
       type: 'boolean',
       defaultsTo: false
     },
-    
+
 
     toJSON: function() {
       var obj = this.toObject();
@@ -90,7 +95,21 @@ module.exports = {
       // values.online= true;
       next();
     });
-  }
+  },
+
+  beforeUpdate: function (values, next) {
+        // This checks to make sure the password and password confirmation match before creating record
+        if (!values.password) {
+            return next();
+        }
+        if (values.password && values.password != values.confirmation) {
+            return next({err: ["Password doesn't match password confirmation."]});
+        }
+        require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
+            if (err) return next(err);
+            values.encryptedPassword = encryptedPassword;
+            next();
+        });
+    },
 
 };
-

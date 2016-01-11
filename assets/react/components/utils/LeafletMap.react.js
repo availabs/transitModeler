@@ -19,6 +19,7 @@ var map = null,
     layers = {};
 
 
+
 var Map = React.createClass({
 
     getDefaultProps:function(){
@@ -30,7 +31,24 @@ var Map = React.createClass({
             mapId:'map_'+Math.floor((Math.random() * 100) + 1)
         };
     },
+    setLabel:function(map){
+      if(this.props.label){
+        var scope = this;
+        var legend = L.control({position:'topright'});
+        legend.onAdd = function(map){
+          var div= L.DomUtil.create('div','info label');
+          div.innerHTML = '<p>'+scope.props.label+'<p>';
+          return div;
+        };
+        var label = d3.select('.info.label');
+        if(!label.node()){
+            legend.addTo(map);
+        }else{
+          label.html('<p>'+scope.props.label+'<p>');
+        }
 
+      }
+    },
     componentDidMount: function() {
         this.renderMap();
     },
@@ -59,6 +77,7 @@ var Map = React.createClass({
     },
 
     _updateLayer : function(key,layer){
+        var scope = this;
         if(map){
             if(map.hasLayer(layers[key].layer)){
                 map.removeLayer(layers[key].layer);
@@ -96,6 +115,7 @@ var Map = React.createClass({
                 //console.log('bring to back',key)
                 layers[key].layer.bringToBack();
             }
+            scope.setLabel(map);
         }
     },
 
@@ -152,7 +172,7 @@ var Map = React.createClass({
                     layer: L.geoJson(currLayer.geo,currLayer.options)
                 };
                 map.addLayer(layers[key].layer);
-                
+
                 if(currLayer.options.bringToFront){
                   layers[key].layer.bringToFront();
                 }
@@ -169,6 +189,7 @@ var Map = React.createClass({
 
             });
         }
+        scope.setLabel(map)
     }
 });
 

@@ -46,6 +46,7 @@ module.exports.routes = {
   '/datasources/gtfs/generate' : 'GtfsController.downloadGtfs',
   //---------Triptable-----------------------------
   '/triptable':'TriptableController.calculateTripTable',
+  '/triptable/update':'TriptableController.update',
   '/triptable/run':'TriptableController.runModel',
   '/triptable/list':'TriptableController.finishedModels',
   '/triptable/:id/modelrun':'TriptableController.getModelRun',

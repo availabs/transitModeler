@@ -102,7 +102,7 @@ function spawnModelRun(job,triptable_id){
 module.exports = {
 
 	finishedModels: function(req,res){
-		var sql = 'SELECT id,"user",info FROM triptable where "isFinished" = true';
+		var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true';
 		///console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
@@ -110,7 +110,7 @@ module.exports = {
 				res.json({message:'tt query Error',error:err,sql:sql});
 				return;
 			}
-			//console.log('finished models',data)
+			console.log('finished models',data);
 			res.send(data.rows);
 		});
 
@@ -145,21 +145,26 @@ module.exports = {
 			//console.log(routes);
 
 			var gtfs_table = 'njtransit_bus_07-12-2013';//info.datasources.gtfs;
-			var sql ="SELECT a.run_id,a.trip_id,a.duration,a.distance,a.route,a.on_stop_code,a.gtfs_trip_id,a.off_stop_code,b.start_time,b.waiting_time,b.walk_distance,b.walking_time,	c.arrival_time,	d.arrival_time as trip_start_time,f.fare_zone as on_fare_zone,	g.fare_zone as off_fare_zone,e.geoid as on_tract, h.geoid as off_tract"
+			var sql ="SELECT a.run_id,a.trip_id,a.duration,a.distance,a.route,a.on_stop_code," +
+				 "  a.gtfs_trip_id,a.off_stop_code,b.start_time,b.waiting_time,b.walk_distance,b.walking_time,"+
+				 "	c.arrival_time,	d.arrival_time as trip_start_time,f.fare_zone as on_fare_zone,"+
+				 "	g.fare_zone as off_fare_zone,e.geoid as on_tract, h.geoid as off_tract"
 			 		+" from model_legs a "
 			 		+" join model_trips b ON a.trip_id = b.id "
 			 		+" join \""+gtfs_table+"\".stop_times c ON a.on_stop_id = c.stop_id and a.gtfs_trip_id = c.trip_id "
 			 		+" join fare_zones f on f.stop_num = a.on_stop_code and f.line = a.route	"
 			 		+" join fare_zones g on g.stop_num = a.off_stop_code and g.line = a.route "
-			 		+" join \""+gtfs_table+"\".stops as son on son.stop_id = a.on_stop_id"
-			 		+" join \""+gtfs_table+"\".stops as soff on soff.stop_id = a.off_stop_id"
-			 		+" join tl_2013_34_tract as e on ST_CONTAINS(e.geom,son.geom) "
-			 		+" join tl_2013_34_tract as h on ST_CONTAINS(h.geom,soff.geom) "
+					// 	+" join \""+gtfs_table+"\".stops as son on son.stop_id = a.on_stop_id"
+					// 	+" join \""+gtfs_table+"\".stops as soff on soff.stop_id = a.off_stop_id"
+					// 	+" join tl_2013_34_tract as e on ST_CONTAINS(e.geom,son.geom) "
+			 		//+" join tl_2013_34_tract as h on ST_CONTAINS(h.geom,soff.geom) "
+					+' JOIN stopsintracts AS e on e.stop_id = a.on_stop_id'
+					+' JOIN stopsintracts AS h on h.stop_id = a.off_stop_id'
 					+" join \""+gtfs_table+"\".stop_times d ON d.stop_sequence = 1 and a.gtfs_trip_id = d.trip_id "
 			 		+" where a.run_id = "+req.param('id')
 			 		+"  and mode = 'BUS'and g.fare_zone like 'P%' ";
 			 		sql+="  and a.route in "+routes;
-				//console.log(sql);
+				console.log(sql);
 				Triptable.query(sql,{},function(err,output){
 					if (err) {
 						res.send('{sql:"'+sql+'",status:"error",message:"'+err+'"}',500);
@@ -380,7 +385,21 @@ module.exports = {
 					//default code block
 			}
 		});
-	}
+	},
+	update : function(req,res){
+
+		var model = req.body;
+		console.log(model);
+
+		model.info = JSON.stringify(model.info);
+		Triptable.update({id:model.id},{name:model.name,description:model.description}).exec(function(err, model){
+			console.log('ERROR',err,'\nModel',model);
+			if(err) return res.json({err:err},500);
+			res.json(model);
+
+		});
+
+	},
 
 };//end module.exports
 
@@ -555,7 +574,7 @@ var getTime = function(timeMatrix,ampm){
 
 
 function getCensusData(tracts,table,cb){
-	
+
 	var sql = 'SELECT a.*,b.aland FROM public.'+table+' as a'
 					+ ' join tl_2013_34_tract as b on a.geoid = b.geoid'
 					+ ' where a.geoid in '+tracts;

@@ -458,7 +458,7 @@ var FareboxAnalysis = React.createClass({
       this.setState({direction:dir});
     },
     render: function() {
-        //console.log(this.state.farebox,this.state.farebox.all)
+        console.log('MarketArea',this.props.marketarea);
         var processData;
         var scope = this,
             fullDay = scope.processor();
@@ -508,7 +508,7 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
-
+        console.log('DATASOURCES',this.props.datasources);
         return (
     	   <div>
                 <div className="row">
@@ -517,6 +517,7 @@ var FareboxAnalysis = React.createClass({
                             stops={stops}
                             largeStops={true}
                             routes={routes}
+                            gtfsSettings={(this.props.datasources[this.props.marketarea.origin_gtfs])?this.props.datasources[this.props.marketarea.origin_gtfs].settings : {}}
                             tracts ={this.props.tracts}
                             stopFareZones={true}/>
                          <section className="widget">

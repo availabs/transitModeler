@@ -288,7 +288,9 @@ var CtppMap = React.createClass({
 
         return (
             <div>
-                <LeafletMap layers={layers}  height="750px" />
+                <LeafletMap layers={layers}  height="750px"
+                  label={(this.props.gtfsSettings)?"Gtfs:: " + (new Date(this.props.gtfsSettings.started)).toLocaleDateString():''}
+                   />
                 <MapControls  layers={legendLayers} options={legendOptions} layerToggle={this._layerToggle}/>
             </div>
         );

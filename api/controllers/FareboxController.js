@@ -18,7 +18,7 @@ module.exports = {
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
 			var sql = 'SELECT fb.line,fb.run,fb.trip,fb.pattern,fb.boarding_zone,fb.alighting_zone,fb.run_date,fb.total_transactions,pd.direction '+
-					  ' FROM farebox_data as fb LEFT OUTER JOIN pattern_direction as pd ON fb.line=pd.line AND replace(fb.pattern,\'"\',\'\')=pd.bus_pattern ' +
+					  ' FROM farebox_data as fb LEFT OUTER JOIN pattern_direction as pd ON fb.line=pd.line AND fb.pattern=pd.bus_pattern ' +
 					  ' where fb.line in '+JSON.stringify( ma.routes.filter( function(d){return d;} ) ).replace(/\"/g,"'").replace("[","(").replace("]",")")+
 					  ' order by fb.run_date';
 
@@ -29,9 +29,9 @@ module.exports = {
 			Farebox.query(sql,{},function(err,data){
 				if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
-				res.json(data.rows)
+				res.json(data.rows);
 
-			})
+			});
 		});
 	},
 

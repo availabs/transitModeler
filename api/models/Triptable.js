@@ -11,6 +11,8 @@ module.exports = {
   	user:'string',
   	info:'string',
   	trips:'array',
+    name:'STRING',
+    description:'STRING',
   	isFinished:{
       type: 'boolean',
       defaultsTo: false
@@ -19,4 +21,3 @@ module.exports = {
   }
 
 };
-

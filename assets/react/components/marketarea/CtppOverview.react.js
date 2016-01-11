@@ -84,24 +84,24 @@ var CtppOverview = React.createClass({
           />
       );
     },
-    
+
     renderLoading :function(){
         return (
-          
+
                 <section className="widget" style={{textAlign:'center'}}>
                     <h3 style={{padding:150}}>Fetching Data...</h3>
                 </section>
-          
+
         )
     },
 
 
     render: function() {
         //console.log('data',this.props.type,this.props.data);
-           
+
 
         if(!this.props.data.initialized){
-             return this.renderLoading(); 
+             return this.renderLoading();
         }
 
         var direction = this.state.direction,
@@ -124,14 +124,14 @@ var CtppOverview = React.createClass({
             }else {
               cdata = this.props.data.groups[direction].top(Infinity);
             }
-            
+
             //get all the groups from the ctpp
 
             var ctppColumns = [
                 {key:'key',name:'Tract'},
                 {key:'value',name:'Num Trips'},
             ];
-            
+
         return (
         	<div >
 
@@ -146,6 +146,7 @@ var CtppOverview = React.createClass({
                             direction = {this.state.direction}
                             selected={this.state.filter}
                             censusData={this.props.censusData}
+                            gtfsSettings={(this.props.datasources[this.props.marketarea.origin_gtfs])?this.props.datasources[this.props.marketarea.origin_gtfs].settings : {}}
                             selectTract={this.mapTractSelect}
                             routes={this.props.routesGeo}
                             stops={this.props.stopsGeo}

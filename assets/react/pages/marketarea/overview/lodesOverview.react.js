@@ -9,7 +9,7 @@ var React = require('react'),
     MarketareaNav = require('../../../components/marketarea/layout/marketareaNav.react'),
     MarketareaHeader = require('../../../components/marketarea/layout/marketareaHeader.react'),
     CtppOverview = require('../../../components/marketarea/CtppOverview.react'),
-    
+
     // -- Actions
     MarketAreaActionsCreator = require('../../../actions/MarketAreaActionsCreator');
 
@@ -39,9 +39,9 @@ var MarketAreaIndex = React.createClass({
 
         return (
         	<div className="content container">
-            	
+
                 <MarketareaNav marketarea={this.props.marketarea}/>
-                
+
                 <CtppOverview
                     type='lodes'
                     tracts={this.props.tracts}
@@ -50,6 +50,7 @@ var MarketAreaIndex = React.createClass({
                     censusData={this.props.censusData}
                     stopsGeo={this.props.stopsGeo}
                     routesGeo={this.props.routesGeo}
+                    datasources={this.props.datasources.gtfs}
                     routeColors={this.props.marketarea.routecolors} />
 
         	</div>

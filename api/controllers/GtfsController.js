@@ -275,7 +275,7 @@ module.exports = {
 
 			//console.log(err,data);
 			var chk = data.filter(function(d){//collect those with the same name
-				return d.tableName === name;
+				return d.tableName === ('gtfs_edit_'+name);
 			});
 			//console.log(data);
 			var source = data.filter(function(d){
@@ -351,40 +351,80 @@ module.exports = {
 		});
 	}
 };
+
+
 function spawnGtfsClone(job,names,config,savedata){
 	var exec = require('child_process').exec;
 	var current_progress = 0;
 	var backupName = 'gtfs_edit_'+names.clone.toLowerCase();//set the name of the gtfs file
 	//First put the entry in the datasource table;
+	console.log('uploaded settings',config.settings);
 	var sql = 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
 	sql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now());';
 	sql += 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
 	sql += 'SELECT clone_schema(\''+names.source+'\',\''+backupName+'\');'; //clone the source schema
 	//Add this entry to the datasources table
 
-
-	//console.log(sql);
-	Datasource.query(sql,{},function(err,data){//run the queries
-		if(err){ console.log(err); return; }
+	var onFinish = function(){
 		Job.update({id:job.id},{status:'Building Frequencies',progress:50}).exec(function(error,updated_job){ //update the state of the job to being 50% done
 			if(error){console.log('job update error',error); return;}
 			sails.sockets.blast('job_updated',updated_job); //update the client
-			// console.log('Building Frequencies');
-			// exec('node api/support/frequencybuilder.js '+backupName,function(err,sout,serr){ //build the frequencies table of the new set
-			// 	if(err){console.log('ERROR : ',err);return;}
-			// 	if(serr){console.log('STDERR : ',serr);return;}
-			// 	if(sout){console.log('STDOUT : ',sout);}
-				// Job.update({id:job.id},{status:'saving',progress:90})//complete the job
-				// 	.exec(function(err,updated_job){
-				// 		if(err){console.log('job update error',err);}
-				// 		sails.sockets.blast('job_updated',updated_job);
-				// 		debugger;
 						if(savedata && Object.keys(savedata).length > 0){
 							save(job,backupName,savedata);
 						}
-					// });
-			//});
 		});
+	};
+
+	var updateDatasource = function(data1,cb){
+		var query2 = 'SELECT * FROM datasource WHERE "tableName" = \''+backupName+'\'';
+		Datasource.query(query2,{},function(err,data){
+			if(err){
+				console.log(err);
+			}
+			console.log(data);
+			console.log(data.rows[0].settings);
+			var settings = JSON.parse(data.rows[0].settings);
+			if(typeof settings.length !== 'undefined')
+			{
+				settings = settings[0];
+			}
+
+			settings.started = data1.rows[0].min;
+			settings.agency = data1.rows[0].agency_name;
+			console.log(settings);
+			var query3 = 'UPDATE datasource SET settings=\''+JSON.stringify([settings])+'\''+
+										' WHERE id='+data.rows[0].id+';';
+			console.log(query3);
+			Datasource.query(query3,{},function(err,data){
+				if(err)
+					console.log(err);
+				else
+					console.log(data);
+				cb();
+			});
+		});
+	};
+
+	//console.log(sql);
+	Datasource.query(sql,{},function(err,data){//run the queries
+
+		if(err){ console.log(err); return; }
+		var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+backupName+'".calendar as cal, "'+backupName+'".agency as agency GROUP BY agency.agency_name';
+		Datasource.query(query,{},function(err,data){
+			if(err){
+				query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
+				Datasource.query(query,{},function(err,data){
+					if(err){
+						console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
+					}
+					updateDatasource(data,onFinish);
+				});
+			}
+			else{
+				updateDatasource(data,onFinish);
+			}
+		});
+
 	});
 }
 

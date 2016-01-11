@@ -8,7 +8,9 @@
 var io = require('./sails.io.js')();
 var d3 = require('d3');
 var ServerActionCreators = require('../actions/ServerActionsCreator');
+var UserActions          = require('../actions/UserActions');
 var GtfsActionsCreator = require('../actions/GtfsActionsCreator');
+var GroupAdminActions  = require('../actions/GroupAdminActions');
 var Router = require('./hereApi');
 
 //---------------------------------------------------
@@ -33,11 +35,12 @@ function listenToSockets(sessionUser){
 module.exports = {
 
   init:function(user){
-    ServerActionCreators.setSessionUser(user);
+    UserActions.setSessionUser(user);
+    UserActions.getAllUsers();
+    GroupAdminActions.getAllGroups();
     this.getStateGeodata(34);
     this.getModelRuns();
     this.read('marketarea');
-    this.read('user');
     this.read('regression');
     this.read('datasource');
     listenToSockets();
@@ -257,6 +260,16 @@ module.exports = {
       ServerActionCreators.receiveDataWithId('full_model_run',id,data);
     });
   },
+
+  updateModelRun : function(data,cb){
+    d3.json('/triptable/update')
+      .post(JSON.stringify(data),function(err,data){
+        if(err)
+          console.log(err);
+        ServerActionCreators.receiveData({type:'UPDATED_MODEL'},data);
+        cb();
+      });
+  },
   //---------------------------------------------------
   // Datasources Editing
   //---------------------------------------------------
@@ -270,6 +283,7 @@ module.exports = {
   deleteGtfs : function(ds,cb){
     var url = '/datasources/gtfs/delete/'+ds.id;
     d3.json(url,function(err,data){
+      if(err) console.error(err);
       GtfsActionsCreator.deleteDataSource(ds);
     });
   },
@@ -284,14 +298,26 @@ module.exports = {
   },
 
   create: function(type,data,cb){
-
-    d3.json('/'+type).post(JSON.stringify(data),function(err,resData){
+    var url = '';
+    if(type.type)
+      url = type.type;
+    else {
+      url = type;
+    }
+    d3.json('/'+url).post(JSON.stringify(data),function(err,resData){
       if(err){
         console.log('Create Err',err);
       }
+      var retype;
+      if(type.type){
+        retype = type.returnType;
+      }
+      else{
+        retype = type;
+      }
       //console.log('create',type,resData);
       //add new user back to store through
-      ServerActionCreators.receiveData(type,[resData]);
+      ServerActionCreators.receiveData(retype,[resData]);
       if(cb) {cb(resData);}
     });
   },

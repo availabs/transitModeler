@@ -1,18 +1,20 @@
 /*globals console,module,require,d3*/
 /*jslint node: true*/
 'use strict';
-/*
-  -Still need to fix color syncing between the stops and the farezones
-  -- show and hide the list
-  -- verify that zone filtering works on both sides
-  -- then add the ability to save these filter lists *with name?
-*/
+
 var React = require('react'),
     _ = require('lodash'),
     Select2Component = require('../utils/Select2.react'),
     FareZoneFilterStore = require('../../stores/FarezoneFilterStore'),
     FarezoneActionsCreator = require('../../actions/FarezoneActionsCreator'),
     FarezoneFilterSummary   = require('../../components/modelAnalysis/FarezoneFilterSummary.react'),
+    DescriptionArea = require('../../components/utils/DescriptionArea.react'),
+    UserComment     = require('../../components/utils/UserComment.react'),
+
+
+    UserActionsCreator = require('../../actions/UserActionsCreator'),
+    UserStore          = require('../../stores/UserStore'),
+
     CreationForm = require('../gtfs/CreationForm.react');
 
 
@@ -45,6 +47,7 @@ var ZoneFilter = React.createClass({
         exclusions : {},
         filters:FareZoneFilterStore.getFarezoneFilters(),
         filterId : null,
+        description:'',
       };
   },
   componentWillReceiveProps : function(nextProps){
@@ -95,12 +98,20 @@ var ZoneFilter = React.createClass({
                 filtername:d.filter_name,
                 filter:[this.state.exclusions],
                 dates: this.props.dates,
+                description:this.state.description,
                 id : (this.state.dirty) ? -1:this.state.filterId,
                 stateid : this.props.marketarea.stateFips,
                 maid : this.props.marketarea.id,
               };
     if(data.filtername && data.filtername.length >= 1){
       console.log('Tried To Save',data);
+      UserActionsCreator.userAction({
+        actiondesc:data.description,
+        actiontitle:((this.state.dirty) ?'Creating':'Updating')+' Farezone Filter: '+data.filtername,
+        maid:this.props.marketarea.id,
+        stateFips:this.props.marketarea.stateFips,
+        userid:UserStore.getSessionUser().id,
+      });
       FarezoneActionsCreator.saveFilter(data);
     }
     else
@@ -121,7 +132,7 @@ var ZoneFilter = React.createClass({
     var filteredDates = currfilter.dates;
     originalDates = _.cloneDeep(filteredDates);
     originalFilter = _.cloneDeep(filteredZones);
-    scope.setState({filterId:selection.id,exclusions:currfilter.filter[0],dirty:false},function(){
+    scope.setState({filterId:selection.id,exclusions:currfilter.filter[0],dirty:false,filter_name:currfilter.filtername,description:currfilter.description},function(){
       scope.props.zoneFilter(filteredZones,filteredDates);
     });
   },
@@ -167,7 +178,9 @@ var ZoneFilter = React.createClass({
     else
       return (<span></span>);
   },
-
+  onDescChange : function(text){
+    this.setState({description:text});
+  },
   render : function(){
     var scope = this;
     var rzones;
@@ -198,8 +211,13 @@ var ZoneFilter = React.createClass({
       return {id:d.id,'text':d.filtername};
     });
     var form;
+    console.log('filter_name',scope.state.filter_name);
     if(scope.isActiveFilter())
       form = (
+        <div>
+        <DescriptionArea
+          text={scope.state.description}
+          onChange={scope.onDescChange}/>
         <CreationForm
           buttonText={'Save Filter'}
           id={'filterForm'}
@@ -207,7 +225,10 @@ var ZoneFilter = React.createClass({
           handleChange={this.filterNameInputChange}
           saveAction={this.saveFilterAction}
           invalidMessages={{'filter_name':'Invalid Filter Name'}}
+          useDefault={!this.state.dirty}
+          DefaultValues={{'filter_name':scope.state.filter_name}}
           />
+        </div>
       );
 
     console.log('current filter',this.props.marketarea);
@@ -224,8 +245,10 @@ var ZoneFilter = React.createClass({
           val={(scope.state.filterId)?[scope.state.filterId]:[]}
         />
       {(form)?form:<span></span>}
+
         {rzones}
         {scope.renderSummary()}
+
       </div>
     );
   },
