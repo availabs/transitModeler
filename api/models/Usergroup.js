@@ -24,6 +24,10 @@ module.exports = {
             enum: ['transitAuth', 'state', 'sysAdmin'],
             required: true
         },
+        appservices:{
+          type:'ARRAY',
+          required: true,
+        },
         datasources:{
           collection:'datasource',
           via:'groups',
