@@ -66,6 +66,10 @@ module.exports = {
     //--------Data Sources------------------------------------
     RECEIVE_RAW_CENSUS_DATA:null,
     RECEIVE_RAW_STATE_TRACTS:null,
+    RECEIVE_NEW_TRACTS:null,
+    REQUEST_NEW_TRACTS:null,
+    RECEIVE_NEW_COUNTIES:null,
+    DELETE_TRACTS:null,
     RECEIVE_CTPP_DATA:null,
     RECEIVE_LODES_DATA:null,
     RECEIVE_SURVEYS:null,

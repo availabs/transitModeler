@@ -109,8 +109,11 @@ module.exports = {
 				res.send(err,500);
 			}else{
 				var MAs = data.marketareas.map(function(d){return d.id;});
-				MAs = '('+MAs.toString()+')';
-				var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true AND "marketareaId" in '+MAs;
+				if(MAs.length === 0){
+					return res.send([]);
+				}
+				MAs = 'AND "marketareaId" in (\''+MAs.join("','")+'\')';
+				var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true '+MAs;
 				console.log('finished models',sql);
 				Triptable.query(sql,{},function(err,data){
 					if(err){
@@ -130,7 +133,7 @@ module.exports = {
 	getModelRun:function(req,res){
 		if(typeof req.param('id') == 'undefined'){
 			console.log('model Data no id passed');
-			res.json({responseText:'Must pass model run ID'},500)
+			res.json({responseText:'Must pass model run ID'},500);
 		}
 
 		//farebox data is cached

@@ -38,6 +38,20 @@ module.exports = {
       geoData: data
     });
   },
+  receiveTracts : function(data,id){
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_NEW_TRACTS,
+      id: id,
+      data:data,
+    });
+  },
+  receiveCounties : function(data,id){
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_NEW_COUNTIES,
+      id: id,
+      data: data,
+    });
+  },
   //-----------------------------------
   // Data Sources
   //-----------------------------------

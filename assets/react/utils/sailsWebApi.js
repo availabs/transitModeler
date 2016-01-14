@@ -60,6 +60,28 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
+  getRouteTracts : function(aid,rid,excludes){
+
+    d3.json('http://localhost:1447/agency/'+aid+'/tract/route/'+rid)
+      .post(JSON.stringify(excludes),function(err,data){
+        if(err){
+          console.log(err);
+        }else{
+          console.log('TractData Received',data);
+          ServerActionCreators.receiveTracts(data,aid+'_'+rid);
+        }
+      });
+  },
+  getRouteCounties : function(aid,rid,excludes){
+    d3.json('http://localhost:1447/agency/'+aid+'/county/route/'+rid)
+      .post(JSON.stringify(excludes),function(err,data){
+      if(err){
+        console.log(err);
+      }else{
+        ServerActionCreators.receiveCounties(data,aid+'_'+rid);
+      }
+    });
+  },
   getEditRoutesGeo : function(gtfsId,routes,maId,cb){
     d3.json('datasources/gtfs/routes/geo/'+gtfsId)
       .post(JSON.stringify({route:routes}),function(err,data){

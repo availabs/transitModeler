@@ -3,6 +3,7 @@
 
 var React = require('react'),
     Navigation = require('react-router').Navigation,
+    _   = require('lodash'),
     // -- Utils
     SailsWebApi = require('../../utils/sailsWebApi'),
     Geoprocessing = require('../../utils/geoprocessing'),
@@ -16,6 +17,7 @@ var React = require('react'),
 
     // -- Stores
     UserStore                = require('../../stores/UserStore'),
+    GeoDataStore             = require('../../stores/GeodataStore'),
     // -- Actions
     UserActionsCreator       = require('../../actions/UserActionsCreator'),
     MarketAreaActionsCreator = require('../../actions/MarketAreaActionsCreator');
@@ -37,6 +39,28 @@ var MarketAreaNew = React.createClass({
 
     mixins: [Navigation],
 
+    componentDidMount : function(){
+      GeoDataStore.addChangeListener(this._onChange);
+    },
+    componentWillUnmount : function(){
+      GeoDataStore.removeChangeListener(this._onChange);
+    },
+    _onChange : function(){
+      var scope = this;
+      if(this.state.marketarea.origin_gtfs){
+        var agency = this.props.datasources.gtfs[this.state.marketarea.origin_gtfs].settings.agencyid;
+        var routes = this.state.marketarea.routes;
+        console.log('tract id',agency,routes);
+        this.setState({
+                        tracts:GeoDataStore.getTempTracts(agency,routes),
+                        counties:GeoDataStore.getTempCounties(agency,routes),
+                      },function(){
+                        if(scope.state.tracts && scope.state.counties && scope.state.stopsGeo.features.length){
+                          scope.setStopsGeo(scope.state.stopsGeo);
+                        }
+                      });
+      }
+    },
     getInitialState: function(){
 
         return {
@@ -47,7 +71,7 @@ var MarketAreaNew = React.createClass({
                 counties:[],
                 origin_gtfs:null,
                 routecolors:{},
-                stateFips:'34',
+                stateFips:'',
                 center:[],
                 geounit:'tracts',
                 description:'',
@@ -59,7 +83,9 @@ var MarketAreaNew = React.createClass({
             countyFilter:[],
             tractsFilter:[],
             outerTractsFilter:[],
-            message:null
+            message:null,
+            tracts: null,
+            counties: null,
         };
     },
     //function to set the set of routes for the gtfs dataSet
@@ -69,26 +95,27 @@ var MarketAreaNew = React.createClass({
     },
     //function to set the set of stops for the gtfs dataSet
     setStopsGeo:function(data){
-
-        if(data && data.features.length > 0){//make sure the data is non empty
+        var counties = this.state.counties,tracts = this.state.tracts;
+        if(data && data.features.length > 0 && counties && counties.features.length > 0 &&
+            tracts && tracts.features.length > 0){//make sure the data is non empty
             //Get the list of state counties that contain stops for the current routes
-            var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
+            var countyFilter = Geoprocessing.point2polyIntersect(data,counties).keys;
             // get the fips codes for the counties that contain stops
-            var countyFips = this.props.stateCounties.features.filter(function(d,i){
-                return countyFilter.indexOf(d.properties.geoid) > -1;
-            }).map(function(d){ //and generate a list with their geoIds
-                return d.properties.geoid;
-            });
+            // var countyFips = counties.features.filter(function(d,i){
+            //     return countyFilter.indexOf(d.properties.geoid) > -1;
+            // }).map(function(d){ //and generate a list with their geoIds
+            //     return d.properties.geoid;
+            // });
             //Get the state tracts whose geoIds match the geoIds of the state FIPS
-            var filterTracts = this.props.stateTracts.features.filter(function(d){
-                //console.log(parseInt(d.properties.geoid.substr(0,5)));
-                return countyFips.indexOf(parseInt(d.properties.geoid.substr(0,5))) > -1;
-            });
+            // var filterTracts = tracts.features.filter(function(d){
+            //     //console.log(parseInt(d.properties.geoid.substr(0,5)));
+            //     return countyFips.indexOf(parseInt(d.properties.geoid.substr(0,5))) > -1;
+            // });
             //console.log('stateTracts',filterTracts,'fips',countyFips)
             //Get the list of tracts whose geometries contain the stops
-            var tractsFilter = Geoprocessing.point2polyIntersect(data,{type:'FeatureCollection',features:filterTracts});
+            var tractsFilter = Geoprocessing.point2polyIntersect(data,tracts/*{type:'FeatureCollection',features:filterTracts}*/);
             //console.log(tractsFilter,countyFilter)
-            var nonSelectTracts = filterTracts.filter(function(d){ //filter the tracts within our fips regions
+            var nonSelectTracts = tracts.features.filter(function(d){ //filter the tracts within our fips regions
                 var matches = tractsFilter.keys.filter(function(geoId){//check each track id
                   return d.properties.geoid === geoId;                //against the stop associated ones
                 });
@@ -103,7 +130,7 @@ var MarketAreaNew = React.createClass({
               outerTractsFilter:nonSelectTracts,
               marketarea:ma,
               });
-        }else if(data.features.length === 0){ //if there are no stops simply set to empty lists
+        }else{ //if there are no stops simply set to empty lists
             //console.log('remove last layer')
 
             this.setState({
@@ -163,6 +190,9 @@ var MarketAreaNew = React.createClass({
         if(newState.marketarea.routes.indexOf(route) === -1){
             newState.marketarea.routes.push(route);
             newState.marketarea.routes.sort(); //sort the routes to match the ordering from database
+            var dsid = newState.marketarea.origin_gtfs;
+            SailsWebApi.getRouteCounties(this.props.datasources.gtfs[dsid].settings.agencyid,route,this.state.countyFilter);
+            SailsWebApi.getRouteTracts(this.props.datasources.gtfs[dsid].settings.agencyid,route,_.union(newState.tractsFilter,newState.outerTractsFilter) );
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
 
@@ -322,17 +352,17 @@ var MarketAreaNew = React.createClass({
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
 
-        counties.features = this.props.stateCounties.features;
+        //counties.features = this.props.stateCounties.features;
 
         if(this.state.countyFilter.length > 0){
-            counties.features = this.props.stateCounties.features.filter(function(d,i){
+            counties.features = this.state.counties.features.filter(function(d,i){
                 return scope.state.countyFilter.indexOf(d.properties.geoid) > -1;
             });
         }
 
         var tracts = {type:'FeatureCollection',features:[]};
         if(this.state.tractsFilter.length > 0){
-            tracts.features = this.props.stateTracts.features.filter(function(d,i){
+            tracts.features = this.state.tracts.features.filter(function(d,i){
                 var isInner = scope.state.tractsFilter.indexOf(d.properties.geoid) > -1;
                 if(isInner){
                   d.properties.type = 0;
@@ -341,7 +371,7 @@ var MarketAreaNew = React.createClass({
             });
         }
         if(this.state.outerTractsFilter.length > 0){
-          this.props.stateTracts.features.forEach(function(d,i){
+          this.state.tracts.features.forEach(function(d,i){
               var isOuter = scope.state.outerTractsFilter.indexOf(d.properties.geoid) > -1;
               if(isOuter){
                 d.properties.type = 1;
@@ -349,7 +379,8 @@ var MarketAreaNew = React.createClass({
               }
           });
         }
-
+        console.log('Tractfilter length',this.state.tractsFilter.length);
+        console.log(tracts.features.filter(function(d){return d.properties.type===0}).length);
         return (
         	<div className="content container">
             	<h2 className="page-title">
@@ -366,7 +397,8 @@ var MarketAreaNew = React.createClass({
                             tracts ={tracts}
                             counties={counties}
                             toggleTracts={this.toggleTracts}
-                            routeColors={this.state.marketarea.routecolors} />
+                            routeColors={this.state.marketarea.routecolors}
+                            changeTractsWithRoutes={true} />
                         {this.renderMessage()}
 
 

@@ -1,4 +1,4 @@
-/*globals require,console,module,Datasource,Usergroup,Job,UserAction,sails*/
+/*globals require,console,module,Datasource,Usergroup,Job,UserAction,sails,Agencies,MarketArea*/
 'use strict';
 /**
  * DatasourcesController
@@ -116,9 +116,9 @@ module.exports = {
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 	        getCensusData(ma,censusTable,function(census){
-	          res.json({census:census})
-	        })
-	    })
+	          res.json({census:census});
+	        });
+	    });
 
  	},
 
@@ -129,7 +129,7 @@ module.exports = {
 
 		var sql = 'SELECT route_id, route_short_name, route_long_name FROM '+req.param('tablename')+'.routes';
 
-	    Datasource.query(sql,{},function(err,data){
+	    Agencies.query(sql,{},function(err,data){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
 	      var output = data.rows;
@@ -140,7 +140,7 @@ module.exports = {
 	},
 
 	getSurvey:function(req,res){
-		var maId = req.param('marketareaId')
+		var maId = req.param('marketareaId');
 
 		if(!maId){
 			 res.send({status: 500, error: 'You must supply marketarea Id.'}, 500);
@@ -210,7 +210,7 @@ module.exports = {
 		              "WHERE route_short_name in " + JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
 
-		    Datasource.query(sql,{},function(err,data){
+		    Agencies.query(sql,{},function(err,data){
 		        if (err) {
 		            res.send('{status:"error",message:"'+err+'"}',500);
 		            return console.log(err);
@@ -256,7 +256,7 @@ module.exports = {
 
   	},
 
-  	getStopsGeo:function(req,res){
+	getStopsGeo:function(req,res){
 		var gtfs_id = req.param('id'),
 	        route_id = req.param('route');
 
@@ -269,17 +269,17 @@ module.exports = {
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err);}
 			var routes = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
-			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
+			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
 								'stops.zone_id,stops.stop_url,R.route_short_name '+
 								'FROM "'+mgtfs.tableName+'".stops '+
-								'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
+								//'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
 								'JOIN "'+mgtfs.tableName+'".stop_times AS ST on ST.stop_id = stops.stop_id ' +
 								'JOIN "'+mgtfs.tableName+'".trips AS T on T.trip_id = ST.trip_id '+
 								'JOIN "'+mgtfs.tableName+'".routes AS R on R.route_id = T.route_id '+
-								'where (a.line IS NULL OR a.line IN '+routes+ ') AND R.route_short_name IN '+routes;
+								'WHERE R.route_short_name IN '+routes;
 
 			console.log(sql);
-            Datasource.query(sql,{},function(err,data){
+            Agencies.query(sql,{},function(err,data){
                 if (err) {
                     res.send({ status:500, error: err }, 500);
                     return console.log(err);
@@ -296,8 +296,8 @@ module.exports = {
                     Feature.geometry = JSON.parse(stop.stop_geom);
                     Feature.properties = {};
                     Feature.properties.stop_code = stop.stop_code;
-                    Feature.properties.fare_zone = stop.fare_zone;
-                    Feature.properties.line = stop.line || stop.route_short_name;
+                    // Feature.properties.fare_zone = stop.fare_zone;
+                    Feature.properties.line = stop.route_short_name;
                     Feature.properties.stop_id = stop.stop_id;
 										Feature.properties.stop_desc = stop.stop_desc;
 										Feature.properties.stop_url = stop.stop_url;
@@ -307,6 +307,21 @@ module.exports = {
                   }
 
                 });
+								var sql2 = 'SELECT a.stop_num,a.line,a.fare_zone FROM fare_zones as a '+
+													 'where (a.line IS NULL OR a.line IN '+routes+ ') ';
+								Datasource.query(sql2,{},function(err,data){
+									if(err){
+										res.send({status:500,error:err},500);
+										return console.log(err);
+									}
+									var stopzones = {};
+									data.rows.forEach(function(stop){
+										stopzones[stop.stop_num] = {line:stop.line,fare_zone:stop.fare_zone};
+									});
+									stops.forEach(function(stop){
+										stop.fare_zone = stopzones[stop.stop_code].fare_zone;
+									});
+								});
                 //console.log(stopsCollection);
                 res.json(stopsCollection);
 
@@ -316,7 +331,7 @@ module.exports = {
 
   	},
 
-  	getLODES: function(req,res){
+	getLODES: function(req,res){
   		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
 			var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");

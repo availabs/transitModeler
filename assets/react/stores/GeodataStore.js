@@ -1,3 +1,4 @@
+/*globals require,console,module*/
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -22,6 +23,9 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var _stateTracts = {type:'FeatureCollection',features:[]},
     _stateCounties = {type:'FeatureCollection',features:[]},
+    _tempTracts={},
+    _tempCounties={},
+    _geoidMap = {},
     _maTracts = {},
     _maCounties = {},
     _maRoutes = {};
@@ -58,7 +62,22 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
     }
     delete _maTracts[maId];
   },
-
+  getTempTracts : function(aid,rids){
+    var tracts = {type:'FeatureCollection',features:[]};
+    rids.forEach(function(rid){
+      if(_tempTracts[aid+'_'+rid])
+        tracts.features = tracts.features.concat(_tempTracts[aid+'_'+rid].features);
+    });
+    return tracts;
+  },
+  getTempCounties : function(aid,rids){
+    var counties = {type:'FeatureCollection', features:[]};
+    rids.forEach(function(rid){
+      if(_tempCounties[aid+'_'+rid])
+        counties.features = counties.features.concat(_tempCounties[aid+'_'+rid].features);
+    });
+    return counties;
+  },
   getMarketAreaTracts: function() {
 
     var maId = MarketareaStore.getCurrentMarketAreaId(),
@@ -86,7 +105,7 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
           if(zones.indexOf(feat.properties.geoid) !== -1){
               _maTracts[maId].features.push(feat);
           }
-      })
+      });
 
     }
 
@@ -95,6 +114,13 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
 
 
 });
+
+function receiveTracts(data){
+  _tempTracts[data.id] = topojson.feature(data.data,data.data.objects.objs);
+  // _tempTracts[data.id].features.forEach(function(d,i){
+    // _geoidMap[d.properties.geoid] =
+  // });
+}
 
 GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
@@ -108,6 +134,29 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
       if(action.geoType === 'counties'){
         _stateCounties = topojson.feature(action.geoData,action.geoData.objects.tracts);
       }
+      GeodataStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_NEW_TRACTS:
+      console.log(action.type);
+      _tempTracts[action.id] = topojson.feature(action.data,action.data.objects.objs);
+      GeodataStore.emitChange();
+    break;
+
+    case ActionTypes.DELETE_TRACTS:
+      console.log(action.id);
+      delete _tempTracts[action.id];
+      GeodataStore.emitChange();
+    break;
+
+    case ActionTypes.REQUEST_NEW_TRACTS:
+      console.log(action.aid+'_'+action.rid);
+      sailsWebApi.getRouteTracts(action.aid,action.rid,action.excludes);
+    break;
+
+    case ActionTypes.RECEIVE_NEW_COUNTIES:
+      console.log(action.type);
+      _tempCounties[action.id] = topojson.feature(action.data,action.data.objects.objs);
       GeodataStore.emitChange();
     break;
 

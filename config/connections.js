@@ -42,15 +42,22 @@ module.exports.connections = {
     host: 'localhost',///'lor.availabs.org',
     database: 'transitModeler'
   },
-  
+
   lorPostgres: {
     adapter: 'sails-postgresql',
     user: 'postgres',
     password:'transit', //
     host: 'lor.availabs.org',
     database: 'transitModeler'
-  }
+  },
 
+  lorGtfsGeocensus: {
+    adapter: 'sails-postgresql',
+    user: 'postgres',
+    password:'transit',
+    host: 'lor.availabs.org',
+    database:'gtfsgeocensus',
+  },
 
   // More adapters:
   // https://github.com/balderdashy/sails
