@@ -12,6 +12,7 @@ var UserActions          = require('../actions/UserActions');
 var GtfsActionsCreator = require('../actions/GtfsActionsCreator');
 var GroupAdminActions  = require('../actions/GroupAdminActions');
 var Router = require('./hereApi');
+var tractApp = require('../../../appconfig').tractApp;
 
 //---------------------------------------------------
 // Socket Events
@@ -60,9 +61,17 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
+  getMAGeodata : function(group,maid){
+    d3.json('/geo/groups/'+group+'/'+maid+'tracts.json',function(data){
+      ServerActionCreators.receiveMATracts(maid,data);
+    });
+    // d3.json('/geo/'+group+'/'+ma.id+'counties.json',function(data){
+    //   ServerActionCreators.receiveMATracts('counties',data);
+    // });
+  },
   getRouteTracts : function(aid,rid,excludes){
 
-    d3.json('http://localhost:1447/agency/'+aid+'/tract/route/'+rid)
+    d3.json(tractApp+'agency/'+aid+'/tract/route/'+rid)
       .post(JSON.stringify(excludes),function(err,data){
         if(err){
           console.log(err);
@@ -73,7 +82,7 @@ module.exports = {
       });
   },
   getRouteCounties : function(aid,rid,excludes){
-    d3.json('http://localhost:1447/agency/'+aid+'/county/route/'+rid)
+    d3.json(tractApp + 'agency/'+aid+'/county/route/'+rid)
       .post(JSON.stringify(excludes),function(err,data){
       if(err){
         console.log(err);

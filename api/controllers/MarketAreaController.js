@@ -9,7 +9,9 @@ var ogr2ogr = require('ogr2ogr');
 var fs = require('fs');
 var acs_data = require('./utils/acsData');
 var mkdirp = require('mkdirp');
-
+var d3     = require('d3');
+var request = require('request');
+var tractApp = require('../../appconfig').tractApp;
 function getCensusData(marketarea,table,cb){
     var sql = 'SELECT a.*,b.aland FROM public.'+table+' as a' +
           ' join tl_2013_34_tract as b on a.geoid = b.geoid' +
@@ -137,18 +139,45 @@ module.exports = {
   },
 
   create : function(req,res){
-    console.log('Attempted Creation',req.body);
-    MarketArea.create(req.body).exec(function(err,MA){
-        if(err){
-          console.log(err);
-          return res.send(JSON.stringify(err),500);
-        }
-        MA.users.add(req.session.User.id);
-        MA.save(function(){
-          res.send(MA.toJSON());
-        });
+    if(req.session.User){
+      console.log('Attempted Creation',req.body);
+      MarketArea.create(req.body).exec(function(err,MA){
+          if(err){
+            console.log(err);
+            return res.send(JSON.stringify(err),500);
+          }
+          MA.users.add(req.session.User.id);
+          MA.save(function(){
+            res.send(MA.toJSON());
+          });
+          //create marketarea cache
+          var groupname = req.session.User.group;
+          var path = 'assets/geo/groups/'+groupname;
+          if(!fs.existsSync(path)){
+            fs.mkdirSync(path);
+          }
+          //Create get queries for the api requests
+          var countyQ = '?'+MA.counties.map(function(cid){return 'cid[]='+cid;}).join('&');
+          var tractQ  = '?'+MA.zones.map(function(tid){return 'tid[]='+tid;}).join('&');
+          //fetch counites
+          console.log(tractApp+'county'+countyQ);
+          request(tractApp+'county'+countyQ,function(err,res,data){
+            if(err){console.log('Error Fetching Counties',err);}
+            console.log(data);
+            fs.writeFileSync(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)));
+          });
+          //fetch tracts
+          console.log(tractApp+'tract'+tractQ);
+          request(tractApp+'tract'+tractQ,function(err,resp,data){
+            if(err){console.log('Error Fetching Tracts',err);}
+            console.log(data);
+            fs.writeFileSync(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)));
+          });
 
-    });
+      });
+    }else{
+      res.send('Authentication Error');
+    }
 
   },
 };

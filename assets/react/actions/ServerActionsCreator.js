@@ -38,6 +38,13 @@ module.exports = {
       geoData: data
     });
   },
+  receiveMATracts : function(id,data){
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_RAW_MA_TRACTS,
+      id:id,
+      geoData: data,
+    });
+  },
   receiveTracts : function(data,id){
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_NEW_TRACTS,

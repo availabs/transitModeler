@@ -1,4 +1,4 @@
-/*globals require,console,module*/
+/*globals require,console,module,window*/
 'use strict';
 /**
  * This file is provided by Facebook for testing and evaluation purposes
@@ -28,6 +28,7 @@ var _stateTracts = {type:'FeatureCollection',features:[]},
     _geoidMap = {},
     _maTracts = {},
     _maCounties = {},
+    _loading = false,
     _maRoutes = {};
 
 var GeodataStore = assign({}, EventEmitter.prototype, {
@@ -89,24 +90,26 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
     }
     //if cached get from cache
     if( _maTracts[maId] ){
+      _loading=false;
       return _maTracts[maId];
     }
     //if not loaded send empty geojson
-    if(!_stateTracts.features || _stateTracts.features.length === 0){
+    if(_loading){
       return {type:'FeatureCollection',features:[]};
     }
-    //otherwise filter current market area from _stateTracts and cache it
+    //otherwise get the tract data from the server
     else{
-      zones =  zones.zones;
+
       _maTracts[maId] = {type:'FeatureCollection',features:[]};
 
-      //filter
-      _stateTracts.features.forEach(function(feat){
-          if(zones.indexOf(feat.properties.geoid) !== -1){
-              _maTracts[maId].features.push(feat);
-          }
-      });
-
+      // //filter
+      // _stateTracts.features.forEach(function(feat){
+      //     if(zones.indexOf(feat.properties.geoid) !== -1){
+      //         _maTracts[maId].features.push(feat);
+      //     }
+      // });
+      sailsWebApi.getMAGeodata(window.User.group,maId);
+      _loading = true;
     }
 
     return _maTracts[maId];
@@ -134,6 +137,12 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
       if(action.geoType === 'counties'){
         _stateCounties = topojson.feature(action.geoData,action.geoData.objects.tracts);
       }
+      GeodataStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_RAW_MA_TRACTS:
+      console.log(action.type);
+      _maTracts[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
       GeodataStore.emitChange();
     break;
 
