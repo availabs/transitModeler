@@ -52,10 +52,11 @@ module.exports = {
       data:data,
     });
   },
-  receiveCounties : function(data,id){
+  receiveCounties : function(data,aid,id){
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_NEW_COUNTIES,
       id: id,
+      agency: aid,
       data: data,
     });
   },

@@ -97,7 +97,7 @@ var MarketAreaMap = React.createClass({
         if(!_.isEqual(stops,prevStops) ){
             stopslayerID++;
             prevStops = stops;
-            if(this.props.changeTractsWithRoutes){
+            if(this.props.changeTractsWithStops){
               console.log('old',tractlayerID);
               tractlayerID++;
               console.log('new',tractlayerID);

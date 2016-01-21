@@ -398,7 +398,7 @@ var MarketAreaNew = React.createClass({
                             counties={counties}
                             toggleTracts={this.toggleTracts}
                             routeColors={this.state.marketarea.routecolors}
-                            changeTractsWithRoutes={true} />
+                            changeTractsWithStops={true} />
                         {this.renderMessage()}
 
 

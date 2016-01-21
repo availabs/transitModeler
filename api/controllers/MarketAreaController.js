@@ -150,7 +150,7 @@ module.exports = {
           MA.save(function(){
             res.send(MA.toJSON());
           });
-          //create marketarea cache
+          // create marketarea cache
           var groupname = req.session.User.group;
           var path = 'assets/geo/groups/'+groupname;
           if(!fs.existsSync(path)){
