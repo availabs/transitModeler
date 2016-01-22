@@ -61,13 +61,13 @@ module.exports = {
       ServerActionCreators.receiveStateTracts('counties',data);
     });
   },
-  getMAGeodata : function(group,maid){
+  getMAGeodata : function(group,maid,agency){
     d3.json('/geo/groups/'+group+'/'+maid+'tracts.json',function(data){
-      ServerActionCreators.receiveMATracts(maid,data);
+      ServerActionCreators.receiveMATracts(maid,agency,'tracts',data);
     });
-    // d3.json('/geo/'+group+'/'+ma.id+'counties.json',function(data){
-    //   ServerActionCreators.receiveMATracts('counties',data);
-    // });
+    d3.json('/geo/groups/'+group+'/'+maid+'counties.json',function(data){
+      ServerActionCreators.receiveMATracts(maid,agency,'counties',data);
+    });
   },
   getRouteTracts : function(aid,rid,excludes){
 

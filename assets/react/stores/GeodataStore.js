@@ -29,7 +29,7 @@ var _stateTracts = {type:'FeatureCollection',features:[]},
     _geoidMap = {},
     _maTracts = {},
     _maCounties = {},
-    _loading = false,
+    _loading = {},
     _tempLoading=false,
     _maRoutes = {};
 
@@ -93,29 +93,36 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
     });
     return counties;
   },
+  getTractsNearMarketArea : function(){
+    var temp = this.getMarketAreaTracts();
+    if(temp.features.length > 0){
+      var maId = MarketareaStore.getCurrentMarketAreaId();
+      return _maTracts[maId];
+    }else{
+      return {type:'FeatureCollection',features:[]};
+    }
+  },
   getMarketAreaTracts: function() {
 
     var maId = MarketareaStore.getCurrentMarketAreaId(),
         datas= DatasourcesStore.getType('gtfs'),
         zones = MarketareaStore.getCurrentMarketArea();
 
-    if(zones && Object.keys(datas).length > 0 && !_tempLoading ){
-      sailsWebApi.getRouteCounties(datas[zones.origin_gtfs].settings.agencyid,zones.routes);
-      sailsWebApi.getRouteTracts(datas[zones.origin_gtfs].settings.agencyid,zones.routes);
-      _tempLoading= true;
-    }
-
     //if no marketarea send blank
-    if(!zones){
+    if(!zones ||  Object.keys(datas).length === 0){
       return {type:'FeatureCollection',features:[]};
     }
     //if cached get from cache
     if( _maTracts[maId] ){
-      _loading=false;
-      return _maTracts[maId];
+      _loading.tracts=false;
+
+      return {
+        type:'FeatureCollection',
+        features: _maTracts[maId].features.filter(function(d){return zones.zones.indexOf(d.properties.geoid) > -1;}),
+      };
     }
-    //if not loaded send empty geojson
-    if(_loading){
+
+    if(_loading.tracts){
       return {type:'FeatureCollection',features:[]};
     }
     //otherwise get the tract data from the server
@@ -123,15 +130,39 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
 
       _maTracts[maId] = {type:'FeatureCollection',features:[]};
 
-      sailsWebApi.getMAGeodata(window.User.group,maId);
+      sailsWebApi.getMAGeodata(window.User.group,maId,datas[zones.origin_gtfs].settings.agencyid);
 
-      _loading = true;
+      _loading.tracts = true;
     }
 
     return _maTracts[maId];
   },
+  getMarketAreaCounties : function(){
+    var maId = MarketareaStore.getCurrentMarketAreaId(),
+    datas = DatasourcesStore.getType('gtfs'),
+    zones = MarketareaStore.getCurrentMarketArea();
 
+    if(!zones || Object.keys(datas).length === 0 ){
+      return {type:'FeatureCollection',features:[]};
+    }
+    if( _maCounties[maId] ){
+      _loading.county = false;
+      return _maCounties[maId];
+    }
 
+    if(_loading.counties){
+      return {type:'FeatureCollection',features:[]};
+    }
+
+    else{
+      _maCounties[maId] = {type:'FeatureCollection',features:[]};
+
+      sailsWebApi.getMAGeodata(window.User.group,maId,datas[zones.origin_gtfs].settings.agencyid);
+
+      _loading.county = true;
+    }
+    return _maCounties[maId];
+  },
 });
 
 function getGeoId(feat){
@@ -184,8 +215,18 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
     break;
 
     case ActionTypes.RECEIVE_RAW_MA_TRACTS:
+
       console.log(action.type);
-      _maTracts[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
+      if(action.geoType==='tracts'){
+        _maTracts[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
+        receiveTracts(action.geoData);
+      }
+
+      if(action.geoType==='counties'){
+        _maCounties[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
+        processCounties(action.geoData,action.agency);
+      }
+
       GeodataStore.emitChange();
     break;
 

@@ -38,10 +38,12 @@ module.exports = {
       geoData: data
     });
   },
-  receiveMATracts : function(id,data){
+  receiveMATracts : function(id,agency,gtype,data){
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_RAW_MA_TRACTS,
       id:id,
+      agency:agency,
+      geoType : gtype,
       geoData: data,
     });
   },

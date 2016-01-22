@@ -40,6 +40,8 @@ var App = React.createClass({
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
             marketareas:MarketAreaStore.getAll(),
             tracts: GeodataStore.getMarketAreaTracts(),
+            counties : GeodataStore.getMarketAreaCounties(),
+            countyTracts : GeodataStore.getTractsNearMarketArea(),
             stateTracts : GeodataStore.getAllTracts(),
             stateCounties : GeodataStore.getAllCounties(),
             datasources: DatasourcesStore.getAll(),
@@ -61,6 +63,7 @@ var App = React.createClass({
             freqEditResponse:GtfsStore.putFrequencyData(),
             editResponse : GtfsStore.putGtfsData(),
             jobhistory : JobStore.getAll(),
+
         };
     },
 
@@ -108,6 +111,8 @@ var App = React.createClass({
                         marketarea={this.state.currentMarketarea}
                         marketareas ={this.state.marketareas}
                         tracts={this.state.tracts}
+                        counties={this.state.counties}
+                        countyTracts={this.state.countyTracts}
                         datasources={this.state.datasources}
                         regressions={this.state.regressions}
                         censusData={this.state.censusData}
