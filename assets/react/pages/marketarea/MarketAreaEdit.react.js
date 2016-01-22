@@ -387,7 +387,9 @@ var MarketAreaNew = React.createClass({
 
         else{
             this.setState({bMessage:'Saving ...'});
-            SailsWebApi.update('marketarea',marketarea,this.updatedMa);
+            var agency = this.props.datasources.gtfs[marketarea.origin_gtfs].settings.agencyid;
+            MarketAreaActionsCreator.updateMarketArea(marketarea,this.updatedMa,agency);
+            // SailsWebApi.update('marketarea',marketarea,this.updatedMa);
         }
     },
 

@@ -25,4 +25,22 @@ module.exports = {
     });
   },
 
+  createMarketArea : function(data,cb,agency){
+    AppDispatcher.handleViewAction({
+      type:ActionTypes.CREATE_MARKETAREA,
+      data : data,
+      finish : cb,
+      agency : agency,
+    });
+  },
+
+  updateMarketArea : function(data,cb,agency){
+    AppDispatcher.handleViewAction({
+      type:ActionTypes.UPDATE_MARKETAREA,
+      data : data,
+      finish : cb,
+      agency : agency,
+    });
+  },
+
 };

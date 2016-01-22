@@ -62,7 +62,8 @@ module.exports = {
     //--------MarketArea--------------------------------------
     RECEIVE_MARKETAREAS: null,
     DELETE_MARKETAREA:null,
-
+    CREATE_MARKETAREA:null,
+    UPDATE_MARKETAREA:null,
     //--------Data Sources------------------------------------
     RECEIVE_RAW_CENSUS_DATA:null,
     RECEIVE_RAW_STATE_TRACTS:null,

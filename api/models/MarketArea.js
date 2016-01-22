@@ -36,35 +36,39 @@ module.exports = {
         next();
       }
       console.log('users',ma.users);
-      var groupname = ma.users[0].group;
-      var path = 'assets/geo/groups/'+groupname;
-      if(!fs.existsSync(path)){
-        fs.mkdirSync(path);
-      }
-      //Create get queries for the api requests
-      var countyQ = '?'+ma.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
-      var tractQ  = '?'+ma.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
-      //fetch counites
-      Datasource.findOne(ma.origin_gtfs).exec(function(err,ds){
-        var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
-        console.log(url);
-        request(url,function(err,resp,data){
-          if(err){console.log('Error Getting Counties'); next();}
-          console.log(data);
-          fs.writeFile(path+'/'+ma.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
-            //fetch tracts
-            var url = tractApp+'tract/county'+tractQ;
-            console.log(url);
-            request(url,function(err,resp,data){
-              if(err){console.log('Error Getting Tracts',err); next();}
-              console.log(data);
-              fs.writeFile(path+'/'+ma.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
-                next();
+      if(ma.users.length > 0){
+        var groupname = ma.users[0].group;
+        var path = 'assets/geo/groups/'+groupname;
+        if(!fs.existsSync(path)){
+          fs.mkdirSync(path);
+        }
+        //Create get queries for the api requests
+        var countyQ = '?'+ma.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
+        var tractQ  = '?'+ma.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
+        //fetch counites
+        Datasource.findOne(ma.origin_gtfs).exec(function(err,ds){
+          var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
+          console.log(url);
+          request(url,function(err,resp,data){
+            if(err){console.log('Error Getting Counties'); next();}
+            console.log(data);
+            fs.writeFile(path+'/'+ma.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
+              //fetch tracts
+              var url = tractApp+'tract/county'+tractQ;
+              console.log(url);
+              request(url,function(err,resp,data){
+                if(err){console.log('Error Getting Tracts',err); next();}
+                console.log(data);
+                fs.writeFile(path+'/'+ma.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
+                  next();
+                });
               });
             });
           });
         });
-      });
+      }else{
+          next();
+      }
     });
   },
 

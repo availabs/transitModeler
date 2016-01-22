@@ -295,7 +295,9 @@ var MarketAreaNew = React.createClass({
         else if(marketarea.name.length ===  0){
             this.setState({message:'Must add market area name.'});
         }else{
-            SailsWebApi.create('marketarea',marketarea,this.createdMa);
+            var agency = this.props.datasources.gtfs[marketarea.origin_gtfs].settings.agencyid;
+            MarketAreaActionsCreator.createMarketArea(marketarea,this.createdMa,agency);
+            // SailsWebApi.create('marketarea',marketarea,this.createdMa);
         }
     },
     toggleTracts : function(feature){
@@ -380,7 +382,7 @@ var MarketAreaNew = React.createClass({
           });
         }
         console.log('Tractfilter length',this.state.tractsFilter.length);
-        console.log(tracts.features.filter(function(d){return d.properties.type===0}).length);
+        console.log(tracts.features.filter(function(d){return d.properties.type===0;}).length);
         return (
         	<div className="content container">
             	<h2 className="page-title">

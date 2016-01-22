@@ -199,6 +199,13 @@ function processCounties(data,agency){
   });
 }
 
+function saveAndReset(data,agency){
+  _maTracts[data.id] = GeodataStore.getTempTracts(agency,data.routes); //shift temporary tracts and counties
+  _maCounties[data.id] = GeodataStore.getTempCounties(agency,data.routes); //to that marketarea's data
+  _tempCountyTracts={};
+  _tempCounties={};
+  _tempCountyMap={};
+}
 GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
@@ -252,6 +259,26 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
       //_tempCounties[action.id] = topojson.feature(action.data,action.data.objects.objs);
       processCounties(action.data,action.agency);
       GeodataStore.emitChange();
+    break;
+
+    case ActionTypes.CREATE_MARKETAREA:
+      console.log(action.type);
+
+      sailsWebApi.create('marketarea',action.data,function(data){//after the marketrea is created
+        saveAndReset(data,action.agency);
+        GeodataStore.emitChange();
+        action.finish(data);
+      });
+    break;
+
+    case ActionTypes.UPDATE_MARKETAREA:
+      console.log(action.type);
+
+      sailsWebApi.update('marketarea',action.data,function(data){
+        saveAndReset(data,action.agency);
+        GeodataStore.emitChange();
+        action.finish(data);
+      });
     break;
 
     default:
