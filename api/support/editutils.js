@@ -211,7 +211,7 @@ var Util = {
 			}
 
 			var populateRoutesGeo = function(datafile,route_id){
-				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
+				Agencies.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
 						if(err){ console.log(err2);}
 						cb(err,data2);
 				});
@@ -219,7 +219,7 @@ var Util = {
 
 			// sql += db.updateRouteGeo(datafile,route_id);
 			sql = 'BEGIN; ' + sql + ' COMMIT;'; //Wait to commit to avoid bad db state
-      Datasource.query(sql,{},function(err, data){ //execute the combined query;
+      Agencies.query(sql,{},function(err, data){ //execute the combined query;
 				if(err){
 					console.log(err);
 				}
