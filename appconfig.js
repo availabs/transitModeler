@@ -1,5 +1,5 @@
 module.exports = {
 
-    tractApp: 'http://localhost:1447/',
+    tractApp: 'http://geocensus.availabs.org/',
 
 };

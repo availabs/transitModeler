@@ -76,7 +76,6 @@ module.exports = {
     }else{
       rid = '?rid='+rid;
     }
-    console.log(tractApp+'agency'+aid+'/tract/route'+rid);
     d3.json(tractApp+'agency/'+aid+'/tract/route/'+rid)
       .post(JSON.stringify(excludes),function(err,data){
         if(err){

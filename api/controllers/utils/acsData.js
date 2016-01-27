@@ -196,8 +196,8 @@ update_data:function(tracts){
         acs_data.acs[tract.geoid][census_var] = value;
         acs_data.census_vars[census_var].value += acs_data.acs[tract.geoid][census_var];
       }
-       acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159)),
-       acs_data.acs[tract.geoid]['population_density'].value  = (acs_data.acs[tract.geoid].total_population/(acs_data.acs[tract.geoid].aland*0.000000386102159))
+       //acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159)),
+       //acs_data.acs[tract.geoid]['population_density'].value  = (acs_data.acs[tract.geoid].total_population/(acs_data.acs[tract.geoid].aland*0.000000386102159))
     });
   }
 };

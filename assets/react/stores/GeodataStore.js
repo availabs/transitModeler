@@ -223,7 +223,7 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.RECEIVE_RAW_MA_TRACTS:
 
-      console.log(action.type);
+      console.log(action.type,action);
       if(action.geoType==='tracts'){
         _maTracts[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
         receiveTracts(action.geoData);

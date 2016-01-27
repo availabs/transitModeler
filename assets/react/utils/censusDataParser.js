@@ -150,9 +150,9 @@ var tract_census_vars = {},
     '11_00ampt': {"value":0,"vars":['b08132_058e'],"name":'Public Transportation - 11:00 a.m. to 11:59 a.m.'},
     '12_00pmpt': {"value":0,"vars":['b08132_059e'],"name":'Public Transportation - 12:00 p.m. to 3:59 p.m.'},
     '4_00pmpt': {"value":0,"vars":['b08132_060e'],"name":'Public Transportation - 4:00 p.m. to 11:59 p.m.'},
-    'aland': {"value":0,"vars":['aland'],'name':"Land Area (sq Meters)"},
-    'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
-    'population_density':{"value":0,"vars":[],'name':"Population Density (sq Mi)"},
+    //'aland': {"value":0,"vars":['aland'],'name':"Land Area (sq Meters)"},
+    //'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
+    //'population_density':{"value":0,"vars":[],'name':"Population Density (sq Mi)"},
     
   },
   categories = {
@@ -206,8 +206,8 @@ var tract_census_vars = {},
                     total_census_vars[census_var].value += tract_census_vars[tract.geoid][census_var];
                     
                 }
-                tract_census_vars[tract.geoid]['employment_density']  = (tract_census_vars[tract.geoid].employment/(tract_census_vars[tract.geoid].aland*0.000000386102159)),
-                tract_census_vars[tract.geoid]['population_density']  = (tract_census_vars[tract.geoid].total_population/(tract_census_vars[tract.geoid].aland*0.000000386102159))
+                //tract_census_vars[tract.geoid]['employment_density']  = (tract_census_vars[tract.geoid].employment/(tract_census_vars[tract.geoid].aland*0.000000386102159)),
+                //tract_census_vars[tract.geoid]['population_density']  = (tract_census_vars[tract.geoid].total_population/(tract_census_vars[tract.geoid].aland*0.000000386102159))
             });
         },
         getTractData:function(){
