@@ -36,6 +36,7 @@ var CensusOverview = React.createClass({
             id = d;
           }
         });
+
         var state = {};
         state.activeCensusCategory = 18;
         state.activeState = this.props.marketarea.stateFips;
@@ -109,8 +110,9 @@ var CensusOverview = React.createClass({
         var acss = DataSourceStore.getType('acs');
 
         var censi = Object.keys(acss).map(function(d,i){
-          return {id:d,text:acss[d].settings.year,year:acss[d].settings.year};
+          return {id:d,text:acss[d].settings.year+'',year:acss[d].settings.year};
         });
+        console.log('active census',censi);
         //console.log(this.props.stopsGeo,this.props.routesGeo);
         return (
         	<div >
