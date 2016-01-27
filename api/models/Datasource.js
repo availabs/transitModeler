@@ -6,12 +6,15 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
   	type:'string',
   	tableName:'string',
   	stateFips:'string',
-  	settings:'array'
+  	settings:'array',
+    groups:{
+      collection:'usergroup',
+      via:'datasources',
+    }
   }
 };
-

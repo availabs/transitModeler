@@ -52,7 +52,6 @@ var GtfsDisplay = React.createClass({
             //console.log(key,dataset);
             return (
                 <tr>
-                    <td>{dataset.stateFips}</td>
                     <td>{dataset.settings.agency}</td>
                     <td>{(new Date(dataset.settings.started)).toLocaleDateString()}</td>
                     <td>{dataset.tableName}</td>
@@ -81,7 +80,6 @@ var GtfsDisplay = React.createClass({
                     <table className="table table-striped">
                     <thead>
                         <tr>
-                            <td>State Fips</td>
                             <td>Agency</td>
                             <td>Origin Date</td>
                             <td>TableName</td>

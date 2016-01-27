@@ -1,3 +1,4 @@
+/*globals require,console,module,window*/
 'use strict';
 //---------------------------------------
 // App Controller View
@@ -34,6 +35,7 @@ var React = require('react'),
     SurveyManager = require('./pages/datasources/SurveyManager.react'),
     FareboxManager = require('./pages/datasources/FareboxManager.react'),
     UserAdmin = require('./pages/admin/UserAdmin.react'),
+    GroupAdmin = require('./pages/admin/GroupAdmin.react'),
     JobHistory = require('./pages/jobs/JobHistory.react'),
 // --- Server API
     sailsWebApi = require('./utils/sailsWebApi.js');
@@ -67,6 +69,7 @@ var routes = (
     <Route name="RegressionsManager" path="/datasources/regressions" handler={RegressionsManager} />
     <Route name="dashboard" handler={Dashboard} />
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />
+    <Route name="groupAdmin" path="admin/groups" handler={GroupAdmin} />
     <Route name="jobhistory" path="/jobs/jobhistory" handler={JobHistory} />
     <DefaultRoute handler={Dashboard}/>
   </Route>

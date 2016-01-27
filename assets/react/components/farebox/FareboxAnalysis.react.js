@@ -473,7 +473,7 @@ var FareboxAnalysis = React.createClass({
         })();
         var TableData = fullDay[0].values.map(function(d,i){
             return {
-                color: (<div style={{width:'20px',height:'20px',backgroundColor:colors[d.key]}}></div>),
+                color: (<div style={{width:'20px',height:'20px',backgroundColor:colors?colors[d.key]:'#999'}}></div>),
                 line:d.key,
                 fullDay:Math.round(d.value)
             };

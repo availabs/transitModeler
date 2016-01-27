@@ -9,7 +9,9 @@ var ogr2ogr = require('ogr2ogr');
 var fs = require('fs');
 var acs_data = require('./utils/acsData');
 var mkdirp = require('mkdirp');
-
+var d3     = require('d3');
+var request = require('request');
+var tractApp = require('../../appconfig').tractApp;
 function getCensusData(marketarea,table,cb){
     var sql = 'SELECT a.*,b.aland FROM public.'+table+' as a' +
           ' join tl_2013_34_tract as b on a.geoid = b.geoid' +
@@ -102,5 +104,90 @@ module.exports = {
 			});
 		});
 	},
+
+  find : function(req,res){
+
+      User.findOne(req.session.User.id)
+          .populate('marketareas')
+          .exec(function(err,user){
+            if(err){
+              console.log(err);
+              return res.send(JSON.stringify(err),500);
+            }
+            res.send(JSON.stringify(user.marketareas));
+      });
+  },
+
+  findOne : function(req,res){
+    User.findOne(req.session.User.id)
+        .populate('marketareas')
+        .exec(function(err,user){
+          if(err){
+            console.log(err);
+            return res.send(JSON.stringify(err),500);
+          }
+          console.log(user.marketareas.map(function(d){return d.id;}));
+          var ma = user.marketareas.filter(function(d){
+            return d.id === parseInt(req.param('id'));
+          });
+          if(ma.length > 0){
+            res.send(ma[0]);
+          }else{
+            res.send({});
+          }
+        });
+  },
+
+
+
+  create : function(req,res){
+    if(req.session.User){
+      console.log('Attempted Creation',req.body);
+      MarketArea.create(req.body).exec(function(err,MA){
+          if(err){
+            console.log(err);
+            return res.send(JSON.stringify(err),500);
+          }
+          MA.users.add(req.session.User.id);
+          MA.save(console.log);
+          // create marketarea cache
+          cacheData(req,MA,res);
+      });
+    }else{
+      res.send('Authentication Error');
+    }
+
+  },
+};
+var cacheData = function(req,MA,res){
+  var groupname = req.session.User.group;
+  var path = 'assets/geo/groups/'+groupname;
+  if(!fs.existsSync(path)){
+    fs.mkdirSync(path);
+  }
+  //Create get queries for the api requests
+  var countyQ = '?'+MA.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
+  var tractQ  = '?'+MA.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
+  //fetch counites
+  Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
+    var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
+    console.log(url);
+    request(url,function(err,resp,data){
+      if(err){console.log('Error Getting Counties');}
+      console.log(data);
+      fs.writeFile(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
+        //fetch tracts
+        var url = tractApp+'tract/county'+tractQ;
+        console.log(url);
+        request(url,function(err,resp,data){
+          if(err){console.log('Error Getting Tracts',err);}
+          console.log(data);
+          fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
+            res.send(MA.toJSON());
+          });
+        });
+      });
+    });
+  });
 
 };

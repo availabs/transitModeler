@@ -12,11 +12,15 @@ var GtfsSelector= React.createClass({
         selection:(this.props.currentSelection)? [this.props.currentSelection] : [],
       };
     },
-
+    componentWillReceiveProps : function(nextProps){
+      if(nextProps.currentSelection !== this.state.selection[0]){
+        this.setState({selection:[nextProps.currentSelection]});
+      }
+    },
     getDefaultProps:function(){
       return {
         gtfsData:[]
-      }
+      };
     },
 
     updateGtfs:function(e,selection){

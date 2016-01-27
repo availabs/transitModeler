@@ -10,13 +10,14 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     CHANGE_EVENT = 'change';
 
 var USERS = [],
+    USERGROUPS={},
     SESSION_USER = {},
-    _userActions = [],
+    _userActions = null,
     _actionsLoading = false,
     EDIT_TARGET = null;
 
 function requireActions(){
-  SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'100'}});
+  SailsWebApi.read({type:'useraction',options:{sort:'createdAt%20DESC',limit:'10'}});
 }
 
 function assignActions(actions){
@@ -27,6 +28,13 @@ function assignActions(actions){
   actions.forEach(function(d){
     d.user = _users[d.userid];
   });
+}
+function buildGroups(){
+    console.log('USERS',USERS);
+    USERS.forEach(function(d){
+      USERGROUPS[d.group] = USERGROUPS[d.group] || [];
+      USERGROUPS[d.group][d.id]  =  d;
+    });
 }
 
 var UserStore = assign({}, EventEmitter.prototype, {
@@ -54,14 +62,21 @@ var UserStore = assign({}, EventEmitter.prototype, {
         return EDIT_TARGET;
     },
     getUserActions : function(){
-      if(_userActions.length === 0){
+      if(_userActions === null){
         requireActions();
         _actionsLoading = true;
         return [];
       }else{
         return _userActions;
       }
-
+    },
+    getCurrentGroupUsers : function(){
+      if(!USERGROUPS[SESSION_USER.group])
+      {
+        return [];
+      }
+      return Object.keys(USERGROUPS[SESSION_USER.group])
+            .map(function(d){return USERGROUPS[SESSION_USER.group][d];});
     },
 });
 
@@ -76,6 +91,7 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case UserConstants.RECEIVE_USERS:
         USERS = action.users;
+        buildGroups();
         UserStore.emitChange();
         break;
 

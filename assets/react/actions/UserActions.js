@@ -9,13 +9,13 @@ module.exports = {
            user: user
        });
    },
-   getAllUsers: function() {
-       SailsWebApi.getAllUsers(function(users) {
-           AppDispatcher.handleViewAction({
-               type: UserConstants.RECEIVE_USERS,
-               users: users
-           });
-       });
+   getAllUsers: function(id) {
+    SailsWebApi.getAllUsers(function(users) {
+         AppDispatcher.handleViewAction({
+             type: UserConstants.RECEIVE_USERS,
+             users: users
+         });
+     }); 
    },
    setEditTarget: function(user) {
        AppDispatcher.handleViewAction({

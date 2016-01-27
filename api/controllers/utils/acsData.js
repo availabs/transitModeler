@@ -151,9 +151,9 @@ acs_data = {
   '11_00ampt': {"value":0,"vars":['b08132_058e'],"name":'Public Transportation - 11:00 a.m. to 11:59 a.m.'},
   '12_00pmpt': {"value":0,"vars":['b08132_059e'],"name":'Public Transportation - 12:00 p.m. to 3:59 p.m.'},
   '4_00pmpt': {"value":0,"vars":['b08132_060e'],"name":'Public Transportation - 4:00 p.m. to 11:59 p.m.'},
-  'aland': {"value":0,"vars":['aland'],'name':"Land Area (sq Meters)"},
-  'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
-  'population_density':{"value":0,"vars":[],'name':"Population Density (sq Mi)"},
+  // 'aland': {"value":0,"vars":['aland'],'name':"Land Area (sq Meters)"},
+  // 'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
+  // 'population_density':{"value":0,"vars":[],'name':"Population Density (sq Mi)"},
 },
 categories : {
   "Population":["total_population"],
@@ -173,7 +173,7 @@ categories : {
   "Race":["race_white","race_black","race_amerindian","race_asian","race_hawaii","race_other", "race_two"],
   "Housing Units":["1_unit_det","1_unit_att","2_units","3_4units","5_9units","10_19units","20_49units","50+_units","mobile_home","other_home"],
   "Housing Occupied ":["occupied_housing","vacant_housing"],
-  "Housing Ownership": ["occupancy_renter","occupancy_owner"], 
+  "Housing Ownership": ["occupancy_renter","occupancy_owner"],
   "Vehicles Available" :["car_0","car_1","car_2","car_3", "car_4", "car_5+"],
   "Household Vehicles Available" :["car_0_house","car_1_house","car_2_house","car_3_house", "car_4_house", "car_5+_house"],
   "Journey TW by Time":['12_00am','s5_00am','5_30am','6_00am','6_30am','7_00am','7_30am','8_00am','8_30am','9_00am','10_00am','11_00am','12_00pm','4_00pm'],
@@ -196,8 +196,8 @@ update_data:function(tracts){
         acs_data.acs[tract.geoid][census_var] = value;
         acs_data.census_vars[census_var].value += acs_data.acs[tract.geoid][census_var];
       }
-       acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159)),
-       acs_data.acs[tract.geoid]['population_density'].value  = (acs_data.acs[tract.geoid].total_population/(acs_data.acs[tract.geoid].aland*0.000000386102159))
+       //acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159)),
+       //acs_data.acs[tract.geoid]['population_density'].value  = (acs_data.acs[tract.geoid].total_population/(acs_data.acs[tract.geoid].aland*0.000000386102159))
     });
   }
 };

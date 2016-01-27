@@ -268,7 +268,7 @@ module.exports = React.createClass({
         var target = this.state.mode === "update" ? this.props.editTarget : null;
 
         return (
-            <div className="panel panel-primary">
+            <div className="widget panel panel-primary">
 
                 <PanelHeading mode={ this.state.mode } editTarget={ this.props.editTarget }
                     clickHandler={ this.handleClick }/>

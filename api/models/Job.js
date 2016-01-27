@@ -8,7 +8,7 @@ var kill = require('tree-kill');
 
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
   	start:{
   		type:'datetime',
@@ -37,7 +37,13 @@ module.exports = {
     progress:{
       type:'integer',
       defaultsTo:0
-    }
+    },
+    creator:{
+      model:'user',
+    },
+    group:{
+      model:'usergroup',
+    },
   },
 
   beforeUpdate: function(values, next){

@@ -11,20 +11,20 @@ var React = require('react'),
     //-- Components
 
 var GtfsDisplay = React.createClass({
-    
+
     getInitialState : function(){
       return{
         filters:FareZoneFilterStore.getFarezoneFilters(),
         messages:[]
       };
     },
-    
+
     uploadStarted:function(err,res){
-      
+
       console.log('uploadStarted',err,res.body)
        var newMessages = this.state.messages;
       if(res.body.error){
-       
+
         newMessages.push('Error: '+res.body.error)
         this.setState({messages:newMessages})
       }else if(res.body.data){
@@ -178,20 +178,21 @@ var GtfsDisplay = React.createClass({
         // <div className='col-lg-12'>
         //   {this.renderFarezoneFilters(this.state.filters)}
         // </div>
+        // <div className="col-lg-6">
+        //     {this.renderCurrentData()}
+        //
+        // </div>
         return (
             <div className="content container">
                 <h2 className="page-title">Farebox<small> Data Upload</small></h2>
                 <div className="row">
                     <div className="col-lg-6">
                         {this.renderDataController()}
-                       
+
 
                     </div>
-                    <div className="col-lg-6">
-                        {this.renderCurrentData()}
 
-                    </div>
-                    
+
                 </div>
             </div>
         );

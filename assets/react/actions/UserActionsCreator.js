@@ -44,6 +44,9 @@ module.exports = {
   deleteRegression:function(id){
     sailsWebApi.delete('regression',id);
   },
+	shareMarketArea: function(maid,uid,cb){
+		sailsWebApi.shareMarketArea(maid,uid,cb);
+	},
 	userAction : function(data){
 		AppDispatcher.handleViewAction({
 			type: ActionTypes.USER_ACTION,

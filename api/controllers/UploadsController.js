@@ -6,8 +6,8 @@
  */
 var path = require('path');
 var password='transit';
-var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitModeler';
- function spawnJob(job){
+var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeocensus';
+ function spawnJob(job,user){
  	var terminal = require('child_process').spawn('bash');
  	var current_progress = 0;
  	var gtfsEntry = {
@@ -47,28 +47,40 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
  	    		if(newJob.status != 'Cancelled'){
             //if job is not cancelled, in this version of the app we want to only add to the datasource tableName
             var onFinish = function(data){
-              console.log('GTFS START',data);
-              var ds = {
-                type:'gtfs',
-                tableName:gtfsEntry.tableName,
-                stateFips:34,
-                settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name}],
-              };
-              console.log(ds);
-              Datasource.create(ds).exec(function(err,newEntry){
-                if(err){console.log('Error Creating DataSource',err);}
-                Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-                   .exec(function(err,updated_job){
-                     if(err){console.log('job_update error',error);}
-                     sails.sockets.blast('job_updated',updated_job);
-                   });
+              Agencies.create({                 //create an agency entry for the gtfs dataset
+                tablename:gtfsEntry.tableName,
+                agencyname:data.agency_name,
+              }).exec(function(err,agdata){
+                console.log('GTFS START',data);
+                var ds = {                      //create a new datasource entry for the application
+                  type:'gtfs',
+                  tableName:gtfsEntry.tableName,
+                  settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name,agencyid:agdata.id}],
+                };
+                console.log(ds);
+                Datasource.create(ds).exec(function(err,newEntry){
+                  if(err){console.log('Error Creating DataSource',err);}
+                  newEntry.groups.add(user.userGroup.id);
+                  newEntry.save(function(err){
+                    if(err){
+                      console.log(err);
+                    }else{
+                      Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+                         .exec(function(err,updated_job){
+                           if(err){console.log('job_update error',error);}
+                           sails.sockets.blast('job_updated',updated_job);
+                         });
+                    }
+                  });
+                });
               });
             };
+
             var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
-            Datasource.query(query,{},function(err,data){
+            Agencies.query(query,{},function(err,data){
               if(err){
                 query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
-                Datasource.query(query,{},function(err,data){
+                Agencies.query(query,{},function(err,data){
                   if(err){
                     console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
                   }
@@ -122,7 +134,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
 
 
          var query = 'CREATE SCHEMA "'+job.info[0].schemaName+'" ';
- 		Datasource.query(query,{} ,function(err, result) {
+ 		Agencies.query(query,{} ,function(err, result) {
  			if(err){ console.log('create schema error',err); }
 
  		    var destinationStream = job.info[0].file.fd;//__dirname + '/cdta_20140811_0109.zip';//+fileInfo.name;
@@ -145,6 +157,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/transitM
 module.exports = {
   upload:function(req,res){
     console.log(req.file());
+    var user = req.session.User;
     dirname = path.resolve(sails.config.appPath,'/assets/images');
     req.file('files').upload({dirname:'assets/data/gtfs', maxBytes:500000000},
           function (err, files) {
@@ -163,7 +176,9 @@ module.exports = {
           isFinished:false,
           type:'load GTFS',
           info:[{'file':files[0],'schemaName':schemaName}],
-          status:'Started'
+          status:'Started',
+          creator:user.id,
+          group:user.userGroup.id,
         })
         .exec(function(err,job){
           if(err){console.log('create job error',err);
@@ -180,7 +195,7 @@ module.exports = {
             message: "job created "+job.id,
           }];
 
-          spawnJob(job);
+          spawnJob(job,user);
 
           req.session.flash = {
             err: flashMessage

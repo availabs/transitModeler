@@ -62,7 +62,6 @@ var ZoneFilter = React.createClass({
       actiondesc:model.description,
       actiontitle:'Updating Model Info on '+model.name,
       maid:this.props.marketarea.id,
-      stateFips:this.props.marketarea.stateFips,
       userid: UserStore.getSessionUser().id,
     };
     UserActionsCreator.userAction(message);

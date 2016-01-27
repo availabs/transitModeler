@@ -40,6 +40,8 @@ var App = React.createClass({
             currentMarketarea: MarketAreaStore.getCurrentMarketArea() || {id:0,name:'',routesGeo:{type:'FeatureCollection',features:[]}},
             marketareas:MarketAreaStore.getAll(),
             tracts: GeodataStore.getMarketAreaTracts(),
+            counties : GeodataStore.getMarketAreaCounties(),
+            countyTracts : GeodataStore.getTractsNearMarketArea(),
             stateTracts : GeodataStore.getAllTracts(),
             stateCounties : GeodataStore.getAllCounties(),
             datasources: DatasourcesStore.getAll(),
@@ -61,19 +63,21 @@ var App = React.createClass({
             freqEditResponse:GtfsStore.putFrequencyData(),
             editResponse : GtfsStore.putGtfsData(),
             jobhistory : JobStore.getAll(),
+
         };
     },
 
     getInitialState: function(){
         return this.getState();
     },
-    
+
     _onChange: function() {
         this.setState(this.getState());
     },
 
     componentDidMount: function() {
         JobStore.addChangeListener(this._onChange);
+        RegressionStore.addChangeListener(this._onChange);
         MarketAreaStore.addChangeListener(this._onChange);
         DatasourcesStore.addChangeListener(this._onChange);
         GeodataStore.addChangeListener(this._onChange);
@@ -84,6 +88,7 @@ var App = React.createClass({
 
     componentWillUnmount: function() {
         JobStore.removeChangeListener(this._onChange);
+        RegressionStore.removeChangeListener(this._onChange);
         MarketAreaStore.removeChangeListener(this._onChange);
         DatasourcesStore.removeChangeListener(this._onChange);
         GeodataStore.removeChangeListener(this._onChange);
@@ -106,6 +111,8 @@ var App = React.createClass({
                         marketarea={this.state.currentMarketarea}
                         marketareas ={this.state.marketareas}
                         tracts={this.state.tracts}
+                        counties={this.state.counties}
+                        countyTracts={this.state.countyTracts}
                         datasources={this.state.datasources}
                         regressions={this.state.regressions}
                         censusData={this.state.censusData}
@@ -136,7 +143,6 @@ var App = React.createClass({
             maMenu = [{text:'Loading'}];
         }
         maMenu.push({text:'New Marketarea',icon:'fa fa-plus',action:'MarketAreaNew',type:'Route'});
-
         return {
             menu: [
                 {text:'Dashboard',icon:'fa fa-home',action:'dashboard',type:'Route'},
@@ -148,7 +154,7 @@ var App = React.createClass({
                         {text:'GTFS',type:'Route',action:'GtfsManager'},
                         {text:'ACS',type:'Route',action:'AcsManager'},
                         {text:'Regressions',type:'Route',action:'RegressionsManager'},
-                        {text:'Surveys',type:'Route',action:'SurveyManager'},
+                        //{text:'Surveys',type:'Route',action:'SurveyManager'},
                         {text:'Farebox',type:'Route',action:'FareboxManager'}
                     ]
                 },

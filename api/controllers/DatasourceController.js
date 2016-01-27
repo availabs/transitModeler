@@ -1,3 +1,4 @@
+/*globals require,console,module,Datasource,Usergroup,Job,UserAction,sails,Agencies,MarketArea*/
 'use strict';
 /**
  * DatasourcesController
@@ -7,6 +8,7 @@
  */
 var models = require('../../config/models'),
 	_ = require('lodash'),
+	crudHelper = require('../support/cruds'),
 	connections = require('../../config/connections');
 	var connection = connections.connections[models.models.connection];
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
@@ -28,29 +30,115 @@ var getCensusData = function(marketarea,table,cb){
       if (err) { return console.log(err,sql);}
       return cb(data.rows);
     });
-}
+};
 
 var preserveProperties = function(feature) {
   return feature.properties;
-}
+};
 
 var topojson = require('topojson');
 
+var _ = require('lodash');
+
 module.exports = {
 
+	find:function(req,res){
+	    var user = req.session.User;
+		if(user.userGroup.type==='sysAdmin'){
+			Datasource.find().exec(function(err,data){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}else{
+					res.send(data);
+				}
+			});
+		}else{
+			Usergroup.findOne({name:user.group}).populate('datasources').exec(function(err,group){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}else{
+					res.send(group.datasources);
+				}
+			});
+		}
+	},
+	create:function(req,res){
+		var user = req.session.User;
+		Datasource.create(req.body).exec(function(err,ds){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}else{
+				ds.groups.add(user.userGroup.id);
+				ds.save(function(err){
+					if(err){
+						console.log(err);
+						res.send(err);
+					}else{
+						res.send(ds);
+					}
+				});
+			}
+		});
+		// crudHelper(Datasource,'create','groupname',req,res);
+	},
+	update:function(req,res){
+		res.send('Unfulfilled Feature');
+		// crudHelper(Datasource,'update','groupname',req,res);
+	},
+	destroy:function(req,res){
+		var user = req.session.User;
+		var id = req.param('id');
+		Datasource.findOne(id).populate('groups').exec(function(err,ds){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}else{
+				ds.groups.remove(user.userGroup.id);
+				ds.save(function(err){
+					if(err){
+						console.log(err);
+						res.send(err);
+					}else{
+						res.send(ds);
+					}
+				});
+			}
+		});
+	},
 	getACS:function(req,res){
 		if(!req.param('year')){
 			res.send('{status:"error",message:"Must send 4 digit [year] of data."}',500);
 		}
-	    var censusTable = 'acs5_34_'+req.param('year')+'_tracts';
+	    var censusTable; // = 'acs5_34_'+req.param('year')+'_tracts';
 
 	    //Allow user to specify census table
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
-	        getCensusData(ma,censusTable,function(census){
-	          res.json({census:census})
-	        })
-	    })
+	        var states = {};
+					console.log(ma);
+					var findState = function(id){
+						console.log(id);
+						var sid = (id+'').substr(0,2);
+						states[sid] = states[sid] || [];
+						states[sid].push(id);
+					};
+					ma.zones.forEach(function(geoid){
+						console.log(geoid);
+						findState(geoid);
+					});
+					var sql = Object.keys(states).map(function(sid){
+							censusTable = 'acs5_'+sid+'_'+req.param('year')+'_tracts';
+							return "SELECT * FROM "+censusTable+" where geoid in ('"+states[sid].join("','")+"')";
+					}).join(' UNION ');
+					console.log(sql);
+					MarketArea.query(sql,{},function(err,data){
+						if(err){ return console.log(err,sql);}
+						res.json({census:data.rows});
+					});
+	    });
 
  	},
 
@@ -61,7 +149,7 @@ module.exports = {
 
 		var sql = 'SELECT route_id, route_short_name, route_long_name FROM '+req.param('tablename')+'.routes';
 
-	    Datasource.query(sql,{},function(err,data){
+	    Agencies.query(sql,{},function(err,data){
 	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
 
 	      var output = data.rows;
@@ -72,7 +160,7 @@ module.exports = {
 	},
 
 	getSurvey:function(req,res){
-		var maId = req.param('marketareaId')
+		var maId = req.param('marketareaId');
 
 		if(!maId){
 			 res.send({status: 500, error: 'You must supply marketarea Id.'}, 500);
@@ -142,7 +230,7 @@ module.exports = {
 		              "WHERE route_short_name in " + JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 
 
-		    Datasource.query(sql,{},function(err,data){
+		    Agencies.query(sql,{},function(err,data){
 		        if (err) {
 		            res.send('{status:"error",message:"'+err+'"}',500);
 		            return console.log(err);
@@ -188,7 +276,7 @@ module.exports = {
 
   	},
 
-  	getStopsGeo:function(req,res){
+	getStopsGeo:function(req,res){
 		var gtfs_id = req.param('id'),
 	        route_id = req.param('route');
 
@@ -201,17 +289,17 @@ module.exports = {
 	    Datasource.findOne(gtfs_id).exec(function(err,mgtfs){
 	    	if(err){console.log('find datasource error',err);}
 			var routes = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
-			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,a.stop_num,a.line,a.fare_zone,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
+			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
 								'stops.zone_id,stops.stop_url,R.route_short_name '+
 								'FROM "'+mgtfs.tableName+'".stops '+
-								'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
+								//'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
 								'JOIN "'+mgtfs.tableName+'".stop_times AS ST on ST.stop_id = stops.stop_id ' +
 								'JOIN "'+mgtfs.tableName+'".trips AS T on T.trip_id = ST.trip_id '+
 								'JOIN "'+mgtfs.tableName+'".routes AS R on R.route_id = T.route_id '+
-								'where (a.line IS NULL OR a.line IN '+routes+ ') AND R.route_short_name IN '+routes;
+								'WHERE R.route_short_name IN '+routes;
 
 			console.log(sql);
-            Datasource.query(sql,{},function(err,data){
+            Agencies.query(sql,{},function(err,data){
                 if (err) {
                     res.send({ status:500, error: err }, 500);
                     return console.log(err);
@@ -228,8 +316,8 @@ module.exports = {
                     Feature.geometry = JSON.parse(stop.stop_geom);
                     Feature.properties = {};
                     Feature.properties.stop_code = stop.stop_code;
-                    Feature.properties.fare_zone = stop.fare_zone;
-                    Feature.properties.line = stop.line || stop.route_short_name;
+                    // Feature.properties.fare_zone = stop.fare_zone;
+                    Feature.properties.line = stop.route_short_name;
                     Feature.properties.stop_id = stop.stop_id;
 										Feature.properties.stop_desc = stop.stop_desc;
 										Feature.properties.stop_url = stop.stop_url;
@@ -239,6 +327,21 @@ module.exports = {
                   }
 
                 });
+								var sql2 = 'SELECT a.stop_num,a.line,a.fare_zone FROM fare_zones as a '+
+													 'where (a.line IS NULL OR a.line IN '+routes+ ') ';
+								Datasource.query(sql2,{},function(err,data){
+									if(err){
+										res.send({status:500,error:err},500);
+										return console.log(err);
+									}
+									var stopzones = {};
+									data.rows.forEach(function(stop){
+										stopzones[stop.stop_num] = {line:stop.line,fare_zone:stop.fare_zone};
+									});
+									stops.forEach(function(stop){
+										stop.fare_zone = stopzones[stop.stop_code].fare_zone;
+									});
+								});
                 //console.log(stopsCollection);
                 res.json(stopsCollection);
 
@@ -248,7 +351,7 @@ module.exports = {
 
   	},
 
-  	getLODES: function(req,res){
+	getLODES: function(req,res){
   		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
 			var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
@@ -273,64 +376,97 @@ module.exports = {
 	getCTPP: function(req, res) {
 		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
-			var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+		    var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+		    var states = marketarea.zones.map(function(zone){
+			return zone.substr(0,2); // get the state fips codes from the tracts
+		    });
+		    states = _.uniq(states); //get the set of unique state fips
 
-			var sql = "SELECT from_tract,to_tract, est, se " +
-			            "FROM ctpp_34_2010_tracts " +
-			            "WHERE to_tract in " + tracts + " or from_tract in "+tracts;
-
-			MarketArea.query(sql, {}, function(error, data) {
-			    if (error) {
-			          console.log("error executing "+sql, error);
-			          res.send({status: 500, message: 'internal error'}, 500);
-			          return;
-			    }
-
-			    res.send(data.rows);
-			})
+		    var sql = states.map(function(fips){
+			return "SELECT from_tract,to_tract, est, se " +
+			"FROM ctpp_"+fips+"_2010_tracts " +
+			"WHERE to_tract in " + tracts + " or from_tract in "+tracts;
+		    }).join(' Union ');
+		    
+		    
+		    Ctpp.query(sql, {}, function(error, data) {
+			if (error) {
+			    console.log("error executing "+sql, error);
+			    res.send({status: 500, message: 'internal error'}, 500);
+			    return;
+			}
+			
+			res.send(data.rows);
+		    })
 		});
 	},
 	//---------------------ACS Create Delete-----------------------------------------
 	deleteACS:function(req,res){
-
-		Datasource.findOne(req.param('id')).exec(function(err,found){
-
-			var query = 'DROP TABLE public."'+found.tableName+'"';
-
-
-			Datasource.query(query,{} ,function(err, result) {
-				if(err) { console.error('error running query:',query, err); }
-
-				Datasource.destroy(found.id).exec(function(err,destroyed){
-					if(err) { console.log(err); res.json({error:err}); }
-
-					res.json({'message':'Record '+found.id+' deleted.'})
-
-				});
-
+		var user = req.session.User;
+		Datasource.findOne(req.param('id')).populate('groups').exec(function(err,found){
+			if(err){
+				console.log(err);
+				res.send(err,500);
+			}
+			// var query = 'DROP TABLE public."'+found.tableName+'"';
+			found.groups.remove(user.userGroup.id);
+			found.save(function(err){
+				if(err){
+					console.log(err);
+					res.send(err,500);
+				}
+				var message = 	{groupname:user.group,
+													 actiondesc:'deleted ' + found.tableName,
+													 actiontitle:'deleted '+found.type,
+													 maid:-1,
+													 userid:user.id,
+												 };
+					UserAction.create(message).exec(function(err,data){
+						if(err){
+							console.log(err,data);
+						}
+					});
+					res.json({'message':'Record '+found.id+' deleted.'});
 			});
+
+			// Datasource.query(query,{} ,function(err, result) {
+			// 	if(err) { console.error('error running query:',query, err); }
+
+				// Datasource.destroy(found.id).exec(function(err,destroyed){
+				// 	if(err) { console.log(err); res.json({error:err}); }
+
+
+				// });
+
+			// });
 
 		});
 
 	},
 	loadACSData:function(req,res){
+		var user = req.session.User;
 		var state=req.param('state'),
 		dataSource=req.param('dataSource'),
 		year=req.param('startYear'),
 		sumlevel=req.param('sumLevel');
-
-		console.log('Datasource.loadData',state,dataSource,year,sumlevel)
+		var message = {groupname:user.group,
+											 actiondesc:'loaded acs_'+state+'_'+year+'_'+sumlevel,
+											 actiontitle:'loaded acs',
+											 maid:-1,
+											 userid:user.id,
+										 };
+		console.log('Datasource.loadData',state,dataSource,year,sumlevel);
 
 		Datasource //Check to see if this data set has been loaded
-		.find({ stateFips:state})
+		.find({ stateFips:state}).populate('groups')
 		.exec(function(err,data){
 			console.log(err,data);
-
 			data = data.filter(function(d){
-				return d.stateFips == state && d.settings.year == year && d.settings.level == sumlevel;
-			})
-			console.log(err,data);
-			if(data.length > 0){// the data source does exist, refuse to load.
+				return d.stateFips == state && d.settings[0].year == year &&
+								d.settings[0].level == sumlevel;
+			});
+
+			if(data.length > 0 ){// the data source does exist, refuse to load.
 				var flashMessage = [{
 					name:"Data Exists",
 					message: "This dataset has already been loaded"
@@ -338,24 +474,40 @@ module.exports = {
 
 				req.session.flash = {
 					err: flashMessage
+				};
+				var inGroup = data[0].groups.filter(function(d){return d.id === user.userGroup.id;});
+				if(inGroup.length > 0){
+						res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
+				}else{
+					data[0].groups.add(user.userGroup.id);
+					data[0].save(function(err){
+						console.log('MADE IT TO SAVE');
+						if(err){
+							console.log(err);
+							res.json({responseText:'Error adding ACS data'});
+						}else{
+							UserAction.create(message).exec(function(err,data){
+																 if(err){console.log(err,data);}
+															 });
+							res.json({responseText:'Successfully added ACS data'});
+						}
+					});
 				}
-
-
-				res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
-
 			}else{//the data source doesn't exists
 
 				Job.create({
 					isFinished:false,
 					type:'load ACS',
 					info:[{'state':state,'dataSource':dataSource,'year':year,'sumlevel':sumlevel}],
-					status:'Started'
+					status:'Started',
+					creator:user.id,
+					group:user.userGroup.id,
 				})
 				.exec(function(err,job){
-					if(err){console.log('create job error',err)
+					if(err){console.log('create job error',err);
 						req.session.flash = {
 							err: err
-						}
+						};
 						res.json({responseText:'ACS Job Create Error'});
 						return;
 					}
@@ -366,19 +518,19 @@ module.exports = {
 						message: "job created "+job.id,
 					}];
 
-					spawnACSJob(job);
+					spawnACSJob(job,user,message);
 
 					req.session.flash = {
 						err: flashMessage
-					}
+					};
 
 					res.json({responseText:'ACS Job Created'});
 					return;
 
-				})
+				});
 			}
 
-		})//Check for data source
+		});//Check for data source
 	},
 
 	deleteGtfs : function(req,res){
@@ -464,7 +616,7 @@ module.exports = {
 };
 
 //--------------------------------------------------------
-function spawnACSJob(job){
+function spawnACSJob(job,user,message){
 	var terminal = require('child_process').spawn('bash');
 	var current_progress = 0;
 	var settings = {
@@ -473,11 +625,11 @@ function spawnACSJob(job){
   	 		level:job.info[0].sumlevel
   	 	},
   	 	acsEntry = {
-		tableName:'',
-		type:'acs',
-  	 	stateFips:job.info[0].state,
-	 	settings:[settings]
-  	}
+				tableName:'',
+				type:'acs',
+		  	stateFips:job.info[0].state,
+			 	settings:[settings],
+	  	};
 
   	terminal.stdout.on('data', function (data) {
 	    data = data+'';
@@ -514,7 +666,7 @@ function spawnACSJob(job){
 	terminal.on('exit', function (code) {
 		code = code*1;
 	    console.log('child process exited with code ' + code);
-	    if(code == 0){
+	    if(code === 0){
 
 	    	Job.findOne(job.id).exec(function(err,newJob){
 	    		if(err){ console.log('Job check err',err);}
@@ -524,11 +676,17 @@ function spawnACSJob(job){
 			    	Datasource.create(acsEntry)
 				    .exec(function(err,newEntry){
 				    	if(err){ console.log('Datasource create error',err);}
-
-					    Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-						.exec(function(err,updated_job){
-							if(err){ console.log('job update error',err); }
-							sails.sockets.blast('job_updated',updated_job);
+							newEntry.groups.add(user.userGroup.id);
+							newEntry.save(function(err){
+								if(err){console.log(err);}
+								Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+								.exec(function(err,updated_job){
+								if(err){ console.log('job update error',err); }
+								UserAction.create(message).exec(function(err,data){
+									if(err){console.log(err,data);}
+								});
+								sails.sockets.blast('job_updated',updated_job);
+							});
 						});
 					});
 				}else{

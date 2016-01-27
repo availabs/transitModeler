@@ -6,13 +6,16 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
+    groupname:{
+        type:'string',
+        required:true,
+    },
   	name:'string',
   	constant:'float',
   	censusVariables:'array',
   	marketarea:'integer'
   }
-  
-};
 
+};

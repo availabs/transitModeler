@@ -6,7 +6,7 @@
 */
 
 module.exports = {
-
+    migrate:'safe',
     schema: true,
     autosubscribe: ['create','destroy', 'update'],
     attributes: {
@@ -23,7 +23,18 @@ module.exports = {
             type: 'string',
             enum: ['transitAuth', 'state', 'sysAdmin'],
             required: true
+        },
+        appservices:{
+          type:'ARRAY',
+          required: true,
+        },
+        datasources:{
+          collection:'datasource',
+          via:'groups',
+        },
+        jobs:{
+          collection:'job',
+          via:'group'
         }
-
     }
 };

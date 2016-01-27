@@ -7,7 +7,7 @@
  */
 
 module.exports = {
-
+  migrate:'safe',
   schema: true,
   autosubscribe: ['create','destroy', 'update'],
   attributes: {
@@ -58,6 +58,14 @@ module.exports = {
       defaultsTo: false
     },
 
+    marketareas:{
+      collection:'marketarea',
+      via:'users',
+    },
+    jobs:{
+      collection:'job',
+      via:'creator',
+    },
 
     toJSON: function() {
       var obj = this.toObject();
@@ -72,6 +80,7 @@ module.exports = {
 
 
   beforeValidation: function (values, next) {
+    console.log('beforeValidation 1')
     if (typeof values.admin !== 'undefined') {
       if (values.admin === 'unchecked') {
         values.admin = false;
@@ -79,7 +88,8 @@ module.exports = {
         values.admin = true;
       }
     }
-     next();
+    console.log('beforeValidation 2')
+    next();
   },
 
   beforeCreate: function (values, next) {
@@ -89,11 +99,25 @@ module.exports = {
       return next({err: ["Password doesn't match password confirmation."]});
     }
 
-    require('bcryptjs').hash(values.password, 10, function passwordEncrypted(err, encryptedPassword) {
-      if (err) return next(err);
-      values.encryptedPassword = encryptedPassword;
-      // values.online= true;
-      next();
+    console.log('made it',values);
+    Usergroup.find({name:values.group}).exec(function(err,data){
+      if(err){console.error(err);}
+      var isSys;
+      data.forEach(function(d){
+        if(d.type==='sysAdmin'){
+          isSys = true;
+        }
+      });
+      if(isSys){
+        console.log('Invalid Permissions Request',data);
+        return next({err:["Invalid Permissions"]});
+      }
+      require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
+          if (err) return next(err);
+          values.encryptedPassword = encryptedPassword;
+          console.log('user beforeCreate : going next');
+          next();
+      });
     });
   },
 
@@ -105,11 +129,26 @@ module.exports = {
         if (values.password && values.password != values.confirmation) {
             return next({err: ["Password doesn't match password confirmation."]});
         }
-        require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
-            if (err) return next(err);
-            values.encryptedPassword = encryptedPassword;
-            next();
+        Usergroup.find({name:values.group}).exec(function(err,data){
+          if(err){console.error(err);}
+          var isSys;
+          data.forEach(function(d){
+            if(d.type==='sysAdmin'){
+              isSys = true;
+            }
+          });
+          if(isSys){
+            console.log('Invalid Permissions Request');
+            return next({err:["Invalid Permissions"]});
+          }
+          require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
+              if (err) return next(err);
+              values.encryptedPassword = encryptedPassword;
+              next();
+          });
         });
+
     },
+
 
 };

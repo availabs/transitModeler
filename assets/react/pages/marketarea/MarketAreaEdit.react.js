@@ -5,6 +5,7 @@ var React = require('react'),
 Router = require('react-router'),
     Link = require('react-router').Link,
     Navigation = require('react-router').Navigation,
+    _   = require('lodash'),
     // -- Utils
     SailsWebApi = require('../../utils/sailsWebApi'),
     Geoprocessing = require('../../utils/geoprocessing'),
@@ -25,6 +26,7 @@ Router = require('react-router'),
     GeoDataStore = require('../../stores/GeodataStore'),
     MarketAreaStore = require('../../stores/MarketAreaStore');
 
+var stateFipsLength = 2;
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 var transfer = function(src,dest,id){
   var ix,ids;
@@ -50,8 +52,8 @@ var MarketAreaNew = React.createClass({
     },
     getInitialState: function(){
         var pma = this.props.marketarea;
-        this.colors = (this.props.marketarea && this.props.marketarea.routecolors)? this.props.marketarea.routecolors : {};
-        return {
+        this.colors = (pma && pma.routecolors)? pma.routecolors : {};
+              return {
             marketarea:{
               id:(pma.id) ? pma.id:'',
               name:(pma.name)?pma.name:'',
@@ -61,7 +63,7 @@ var MarketAreaNew = React.createClass({
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
               routecolors:(pma.routecolors !== null)? pma.routecolors:{},
               center : pma.center || [],
-              stateFips:'34',
+              stateFips:pma.stateFips || [],
               geounit:'tracts',
               description:(pma.description) || '',
             },
@@ -75,6 +77,9 @@ var MarketAreaNew = React.createClass({
             message:null,
             bMessage:'Update Market Area',
             gtfs_source:null,
+            tracts: null,
+            counties: null,
+            loading:null,
         };
     },
     componentDidMount : function(){
@@ -89,7 +94,37 @@ var MarketAreaNew = React.createClass({
             this.setStopsGeo(this.props.stopsGeo);
         }
       }
+      GeoDataStore.addChangeListener(this._onGeoChange);
       MarketAreaStore.addChangeListener(this._onChange);
+
+    },
+    _onGeoChange : function(){
+      var scope = this;
+      if(this.state.marketarea.origin_gtfs && this.props.datasources.gtfs[this.state.marketarea.origin_gtfs]){
+        var agency = this.props.datasources.gtfs[this.state.marketarea.origin_gtfs].settings.agencyid;
+        var routes = this.state.marketarea.routes;
+        console.log('tract id',agency,routes);
+        var partialState = this.state;
+        var tracts = GeoDataStore.getTempTracts(agency,routes);
+        var outerTractsFilter = tracts.features.map(function(d){return d.properties.geoid;})
+                                .filter(function(d){return scope.state.marketarea.zones.indexOf(d) === -1;});
+        if(tracts.features.length > 0){
+          partialState.tracts = tracts;
+          partialState.outerTractsFilter = outerTractsFilter;
+        }
+        var counties = GeoDataStore.getTempCounties(agency,routes);
+        var states = _.uniq(counties.features.map(function(d){return d.properties.geoid.substr(0,stateFipsLength);}));
+        if(counties.features.length > 0){
+          partialState.counties = counties;
+          partialState.stateFips = states;
+        }
+
+        this.setState(partialState,function(){
+                        if(scope.state.tracts && scope.state.counties && scope.state.stopsGeo.features.length){
+                          scope.setStopsGeo(scope.state.stopsGeo);
+                        }
+                      });
+      }
     },
     _onChange : function(){
       var ma = MarketAreaStore.getCurrentMarketArea();
@@ -98,6 +133,10 @@ var MarketAreaNew = React.createClass({
         sma[d] = (ma[d])?ma[d]:sma[d];
       });
       this.setState({marketarea:sma});
+    },
+    componentWillUnmount:function(){
+      GeoDataStore.removeChangeListener(this._onGeoChange);
+      MarketAreaStore.removeChangeListener(this._onChange);
     },
     setRouteList : function(id,data){
       SailsWebApi.getRoutesGeo(-1,this.state.marketarea.origin_gtfs,this.state.marketarea.routes,this.setRoutesGeo);
@@ -123,15 +162,15 @@ var MarketAreaNew = React.createClass({
       if(nextProps.marketarea && nextProps.marketarea !== this.props.marketarea && nextProps.marketarea.id > 0){
         var nma = this.state.marketarea;
         Object.keys(nextProps.marketarea).forEach(function(d){
-          nma[d] = (nextProps.marketarea[d]) ? nextProps.marketarea[d]:{};
+          nma[d] = (nextProps.marketarea[d] || Array.isArray(nextProps.marketarea[d])) ? nextProps.marketarea[d]:{};
         });
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);
         this.colors = nextProps.marketarea.routecolors;
 
         this.setState({marketarea:nma,tractsFilter:filter,countyFilter:cfilter});
-
       }
+
     },
     initTracts : function(){
       if(this.state.countyFilter){
@@ -143,8 +182,11 @@ var MarketAreaNew = React.createClass({
         }
       }
     },
-    getNonZone : function(filterTracts,tractsFilter){
-      var nonSelectTracts = filterTracts.filter(function(d){ //filter the tracts within our fips regions
+    getNonZone : function(tracts,tractsFilter){
+      if(!tracts.features){
+        return [];
+      }
+      var nonSelectTracts = tracts.features.filter(function(d){ //filter the tracts within our fips regions
           var matches = tractsFilter.filter(function(geoId){//check each track id
             return d.properties.geoid === geoId;                //against the stop associated ones
           });
@@ -168,20 +210,21 @@ var MarketAreaNew = React.createClass({
       return filterTracts;
     },
     setStopsGeo:function(data){
-        if(data && data.features.length > 0 && this.props.stateCounties && this.props.stateCounties.features.length > 0 &&
-               this.props.stateTracts && this.props.stateTracts.features.length > 0){
+      var counties = this.state.counties,tracts = this.state.tracts;
+      if(data && data.features.length > 0 && counties && counties.features.length > 0 &&
+          tracts && tracts.features.length > 0){
             console.log('Processing counties',new Date());
-            var countyFilter = Geoprocessing.point2polyIntersect(data,this.props.stateCounties).keys;
+            var countyFilter = Geoprocessing.point2polyIntersect(data,counties).keys;
             console.log('Finished processing counties',new Date());
 
-            var countyFips = this.getCountyFips(countyFilter);
-            var filterTracts = this.getFilterTracts(countyFips);
-
+            // var countyFips = this.getCountyFips(countyFilter);
+            // var filterTracts = this.getFilterTracts(countyFips);
+            //
             console.log('Processing tracts',new Date());
-            var tractsFilter = Geoprocessing.point2polyIntersect(data,{type:'FeatureCollection',features:filterTracts});
-            console.log('Finished Processing tracts',new Date());
-            console.log(tractsFilter,countyFilter);
-            var nonSelectTracts = this.getNonZone(filterTracts,tractsFilter.keys);
+            var tractsFilter = Geoprocessing.point2polyIntersect(data,tracts);
+            // console.log('Finished Processing tracts',new Date());
+            // console.log(tractsFilter,countyFilter);
+            var nonSelectTracts = this.getNonZone(tracts,tractsFilter.keys);
             var ma = this.state.marketarea;
             ma.center = Geoprocessing.center(data);
             this.setState({
@@ -191,7 +234,7 @@ var MarketAreaNew = React.createClass({
               outerTractsFilter:nonSelectTracts,
               marketarea:ma,
               });
-        }else if(data.features.length === 0){
+        }else {
             console.log('remove last layer');
             this.setState({
               stopsGeo:data,
@@ -238,7 +281,9 @@ var MarketAreaNew = React.createClass({
         if(newState.marketarea.routes.indexOf(route) === -1){
             newState.marketarea.routes.push(route);
             newState.marketarea.routes.sort();
-
+            var dsid = newState.marketarea.origin_gtfs;
+            SailsWebApi.getRouteCounties(this.props.datasources.gtfs[dsid].settings.agencyid,route,this.state.countyFilter);
+            SailsWebApi.getRouteTracts(this.props.datasources.gtfs[dsid].settings.agencyid,route,_.union(newState.tractsFilter,newState.outerTractsFilter) );
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
 
@@ -326,8 +371,10 @@ var MarketAreaNew = React.createClass({
             UserActionsCreator.userAction(message);
             this.setState({bMessage:'Update Again',marketarea:data});
             GeoDataStore.purgeMarketTracts();
-            SailsWebApi.read('marketarea');
-            SailsWebApi.getStateGeodata(this.state.marketarea.stateFips);
+            var dsid = data.origin_gtfs;
+            var route = data.routes;
+            SailsWebApi.getRouteCounties(this.props.datasources.gtfs[dsid].settings.agencyid,route,this.state.countyFilter);
+            SailsWebApi.getRouteTracts(this.props.datasources.gtfs[dsid].settings.agencyid,route, []);
         }
     },
 
@@ -343,7 +390,9 @@ var MarketAreaNew = React.createClass({
 
         else{
             this.setState({bMessage:'Saving ...'});
-            SailsWebApi.update('marketarea',marketarea,this.updatedMa);
+            var agency = this.props.datasources.gtfs[marketarea.origin_gtfs].settings.agencyid;
+            MarketAreaActionsCreator.updateMarketArea(marketarea,this.updatedMa,agency);
+            // SailsWebApi.update('marketarea',marketarea,this.updatedMa);
         }
     },
 
@@ -396,39 +445,38 @@ var MarketAreaNew = React.createClass({
         });
     },
     render: function() {
-
+        console.log("RENDERING");
         //var routesGeo = this.state.routesGeo || emptyGeojson;
         var scope = this;
         var counties = {type:'FeatureCollection',features:[]};
-        console.log('marketarea colors',this.state.marketarea.routecolors)
+        // counties.features = this.props.stateCounties.features;
 
-        counties.features = this.props.stateCounties.features;
-
-        if(this.state.countyFilter.length > 0){
-            counties.features = this.props.stateCounties.features.filter(function(d,i){
+        if(this.state.countyFilter.length > 0 && this.state.counties){
+            counties.features = this.state.counties.features.filter(function(d,i){
                 return scope.state.countyFilter.indexOf(d.properties.geoid) > -1;
             });
         }
 
+        var countyTracts;
+        if(this.state.tracts && this.state.tracts.features.length > 0){
+          countyTracts = this.state.tracts;
+        }else{
+          countyTracts = this.props.countyTracts;
+        }
+
         var tracts = {type:'FeatureCollection',features:[]};
-        if(this.state.tractsFilter.length > 0){
-            tracts.features = this.state.stateTracts.features.filter(function(d,i){
+        if(this.state.tractsFilter.length > 0 && countyTracts){
+            countyTracts.features.forEach(function(d,i){
                 var isInner = scope.state.tractsFilter.indexOf(d.properties.geoid) > -1;
                 if(isInner){
                   d.properties.type = 0;
+                }else{
+                  d.properties.type = 1;
                 }
-                return isInner;
+                tracts.features.push(d);
             });
         }
-        if(this.state.outerTractsFilter.length > 0){
-          this.state.stateTracts.features.forEach(function(d,i){
-              var isOuter = scope.state.outerTractsFilter.indexOf(d.properties.geoid) > -1;
-              if(isOuter){
-                d.properties.type = 1;
-                tracts.features.push(d);
-              }
-          });
-        }
+        console.log('yonder tracts',countyTracts);
         return (
         	<div className="content container">
             <MarketareaNav marketarea={this.props.marketarea}/>
@@ -440,9 +488,10 @@ var MarketAreaNew = React.createClass({
                             stops={this.state.stopsGeo}
                             routes={this.state.routesGeo}
                             tracts ={tracts}
-                            counties={counties}
+                            counties={this.state.counties ? counties : this.props.counties}
                             toggleTracts={this.toggleTracts}
                             routeColors={this.state.marketarea.routecolors}
+                            changeTractsWithStops={true}
                             />
                         {this.renderMessage()}
 

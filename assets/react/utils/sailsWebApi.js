@@ -12,6 +12,7 @@ var UserActions          = require('../actions/UserActions');
 var GtfsActionsCreator = require('../actions/GtfsActionsCreator');
 var GroupAdminActions  = require('../actions/GroupAdminActions');
 var Router = require('./hereApi');
+var tractApp = require('../../../appconfig').tractApp;
 
 //---------------------------------------------------
 // Socket Events
@@ -38,7 +39,7 @@ module.exports = {
     UserActions.setSessionUser(user);
     UserActions.getAllUsers();
     GroupAdminActions.getAllGroups();
-    this.getStateGeodata(34);
+    // this.getStateGeodata(34);
     this.getModelRuns();
     this.read('marketarea');
     this.read('regression');
@@ -58,6 +59,48 @@ module.exports = {
     d3.json('/geo/states/'+fips+'/counties.json',function(data){
       //console.log('utils/sailsWebApi/getStateGeodata',data);
       ServerActionCreators.receiveStateTracts('counties',data);
+    });
+  },
+  getMAGeodata : function(group,maid,agency){
+    d3.json('/geo/groups/'+group+'/'+maid+'tracts.json',function(data){
+      ServerActionCreators.receiveMATracts(maid,agency,'tracts',data);
+    });
+    d3.json('/geo/groups/'+group+'/'+maid+'counties.json',function(data){
+      ServerActionCreators.receiveMATracts(maid,agency,'counties',data);
+    });
+  },
+  getRouteTracts : function(aid,rid,excludes){
+
+    if(Array.isArray(rid)){
+      rid = '?'+rid.map(function(r){return 'rid[]='+r;}).join('&');
+    }else{
+      rid = '?rid='+rid;
+    }
+    d3.json(tractApp+'agency/'+aid+'/tract/route/'+rid)
+      .post(JSON.stringify(excludes),function(err,data){
+        if(err){
+          console.log(err);
+        }else{
+          console.log('TractData Received',data);
+          ServerActionCreators.receiveTracts(data);
+        }
+      });
+  },
+  getRouteCounties : function(aid,rid,excludes){
+    var id = rid;
+    if(Array.isArray(rid)){
+      rid = '?'+rid.map(function(r){return 'rid[]='+r;}).join('&');
+    }else{
+      rid = '?rid='+rid;
+    }
+    console.log(tractApp + 'agency/'+aid+'/county/route'+rid);
+    d3.json(tractApp + 'agency/'+aid+'/county/route'+rid)
+      .post(JSON.stringify(excludes),function(err,data){
+      if(err){
+        console.log(err);
+      }else{
+        ServerActionCreators.receiveCounties(data,aid,rid);
+      }
     });
   },
   getEditRoutesGeo : function(gtfsId,routes,maId,cb){
@@ -278,6 +321,13 @@ module.exports = {
     .post(JSON.stringify(newData),function(err,data){
        if(err){  console.log('SAILS WEB API / loadAcs / error',err);  }
        //console.log('SAILS WEB API  / loadACS',data);
+
+    });
+  },
+  deleteAcs:function(id){
+    d3.json('/acs/delete/'+id,function(err,data){
+      if(err){console.log('SAILS WEB API / deleteAcs / error',err);}
+      ServerActionCreators.deleteData('acs',id);
     });
   },
   deleteGtfs : function(ds,cb){
@@ -285,6 +335,17 @@ module.exports = {
     d3.json(url,function(err,data){
       if(err) console.error(err);
       GtfsActionsCreator.deleteDataSource(ds);
+    });
+  },
+  //---------------------------------------------------
+  // Sharing is careing
+  //---------------------------------------------------
+  shareMarketArea : function(maid,uid,cb){
+    var url = '/marketarea/'+maid+'/users/add/'+uid;
+    d3.json(url,function(err,data){
+      console.log('error',err,'Data',data);
+      if(cb && !err)
+        cb(data);
     });
   },
   //---------------------------------------------------

@@ -81,7 +81,7 @@ module.exports = {
 					+') as T2 '
 					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
 					//console.log(sql);
-			Datasource.query(sql,{},function(err,data){
+			Agencies.query(sql,{},function(err,data){
 				if(err) console.log('error',err);
 
 					var Routes = {};
@@ -191,7 +191,7 @@ module.exports = {
 		  	if(rid){
 					sql += " WHERE route_id='" + rid + "'";
 				}
-				Datasource.query(sql,{},function(err,data){
+				Agencies.query(sql,{},function(err,data){
 		  		if (err) {
 		       res.send('{status:"error",message:"'+err+'"}',500);
 		       return console.log(err);
@@ -247,7 +247,7 @@ module.exports = {
 			sql = 'SELECT trip_id,start_time,end_time,headway_secs FROM '+tableName+'.frequencies ' +
 						'WHERE '+idString +' && string_to_array(trip_id,\',\') ORDER BY start_time';
 
-			Datasource.query(sql,{},function(err,data){ //if there is an error with the query logg and send it
+			Agencies.query(sql,{},function(err,data){ //if there is an error with the query logg and send it
 				if(err){console.log('Error Executing query'); res.send('{status:"error",message:"'+err+'"}',500);}
 
 				data.rows.forEach(function(d){//if rows were returned process them
@@ -261,7 +261,7 @@ module.exports = {
 
 	backupSource   : function(req,res){
 		var name = req.body.name,
-		fips = req.body.fips || -1,
+		fips = req.body.fips || [],
 		settings = req.body.settings || {},
 		dsID = parseInt(req.param('id'));
 		savedata = req.body.savedata;
@@ -410,10 +410,10 @@ function spawnGtfsClone(job,names,config,savedata){
 
 		if(err){ console.log(err); return; }
 		var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+backupName+'".calendar as cal, "'+backupName+'".agency as agency GROUP BY agency.agency_name';
-		Datasource.query(query,{},function(err,data){
+		Agencies.query(query,{},function(err,data){
 			if(err){
 				query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
-				Datasource.query(query,{},function(err,data){
+				Agencies.query(query,{},function(err,data){
 					if(err){
 						console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
 					}

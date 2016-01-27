@@ -6,12 +6,15 @@
 */
 
 module.exports = {
-
+  migrate:'safe',
   attributes: {
+    groupname:{
+        type:'STRING',
+        required:true,
+    },
     actiondesc : 'STRING',
     actiontitle : 'STRING',
     maid : 'INTEGER',
-    stateFips : 'STRING',
     userid : 'INTEGER',
   }
 };
