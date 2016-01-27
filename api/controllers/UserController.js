@@ -158,6 +158,7 @@ module.exports = {
 	login:function(req,res){
 		res.view();
 	},
+	
 	find : function(req,res){
 		var u = req.session.User;
 		var group = u.group;

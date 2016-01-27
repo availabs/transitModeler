@@ -80,6 +80,7 @@ module.exports = {
 
 
   beforeValidation: function (values, next) {
+    console.log('beforeValidation 1')
     if (typeof values.admin !== 'undefined') {
       if (values.admin === 'unchecked') {
         values.admin = false;
@@ -87,7 +88,8 @@ module.exports = {
         values.admin = true;
       }
     }
-     next();
+    console.log('beforeValidation 2')
+    next();
   },
 
   beforeCreate: function (values, next) {
@@ -113,6 +115,7 @@ module.exports = {
       require('bcryptjs').hash(values.password, 10, function(err, encryptedPassword) {
           if (err) return next(err);
           values.encryptedPassword = encryptedPassword;
+          console.log('user beforeCreate : going next');
           next();
       });
     });
