@@ -109,7 +109,6 @@ var ZoneFilter = React.createClass({
         actiondesc:data.description,
         actiontitle:((this.state.dirty) ?'Creating':'Updating')+' Farezone Filter: '+data.filtername,
         maid:this.props.marketarea.id,
-        stateFips:this.props.marketarea.stateFips,
         userid:UserStore.getSessionUser().id,
       });
       FarezoneActionsCreator.saveFilter(data);

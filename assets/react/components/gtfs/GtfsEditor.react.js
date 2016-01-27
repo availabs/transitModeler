@@ -277,7 +277,6 @@ var MarketAreaNew = React.createClass({
       message.actiontitle='Created Gtfs: '+obj.name;
       message.actiondesc = obj.settings.description;
       message.maid       = this.props.marketarea.id;
-      message.stateFips  = this.props.marketarea.stateFips;
       message.userid     = UserStore.getSessionUser().id;
       UserActionsCreator.userAction(message);
       GtfsActionsCreator.uploadEdit(obj);

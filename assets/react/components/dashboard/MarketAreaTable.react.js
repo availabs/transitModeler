@@ -121,7 +121,6 @@ var MarketAreaTable = React.createClass({
         actiondesc:user.name +' shared '+ this.state.marketareas[this.state.selectedMarketarea].name + ' with '+
         this.state.users.filter(function(d){return d.id === scope.state.userSelection[0];})[0].name,
         actiontitle:'Market Area Share',
-        stateFips:'',
         maid:-1,
         userid:user.id,
       });

@@ -261,7 +261,7 @@ module.exports = {
 
 	backupSource   : function(req,res){
 		var name = req.body.name,
-		fips = req.body.fips || -1,
+		fips = req.body.fips || [],
 		settings = req.body.settings || {},
 		dsID = parseInt(req.param('id'));
 		savedata = req.body.savedata;

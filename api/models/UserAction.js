@@ -15,7 +15,6 @@ module.exports = {
     actiondesc : 'STRING',
     actiontitle : 'STRING',
     maid : 'INTEGER',
-    stateFips : 'STRING',
     userid : 'INTEGER',
   }
 };

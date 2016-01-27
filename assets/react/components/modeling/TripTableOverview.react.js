@@ -47,7 +47,6 @@ var TripTableOverview = React.createClass({
           actiondesc:this.state.model_description,
           actiontitle:'Creating New Model '+this.state.model_name,
           maid: this.props.marketarea.id,
-          stateFips: this.props.marketarea.stateFips,
           userid: UserStore.getSessionUser().id,
         };
         UserActionsCreator.userAction(message);

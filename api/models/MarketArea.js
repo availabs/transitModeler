@@ -19,7 +19,7 @@ module.exports = {
 	routes : 'ARRAY',
 	center : 'ARRAY',
 	origin_gtfs:'INTEGER',
-	stateFips:'STRING',
+	stateFips:'ARRAY',
   routecolors:'json',
   description:'STRING',
   users: {

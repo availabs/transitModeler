@@ -24,7 +24,7 @@ var React = require('react'),
 
 
 
-
+var stateFipsLength = 2;
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 var transfer = function(src,dest,id){
   var ix,ids;
@@ -51,9 +51,13 @@ var MarketAreaNew = React.createClass({
         var agency = this.props.datasources.gtfs[this.state.marketarea.origin_gtfs].settings.agencyid;
         var routes = this.state.marketarea.routes;
         console.log('tract id',agency,routes);
+        var tracts = GeoDataStore.getTempTracts(agency,routes);
+        var counties = GeoDataStore.getTempCounties(agency,routes);
+        var states = _.uniq(counties.features.map(function(d){return d.properties.geoid.substr(0,stateFipsLength);}));
         this.setState({
-                        tracts:GeoDataStore.getTempTracts(agency,routes),
-                        counties:GeoDataStore.getTempCounties(agency,routes),
+                        tracts:tracts,
+                        counties:counties,
+                        stateFips:states,
                       },function(){
                         if(scope.state.tracts && scope.state.counties && scope.state.stopsGeo.features.length){
                           scope.setStopsGeo(scope.state.stopsGeo);
@@ -71,7 +75,7 @@ var MarketAreaNew = React.createClass({
                 counties:[],
                 origin_gtfs:null,
                 routecolors:{},
-                stateFips:'',
+                stateFips:[],
                 center:[],
                 geounit:'tracts',
                 description:'',
@@ -381,8 +385,7 @@ var MarketAreaNew = React.createClass({
               }
           });
         }
-        console.log('Tractfilter length',this.state.tractsFilter.length);
-        console.log(tracts.features.filter(function(d){return d.properties.type===0;}).length);
+        console.log('stateFips',this.state.marketarea.stateFips);
         return (
         	<div className="content container">
             	<h2 className="page-title">

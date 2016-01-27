@@ -26,6 +26,7 @@ Router = require('react-router'),
     GeoDataStore = require('../../stores/GeodataStore'),
     MarketAreaStore = require('../../stores/MarketAreaStore');
 
+var stateFipsLength = 2;
 var emptyGeojson = {type:'FeatureCollection',features:[]};
 var transfer = function(src,dest,id){
   var ix,ids;
@@ -62,7 +63,7 @@ var MarketAreaNew = React.createClass({
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
               routecolors:(pma.routecolors !== null)? pma.routecolors:{},
               center : pma.center || [],
-              stateFips:pma.stateFips || '',
+              stateFips:pma.stateFips || [],
               geounit:'tracts',
               description:(pma.description) || '',
             },
@@ -112,8 +113,10 @@ var MarketAreaNew = React.createClass({
           partialState.outerTractsFilter = outerTractsFilter;
         }
         var counties = GeoDataStore.getTempCounties(agency,routes);
+        var states = _.uniq(counties.features.map(function(d){return d.properties.geoid.substr(0,stateFipsLength);}));
         if(counties.features.length > 0){
           partialState.counties = counties;
+          partialState.stateFips = states;
         }
 
         this.setState(partialState,function(){
@@ -159,7 +162,7 @@ var MarketAreaNew = React.createClass({
       if(nextProps.marketarea && nextProps.marketarea !== this.props.marketarea && nextProps.marketarea.id > 0){
         var nma = this.state.marketarea;
         Object.keys(nextProps.marketarea).forEach(function(d){
-          nma[d] = (nextProps.marketarea[d] || nextProps.marketarea[d] ==='') ? nextProps.marketarea[d]:{};
+          nma[d] = (nextProps.marketarea[d] || Array.isArray(nextProps.marketarea[d])) ? nextProps.marketarea[d]:{};
         });
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);

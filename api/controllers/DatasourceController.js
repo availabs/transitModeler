@@ -38,10 +38,12 @@ var preserveProperties = function(feature) {
 
 var topojson = require('topojson');
 
+var _ = require('lodash');
+
 module.exports = {
 
 	find:function(req,res){
-		var user = req.session.User;
+	    var user = req.session.User;
 		if(user.userGroup.type==='sysAdmin'){
 			Datasource.find().exec(function(err,data){
 				if(err){
@@ -110,7 +112,7 @@ module.exports = {
 		if(!req.param('year')){
 			res.send('{status:"error",message:"Must send 4 digit [year] of data."}',500);
 		}
-	    var censusTable = 'acs5_34_'+req.param('year')+'_tracts';
+	    var censusTable; // = 'acs5_34_'+req.param('year')+'_tracts';
 
 	    //Allow user to specify census table
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
@@ -374,21 +376,28 @@ module.exports = {
 	getCTPP: function(req, res) {
 		var id = req.param('id')
 		MarketArea.findOne(req.param('marketareaId')).exec(function(err,marketarea){
-			var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+		    var tracts = JSON.stringify(marketarea.zones).replace(/\"/g,"'").replace("[","(").replace("]",")");
+		    var states = marketarea.zones.map(function(zone){
+			return zone.substr(0,2); // get the state fips codes from the tracts
+		    });
+		    states = _.uniq(states); //get the set of unique state fips
 
-			var sql = "SELECT from_tract,to_tract, est, se " +
-			            "FROM ctpp_34_2010_tracts " +
-			            "WHERE to_tract in " + tracts + " or from_tract in "+tracts;
-
-			MarketArea.query(sql, {}, function(error, data) {
-			    if (error) {
-			          console.log("error executing "+sql, error);
-			          res.send({status: 500, message: 'internal error'}, 500);
-			          return;
-			    }
-
-			    res.send(data.rows);
-			})
+		    var sql = states.map(function(fips){
+			return "SELECT from_tract,to_tract, est, se " +
+			"FROM ctpp_"+fips+"_2010_tracts " +
+			"WHERE to_tract in " + tracts + " or from_tract in "+tracts;
+		    }).join(' Union ');
+		    
+		    
+		    Ctpp.query(sql, {}, function(error, data) {
+			if (error) {
+			    console.log("error executing "+sql, error);
+			    res.send({status: 500, message: 'internal error'}, 500);
+			    return;
+			}
+			
+			res.send(data.rows);
+		    })
 		});
 	},
 	//---------------------ACS Create Delete-----------------------------------------
