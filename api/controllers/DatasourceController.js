@@ -385,17 +385,17 @@ module.exports = {
 		    var sql = states.map(function(fips){
 			return "SELECT from_tract,to_tract, est, se " +
 			"FROM ctpp_"+fips+"_2010_tracts " +
-			"WHERE to_tract in " + tracts + " or from_tract in "+tracts;
+			"WHERE type='8' AND (to_tract in " + tracts + " or from_tract in "+tracts+")";
 		    }).join(' Union ');
-		    
-		    
+
+
 		    Ctpp.query(sql, {}, function(error, data) {
 			if (error) {
 			    console.log("error executing "+sql, error);
 			    res.send({status: 500, message: 'internal error'}, 500);
 			    return;
 			}
-			
+
 			res.send(data.rows);
 		    })
 		});

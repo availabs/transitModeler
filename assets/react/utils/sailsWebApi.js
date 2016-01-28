@@ -240,7 +240,7 @@ module.exports = {
   },
 
   getRawCensus: function(marketareaId,year){
-    io.socket.get('/datasources/acs/'+marketareaId+'/'+year,function(data){
+    d3.json('/datasources/acs/'+marketareaId+'/'+year,function(data){
       ServerActionCreators.receiveRawCensus(marketareaId,year,data.census);
     });
   },
