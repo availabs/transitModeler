@@ -152,7 +152,7 @@ var App = React.createClass({
                 {text:'Data Sources',name:'dataSources',icon:'fa fa-database',
                     menuItems:[
                         {text:'GTFS',type:'Route',action:'GtfsManager'},
-                        {text:'ACS',type:'Route',action:'AcsManager'},
+                        //{text:'ACS',type:'Route',action:'AcsManager'},
                         {text:'Regressions',type:'Route',action:'RegressionsManager'},
                         //{text:'Surveys',type:'Route',action:'SurveyManager'},
                         {text:'Farebox',type:'Route',action:'FareboxManager'}
