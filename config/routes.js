@@ -52,5 +52,7 @@ module.exports.routes = {
   '/triptable/:id/modelrun':'TriptableController.getModelRun',
 
   //---------Gtfs Upload----------------------------
-  '/gtfs/upload':'UploadsController.upload'
+  '/gtfs/upload':'UploadsController.upload',
+  //---------MarketArea update override-------------
+  'POST /marketarea/:id' : 'MarketAreaController.update'
 };

@@ -138,7 +138,24 @@ module.exports = {
         });
   },
 
-
+  update : function(req,res){
+      if(req.session.User){
+	  console.log('Attempted Update',req.body);
+	  console.log(MarketArea.update);
+	  MarketArea.update(req.body.id,req.body).exec(function(err,MA){
+	      console.log('CAN U HEAR ME?');
+	      if(err){
+		  console.log(err);
+		  return res.send(JSON.stringify(err),500);
+	      }
+	      console.log(MA[0]);
+	      cacheData(req,MA[0],res);
+	  });
+      }
+      else{
+	  res.send('Authentication Error');
+      }
+  },
 
   create : function(req,res){
     if(req.session.User){
