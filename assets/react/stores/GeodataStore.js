@@ -276,8 +276,9 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
       sailsWebApi.update('marketarea',action.data,function(data){
         saveAndReset(data,action.agency);
+	action.finish(data);
         GeodataStore.emitChange();
-        action.finish(data);
+
       });
     break;
 
