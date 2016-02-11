@@ -221,16 +221,22 @@ var MarketAreaNew = React.createClass({
             // var filterTracts = this.getFilterTracts(countyFips);
             //
             console.log('Processing tracts',new Date());
-            var tractsFilter = Geoprocessing.point2polyIntersect(data,tracts);
+            var tractsFilter = Geoprocessing.point2polyIntersect(data,tracts).keys;
+	    if(this.state.tractsFilter){
+		tractsFilter = _.union(tractsFilter,this.state.tractsFilter);
+		tractsFilter = tractsFilter.filter(function(d){
+		    return countyFilter.indexOf(d.substr(0,5)) !== -1;
+		});
+	    }
             // console.log('Finished Processing tracts',new Date());
             // console.log(tractsFilter,countyFilter);
-            var nonSelectTracts = this.getNonZone(tracts,tractsFilter.keys);
+            var nonSelectTracts = this.getNonZone(tracts,tractsFilter);
             var ma = this.state.marketarea;
             ma.center = Geoprocessing.center(data);
             this.setState({
               stopsGeo:data,
               countyFilter:countyFilter,
-              tractsFilter:tractsFilter.keys,
+              tractsFilter:tractsFilter,
               outerTractsFilter:nonSelectTracts,
               marketarea:ma,
               });
@@ -368,6 +374,7 @@ var MarketAreaNew = React.createClass({
             maid: data.id,
             stateFips: data.stateFips,
           };
+	    console.log('updated ma zones',data.zones);
             UserActionsCreator.userAction(message);
             this.setState({bMessage:'Update Again',marketarea:data});
             GeoDataStore.purgeMarketTracts();
@@ -392,7 +399,6 @@ var MarketAreaNew = React.createClass({
             this.setState({bMessage:'Saving ...'});
             var agency = this.props.datasources.gtfs[marketarea.origin_gtfs].settings.agencyid;
             MarketAreaActionsCreator.updateMarketArea(marketarea,this.updatedMa,agency);
-            // SailsWebApi.update('marketarea',marketarea,this.updatedMa);
         }
     },
 
@@ -433,15 +439,17 @@ var MarketAreaNew = React.createClass({
       this.setState({marketarea:ma});
     },
     toggleTracts : function(feature){
-      var ma = this.state.marketarea, tf = this.state.tractsFilter, otf = this.state.outerTractsFilter;
-      if(feature.properties.type){
-        transfer(otf,tf,feature.properties.geoid);
-      }else{
-        transfer(tf,otf,feature.properties.geoid);
-      }
+	var ma = this.state.marketarea, tf = this.state.tractsFilter, otf = this.state.outerTractsFilter;
+	var inx = tf.indexOf(feature.properties.geoid);
+	
+        if(inx ===-1){
+	    tf.push(feature.properties.geoid);
+	}else{
+            tf.splice(inx,1);
+	}
       this.setState({
         tractsFilter:tf,
-        outerTractsFilter:otf,
+        
         });
     },
     render: function() {
@@ -476,7 +484,7 @@ var MarketAreaNew = React.createClass({
                 tracts.features.push(d);
             });
         }
-        console.log('yonder tracts',countyTracts);
+        console.log('yonder tracts',this.state.tractsFilter);
         return (
         	<div className="content container">
             <MarketareaNav marketarea={this.props.marketarea}/>

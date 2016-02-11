@@ -28,7 +28,7 @@ module.exports = {
     }
   },
 
-  afterUpdate : function(values,next){
+/*  afterUpdate : function(values,next){
     console.log('MyValues',values);
     MarketArea.findOne(values.id).populate('users').exec(function(err,ma){
       if(err){
@@ -71,5 +71,5 @@ module.exports = {
       }
     });
   },
-
+*/
 };
