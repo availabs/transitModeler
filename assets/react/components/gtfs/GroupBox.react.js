@@ -119,11 +119,14 @@ var TripSchedule = React.createClass({
     fieldBlur : function(field){
       var scope = this;
       return function(e){
-        console.log(e);
-        $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')).show();
+          console.log(e);
+          $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_'))
+	      .show();
 
-        $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_')).hide();
-
+          $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_'))
+	      .hide();
+	  
+	  scope.props.notifyChange(scope.state.frequency.edited);
       };
     },
     _parseNum : function(str){
@@ -145,7 +148,9 @@ var TripSchedule = React.createClass({
         var scope = this;
         return function(e){
             var partialState = {},valstr;
-            if(scope.state.frequency[field] || scope.state.frequency[field] === 0){
+            if(scope.state.frequency[field] !== undefined || 
+	       scope.state.frequency[field] !== null || 
+	       scope.state.frequency[field] === 0){
               partialState.frequency = scope.state.frequency;
               if(field === 'headway_secs'){
                 valstr = scope._parseNum(e.target.value);
@@ -161,7 +166,7 @@ var TripSchedule = React.createClass({
               }else{
                 partialState.frequency.edited = undefined;
               }
-              scope.props.notifyChange(partialState.frequency.edited);
+              //scope.props.notifyChange(partialState.frequency.edited);
               scope.setState(partialState);
             }else{
                 if(field === 'idle'){
@@ -202,6 +207,7 @@ var TripSchedule = React.createClass({
 
         <tbody>
             <tr>
+	      <td>{this.state.frequency.trip_id}</td>
               <td onClick={sclick}>
                 <div id={field1+id.replace(/\,/g,'_')}>{s}</div>
                 <input size={8} className={'form-control'} type='text'id={field1+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>

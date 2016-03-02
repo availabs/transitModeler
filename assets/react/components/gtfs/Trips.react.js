@@ -26,7 +26,7 @@ var MarketAreaNew = React.createClass({
 
     },
     _crtTripButton : function(length){
-      if(length < 2 && !this.props.isCreating){
+      if(length >= 0 && !this.props.isCreating){
         return (
             <CreationForm
               values={{Headsign:'HeadSign'}}
@@ -63,7 +63,7 @@ var MarketAreaNew = React.createClass({
             }
             if(trip.direction_id===0){
               classes+=' btn-success';
-            }else{
+            }else if(trip.direction_id === 1){
               classes+=' btn-primary';
             }
             if(scope.props.isCreating && !scope.props.editing){

@@ -89,6 +89,11 @@ var TripSchedule = React.createClass({
         this.setState({lengths:nextProps.lengths});
       }
     },
+
+    addFreq : function(){
+	this.props.addFreq();
+    },
+
     notifyChange : function(change){
       var isEdited;
       var editList = this.state.frequencies.map(function(f){
@@ -107,6 +112,7 @@ var TripSchedule = React.createClass({
         if(this.state.frequencies &&  Object.keys(this.state.frequencies).length > 0){
           var scope = this;
           var tables = this.state.frequencies.sort(function(d1,d2){return diffSecs(d1.start_time,d2.start_time);}).map(function(d){
+	      console.log(d);
               return (
                 <GroupBox
                   frequency={d}
@@ -120,6 +126,7 @@ var TripSchedule = React.createClass({
                 <table className="table">
                   <thead>
                     <tr>
+		      <th>{'Name'}</th>
                       <th>{'First Departure'}</th>
                       <th>{'Last Departure'}</th>
                       <th>{'Headway'}</th>
@@ -127,9 +134,17 @@ var TripSchedule = React.createClass({
                       <th>{'RunTime'}</th>
                       <th>{'Distance'}</th>
                       <th>{'Buses'}</th>
+		      <th></th>
                     </tr>
                   </thead>
                   {tables.reverse()}
+	          <tr>
+		    <th> 
+		      <button className='btn' onClick={this.addFreq}>
+		      <i className='glyphicon glyphicon-plus'> </i> 
+                      </button>
+		    </th>
+	          </tr>
               </table>
               </section>
           );

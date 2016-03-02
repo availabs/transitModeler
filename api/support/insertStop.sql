@@ -8,7 +8,7 @@ DROP FUNCTION IF EXISTS delete_and_update_shapes_with_trips(trip_ids TEXT[],lats
 DROP FUNCTION IF EXISTS insert_into_shapes_with_trips(shape_id TEXT,trip_ids TEXT[],lats REAL[],lons REAL[],geoms TEXT[], schema TEXT);
 DROP FUNCTION IF EXISTS update_route_geom(route_id TEXT,schema TEXT);
 DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, short_name TEXT, type INT, schema TEXT);
-DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text,text);
+DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text,INT,text);
 DROP FUNCTION IF EXISTS create_or_update_service(text,text);
 DROP FUNCTION IF EXISTS create_or_update_freq(text,text,text,integer,text);
 CREATE OR REPLACE FUNCTION add_stop_to_stop_times(stop TEXT, sequence_id INTEGER, id TEXT, schema TEXT)
@@ -204,7 +204,7 @@ RETURNS void as $$
 	END;
 	$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION create_or_update_trip(trip_id TEXT,headsign TEXT,route_id TEXT,service_id TEXT,shape_id TEXT,schema TEXT)
+CREATE OR REPLACE FUNCTION create_or_update_trip(trip_id TEXT,headsign TEXT,route_id TEXT,service_id TEXT,shape_id TEXT,direction_id INTEGER ,schema TEXT)
 RETURNS void as $$
 	DECLARE
 		chk BOOLEAN;
@@ -212,11 +212,11 @@ RETURNS void as $$
 		EXECUTE format('SELECT EXISTS(SELECT trip_id FROM %I.trips WHERE trip_id=$1)',schema)
 						INTO chk USING trip_id;
 		IF NOT chk THEN
-			EXECUTE format('INSERT INTO %I.trips(trip_id,trip_headsign,route_id,service_id,shape_id) VALUES ($1,$2,$3,$4,$5)',schema)
-						USING trip_id,headsign,route_id,service_id,shape_id;
+			EXECUTE format('INSERT INTO %I.trips(trip_id,trip_headsign,route_id,service_id,shape_id,direction_id) VALUES ($1,$2,$3,$4,$5,$6)',schema)
+						USING trip_id,headsign,route_id,service_id,shape_id,direction_id;
 		ELSE
-			EXECUTE format('UPDATE %I.trips SET trip_id=$1,route_id=$2,service_id=$3,shape_id=$4, trip_headsign=$5 WHERE trip_id=$1',schema)
-						USING trip_id,route_id,service_id,shape_id,headsign;
+			EXECUTE format('UPDATE %I.trips SET trip_id=$1,route_id=$2,service_id=$3,shape_id=$4, trip_headsign=$5, direction_id=$6 WHERE trip_id=$1',schema)
+						USING trip_id,route_id,service_id,shape_id,headsign,direction_id;
 		END IF;
 		END;
 		$$LANGUAGE plpgsql;

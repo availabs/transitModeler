@@ -5,6 +5,7 @@
  * @help        :: See http://links.sailsjs.org/docs/controllers
  */
 var path = require('path');
+var frequencyBuilder = require('../support/frequencybuilder');
 var password='transit';
 var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeocensus';
  function spawnJob(job,user){
@@ -65,11 +66,14 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeoc
                     if(err){
                       console.log(err);
                     }else{
-                      Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+			//need to build frequencies for this gtfs dataset
+			frequencyBuilder(gtfsEntry.tableName,function(err,data){
+			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
                          .exec(function(err,updated_job){
                            if(err){console.log('job_update error',error);}
                            sails.sockets.blast('job_updated',updated_job);
-                         });
+                         });    
+			});
                     }
                   });
                 });

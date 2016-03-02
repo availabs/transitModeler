@@ -153,8 +153,22 @@ var MarketAreaNew = React.createClass({
       }
     },
     setTrip:function(ix){
+	var scope = this;
         if(!this.editCheckConfirm(this))
             return false;
+	if(this.state.frequencies && this.state.TripObj){
+	    var freqids = this.state.frequencies.filter(function(d){
+		return d.edited;
+	    }).map(function(d){return d.trip_id;});
+	    
+	    if(freqids.length > 0 ){
+		freqids.forEach(function(id){
+		    scope.state.TripObj.removeTripId(id);
+		});
+	    }
+	    this.state.TripObj.isEdited = false;
+	}
+	
         var T = new Trip(this.state.TripObj),
         temp = this.state.schedules[this.state.currentRoute].trips[ix],
         editInfo = {};
@@ -167,6 +181,7 @@ var MarketAreaNew = React.createClass({
         T.setHeadSign(temp.headsign);
         T.setIds(temp.tripids);
         T.setServiceId(temp.service_id);
+        T.setDirectionId(temp.direction_id);
         GtfsActionsCreator.setTrips(temp.tripids);
         if(this.state.isCreating){
           $('#tooltip2').tooltip('show');
@@ -176,6 +191,8 @@ var MarketAreaNew = React.createClass({
         if(T.getStops().length === 0)
             this.setState({TripObj:T,
               currentTrip:ix,
+	      currentRoute:this.state.currentRoute,
+              currentService: this.state.currentService,
               graph:new Graph(),
               edited:true,
               isNewTrip:true,
@@ -187,6 +204,8 @@ var MarketAreaNew = React.createClass({
             this.setState({
               TripObj:T,
               currentTrip:ix,
+	      currentRoute:this.state.currentRoute,
+              currentService: this.state.currentService,
               graph:new Graph(),
               edited:false,
               tripChange:true,
@@ -256,13 +275,14 @@ var MarketAreaNew = React.createClass({
                                 this.state.TripObj,
                                 route);
       var reqObj = saveObj.getReqObj();
-      console.log('Request Object', reqObj);
+      
       if(this.state.frequencies){
         var changedFrequencies = this.state.frequencies.filter(function(d){
           return d.edited;
         });
         reqObj.frequencies = changedFrequencies;
       }
+      console.log('Request Object', reqObj);
       reqObj.maId = this.props.marketarea.id;
       reqObj.gtfsId = this.state.currentGtfs;
       return reqObj;
@@ -551,6 +571,20 @@ var MarketAreaNew = React.createClass({
         }
         console.log(id);
     },
+    _addFreq : function(){
+	if(this.state.currentRoute && this.state.currentService && 
+	   this.state.currentTrip !== null){
+	    var freq_id = idGen('Trip');
+	    var freq = this.createNewFreq(freq_id);
+	    this.state.TripObj.addTripId(freq_id);
+	    this.state.TripObj.isEdited = true;
+	    var partialState= this.state;
+	    partialState.frequencies = partialState.frequencies || [];
+	    partialState.frequencies.push(freq);
+	    partialState.edited=true;
+	    this.setState(partialState);
+	}
+    },
     _addTrip : function(formObj){
         if(!this.editCheckConfirm(this)){
           return false;
@@ -781,6 +815,7 @@ var MarketAreaNew = React.createClass({
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}
+	                    addFreq={this._addFreq}
                             notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
