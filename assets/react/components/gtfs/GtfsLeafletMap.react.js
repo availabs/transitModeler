@@ -12,7 +12,11 @@ var React = require('react'),
     colorbrewer = require('colorbrewer'),
     Stop = require('./Gtfsutils').Stop,
     topojson = require('topojson'),
+    _  = require('lodash'),
     newStopId = require('../utils/randomId');
+
+require('leaflet-polylinedecorator');
+
 
 var map = null,
     layers = {},
@@ -99,7 +103,6 @@ var Map = React.createClass({
                               }else{
                                 scope.props.editStop(f.properties.stop_id);
                               }
-
                             });
 
                     },
@@ -112,8 +115,8 @@ var Map = React.createClass({
                     style:function(feature){
                         return {
                             color:'yellow',
-                            opacity: 1,
-                            weight:10,
+                            opacity: 0.5,
+                            weight:5,
                             className:'routingPath'
                         };
                     },
@@ -132,6 +135,35 @@ var Map = React.createClass({
                                 e.target.setStyle({opacity:1})
                             }
                         });
+		      var latlngs = feat.geometry.coordinates;
+		      console.log(feat.geometry.type);
+		      latlngs.forEach(function(d,i) {
+			console.log(i,feat);
+			if(Array.isArray(d[0])){
+			  
+			  if(d.length == 1){
+			    var temp = [];
+			    temp[0] = d[0][0];
+			    temp[1] = d[0][1];
+			    d.push(temp);
+			    console.log('here i am');
+			  }
+			}
+			var buf = _.cloneDeep(d);
+			buf.forEach(function(d){
+			  var temp = d[0];
+			  d[0] = d[1];
+			  d[1] = temp;
+			});
+			
+			L.polylineDecorator(buf,{
+				patterns:[
+				  {offset:0, endOffset:'20%', symbol: L.Symbol.arrowHead({pixelSize:50})}
+				]
+			}).addTo(map)
+		      });
+		
+		       
                       },
                 }
     },
