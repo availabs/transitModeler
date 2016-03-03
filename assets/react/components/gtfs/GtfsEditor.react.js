@@ -528,6 +528,7 @@ var MarketAreaNew = React.createClass({
         trip.setRouteId(this.state.TripObj.getRouteId());
         trip.setNew();
         trip.setServiceId(this.state.TripObj.getServiceId());
+	trip.setDirectionId(0);
         trip.setIds(this.state.TripObj.getIds());
         $('#tooltip2').tooltip('destroy');
         // this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
@@ -663,12 +664,16 @@ var MarketAreaNew = React.createClass({
     },
     changeTrip : function(tInfo){
       var trip = this.state.TripObj;
-      if(trip.getHeadSign !== tInfo.headsign){
+      if(trip.getHeadSign() !== tInfo.headsign){
           trip.setHeadSign(tInfo.headsign);
           trip.isEdited = true;
           this.setState({edited:true,TripObj:trip});
       }
-
+     if(trip.getDirectionId() !== tInfo.direction_id){
+	 trip.setDirectionId(tInfo.direction_id);
+	 trip.isEdited = true;
+	 this.setState({edited:true,TripObj:trip});
+     }
     },
     setRouteEdit : function(id){
       var info = {},route = this.state.routeColl.filter(function(d){return d.getId()===id;})[0];

@@ -176,11 +176,11 @@ var Map = React.createClass({
 			var length = Math.sqrt(
 			  dirvec[0]*dirvec[0] + dirvec[1]*dirvec[1]
 			);
-			console.log(dirvec,length);
+			
 			var scale = 0.001;
 			dirvec = 
 			     dirvec.map(function(d){return scale*d/length;});
-			console.log(dirvec);
+			
 			var p3 =[];
 			p3[0] = (p1[0]+p2[0])/2 + dirvec[0];
 			p3[1] = (p1[1]+p2[1])/2 + dirvec[1];
