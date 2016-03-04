@@ -199,7 +199,7 @@ var Util = {
 	    console.log(freqs);
 	    return '';
 	},
-	putData:function(agencyId,featlist,trips,deltas,route_id,route,shape,trip,freqs,maId,cb){
+	putData:function(agencyId,featlist,trips,deltas,route_id,route,shape,trip,freqs,freqKills,maId,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
 			// debugger;
@@ -230,14 +230,18 @@ var Util = {
 				sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper); //and store the new shape of the trip
 			}
 			if(freqs && freqs.length > 0){
-				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
+			    
+			        sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
 			    if(trip.isEdited && !trip.isNew){
 				console.log(trip);
 				console.log(freqs);
 				var ids = freqs.map(function(d){return d.trip_id});
-				sql += db.addStopsToTrips(datafile,trip.stops,ids);
-				
+				sql += db.addStopsToTrips(datafile,trip.stops,ids);		
 			    }
+			}
+		        if(freqKills && freqKills.length > 0){
+			    //destroy the frequencies set to be deleted
+			        sql += db.delFrequencies(datafile,freqKills);
 			}
 
 			var populateRoutesGeo = function(datafile,route_id){
@@ -300,6 +304,19 @@ var Util = {
 			sql += updateStopTimes(datafile,trips,deltas); //update the arrivals & departures of the necessary trips
 															//based on the time deltas.
 			return sql;
+	},
+        delFrequencies : function(datafile,frequencies,cb){
+	    if(frequencies.length === 0){cb(null);return}
+
+	    var template = 'Select delete_freq(\'?\',\'?\');';
+	    var map = ['trip_id','file'];
+	    var data = frequencies.map(function(d){
+		return { trip_id:d.trip_id, file:datafile };
+	    });
+	    var dbhelp = new dbhelper(template,data);
+	    dbhelp.setMapping(map);
+	    var sql = dbhelp.getQuery();
+	    return sql;
 	},
 	putFrequencies : function(datafile,frequencies,cb){
 		if(frequencies.length === 0){

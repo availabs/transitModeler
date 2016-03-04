@@ -144,6 +144,9 @@ var TripSchedule = React.createClass({
         str = val.toString();
       return {val:val,string:str};
     },
+    deleteAction : function(){
+	this.props.deleteAction(this.state.frequency);
+    },
     _onChange : function(field){
         var scope = this;
         return function(e){
@@ -205,7 +208,7 @@ var TripSchedule = React.createClass({
       var style={overflow:'hidden'};
       return(
 
-        <tbody>
+        
             <tr>
 	      <td>{this.state.frequency.trip_id}</td>
               <td onClick={sclick}>
@@ -231,11 +234,48 @@ var TripSchedule = React.createClass({
               <td>{Math.round(this._totalTimeMin()) + 'mins'}</td>
               <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
               <td>{this._totalruns()}</td>
+	      <td><a data-toggle="modal" className='btn btn-danger'
+	           data-target={"#deleteModal"+id} data-backdrop="false">
+	           <i className='glyphicon glyphicon-trash'></i>
+	          </a>
+	      </td>
+	      <td>{this.deleteModal()}</td>
             </tr>
-          </tbody>
+          
       );
     },
+    deleteModal:function(){
+	if(!this.state.frequency){
+	    return <div></div>;
+	}
+	var name = this.state.frequency.trip_id;
+        var text = <h4>Are you sure you want to delete {name}?</h4>;
+        var deleteButton = <button type="button" className="btn btn-info" onClick={this.deleteAction} data-dismiss="modal">Delete</button>;
+        
+        return (
+            <div id={"deleteModal"+name} className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div className="modal-dialog">
+                    <div className="modal-content">
 
+                        <div className="modal-header">
+                            <button type="button" className="close" data-dismiss="modal"  aria-hidden="true">×</button>
+                            <h4 className="modal-title" id="myModalLabel2">Trip Frequency</h4>
+                        </div>
+                        <div className="modal-body">
+                             {text}
+                        </div>
+
+                        <div className="modal-footer">
+                           <br />
+                            <button type="button" className="btn btn-danger" data-dismiss="modal" >Cancel</button>
+                            {deleteButton}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        );
+    },
 });
 
 module.exports = TripSchedule;

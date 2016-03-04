@@ -11,6 +11,7 @@ DROP FUNCTION IF EXISTS create_or_update_route(route_id TEXT, short_name TEXT, t
 DROP FUNCTION IF EXISTS create_or_update_trip(text,text,text,text,text,INT,text);
 DROP FUNCTION IF EXISTS create_or_update_service(text,text);
 DROP FUNCTION IF EXISTS create_or_update_freq(text,text,text,integer,text);
+DROP FUNCTION IF EXISTS delete_freq(text,text);
 CREATE OR REPLACE FUNCTION add_stop_to_stop_times(stop TEXT, sequence_id INTEGER, id TEXT, schema TEXT)
 RETURNS void AS $$
 	DECLARE
@@ -253,6 +254,31 @@ RETURNS void as $$
 	END;
 	$$ LANGUAGE plpgsql;
 
-
+CREATE OR REPLACE FUNCTION delete_freq(trip_id TEXT, schema TEXT)
+RETURNS void as $$
+	DECLARE
+		isThere BOOLEAN;
+		rec RECORD;
+		
+	BEGIN
+		EXECUTE format('SELECT EXISTS (SELECT * FROM %I.frequencies WHERE trip_id = $1)',schema)
+				       INTO isThere USING trip_id;
+		EXECUTE format('SELECT count(trip_id) as numDepends,shape_id,route_id FROM %I.trips 
+				       WHERE shape_id=(SELECT shape_id FROM %I.trips WHERE trip_id=$1)
+				       GROUP BY shape_id,route_id',schema,schema)
+				       INTO rec  USING trip_id;
+		IF isThere THEN
+		         EXECUTE format('DELETE FROM %I.frequencies WHERE trip_id=$1;'||
+			 	 	'DELETE FROM %I.trips WHERE trip_id=$1;' ||
+					'DELETE FROM %I.stop_times WHERE trip_id=$1;',schema,schema,schema)
+					 USING trip_id;
+		END IF;
+		IF rec.numDepends = 1 THEN
+		   	 EXECUTE format('DELETE FROM %I.shapes WHERE shape_id=$1',schema)
+			 	 		USING rec.shape_id;
+			 EXECUTE update_route_geom(rec.route_id,schema);
+		END IF;
+	END;
+	$$ LANGUAGE plpgsql;
 --CREATE OR REPLACE FUNCTION create_or_update_trip(trip_id TEXT,)
 --SELECT * FROM add_stops(text '00000',ARRAY[12],ARRAY['2328042-AUG13-Albany-Weekday-01']);

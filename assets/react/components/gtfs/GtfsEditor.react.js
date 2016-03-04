@@ -94,6 +94,7 @@ var MarketAreaNew = React.createClass({
             lengths:[],
             routeColl:initRoutes(this.props.schedules),
             frequencies:null,
+	    killFrequencies:null,
         };
     },
     editCheckConfirm : function(obj){
@@ -281,6 +282,7 @@ var MarketAreaNew = React.createClass({
           return d.edited;
         });
         reqObj.frequencies = changedFrequencies;
+	reqObj.killFrequencies= this.state.killFrequencies;
       }
       console.log('Request Object', reqObj);
       reqObj.maId = this.props.marketarea.id;
@@ -769,6 +771,17 @@ var MarketAreaNew = React.createClass({
         this.setState({tripChange:false});
       }
     },
+    deleteFreq : function(freq){
+	var partialState = this.state;
+	partialState.killFrequencies = partialState.killFrequencies || [];
+	partialState.killFrequencies.push(freq);
+	partialState.frequencies = 
+	             partialState.frequencies.filter(function(d){
+			 return d.trip_id !== freq.trip_id;
+		     });
+	partialState.edited= true;
+	this.setState(partialState);
+    },
     render: function() {
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
@@ -799,7 +812,6 @@ var MarketAreaNew = React.createClass({
         });
         return (
         	<div>
-
                 <div className="row">
                 	<div className="col-lg-9">
 
@@ -821,6 +833,7 @@ var MarketAreaNew = React.createClass({
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}
 	                    addFreq={this._addFreq}
+	                    deleteFreq={this.deleteFreq}
                             notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
