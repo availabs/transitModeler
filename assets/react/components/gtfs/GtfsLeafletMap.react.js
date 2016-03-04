@@ -152,7 +152,13 @@ var Map = React.createClass({
                         });
 		      var latlngs = feat.geometry.coordinates;
 		      console.log(feat.geometry.type);
-		      latlngs.forEach(function(d,i) {
+			var zoom = map.getZoom();
+			
+			
+			var basePixelSize = 11
+			var normPixSize = Math.pow(2,zoom - basePixelSize)
+			console.log('current pixelsize ::',normPixSize);
+			latlngs.forEach(function(d,i) {
 			if(Array.isArray(d[0])){
 			  
 			  if(d.length == 1){
@@ -189,13 +195,13 @@ var Map = React.createClass({
 			
 			var arrowHead =
 			           L.polylineDecorator([p3,p2]).addTo(map);
-			  
+			
 			  arrowHead.setPatterns([
 			      {offset:0,
-			       
+			       pixelSize:normPixSize,
 			       endOffset:'20%', 
 			       symbol: L.Symbol.arrowHead({
-				   pixelSize:1,
+				   pixelSize:normPixSize,
 				   polygon:false,
 				   tail:true,
 				   pathOptions: {stroke:true}
