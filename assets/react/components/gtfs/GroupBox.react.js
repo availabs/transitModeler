@@ -211,16 +211,20 @@ var TripSchedule = React.createClass({
           ichange= this._onChange(field4);
       var id_fix = id.replace('/\,/g','_');
       var style={overflow:'hidden'};
-      return(
 
-        
-            <tr>
-	      <td>
+	/*
+	   <td>
 	         <div id={field0+id_fix}>{id}</div>
 	         <input size={140} className='form-control' type='text'id={field0+'b'+id_fix} style={{display:'none'}} onChange={idchange}
 	                value={id} onBlur={idblur} />
 	   
 	      </td>
+	 */
+      return(
+
+        
+            <tr>
+	      
               <td onClick={sclick}>
                 <div id={field1+id_fix}>{s}</div>
                 <input size={8} className={'form-control'} type='text'id={field1+'b'+id_fix} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
@@ -258,12 +262,12 @@ var TripSchedule = React.createClass({
 	if(!this.state.frequency){
 	    return <div></div>;
 	}
-	var name = this.state.frequency.trip_id;
-        var text = <h4>Are you sure you want to delete {name}?</h4>;
+	var freq = this.state.frequency;
+        var text = <h4>Are you sure you want to delete the run from {freq.start_time} till {freq.end_time}?</h4>;
         var deleteButton = <button type="button" className="btn btn-info" onClick={this.deleteAction} data-dismiss="modal">Delete</button>;
         
         return (
-            <div id={"deleteModal"+name} className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+            <div id={"deleteModal"+freq.trip_id} className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
                 <div className="modal-dialog">
                     <div className="modal-content">
 

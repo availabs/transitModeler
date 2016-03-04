@@ -130,7 +130,7 @@ var TripSchedule = React.createClass({
                 <table className="table">
                   <thead>
                     <tr>
-		      <th>{'Name'}</th>
+
                       <th>{'First Departure'}</th>
                       <th>{'Last Departure'}</th>
                       <th>{'Headway'}</th>
