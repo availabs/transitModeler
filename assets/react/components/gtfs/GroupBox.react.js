@@ -191,44 +191,54 @@ var TripSchedule = React.createClass({
           e = this.state.frequency.end_time,
           id= this.state.frequency.trip_id,
           h = this.state.frequency.headway_secs,
+	  field0 = 'trip_id',
           field1 = 'start_time',field2='end_time',
           field3='headway_secs',field4='idle';
-      var sclick = this.fieldClick(field1),
+      var idclick= this.fieldClick(field0),
+	  sclick = this.fieldClick(field1),
           eclick = this.fieldClick(field2),
           hclick = this.fieldClick(field3),
           iclick = this.fieldClick(field4),
+	  idblur= this.fieldBlur(field0),
           sblur = this.fieldBlur(field1),
           eblur = this.fieldBlur(field2),
           hblur = this.fieldBlur(field3),
           iblur = this.fieldBlur(field4),
+	  idchange=this._onChange(field0),
           schange= this._onChange(field1),
           echange= this._onChange(field2),
           hchange= this._onChange(field3),
           ichange= this._onChange(field4);
+      var id_fix = id.replace('/\,/g','_');
       var style={overflow:'hidden'};
       return(
 
         
             <tr>
-	      <td>{this.state.frequency.trip_id}</td>
+	      <td>
+	         <div id={field0+id_fix}>{id}</div>
+	         <input size={140} className='form-control' type='text'id={field0+'b'+id_fix} style={{display:'none'}} onChange={idchange}
+	                value={id} onBlur={idblur} />
+	   
+	      </td>
               <td onClick={sclick}>
-                <div id={field1+id.replace(/\,/g,'_')}>{s}</div>
-                <input size={8} className={'form-control'} type='text'id={field1+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
+                <div id={field1+id_fix}>{s}</div>
+                <input size={8} className={'form-control'} type='text'id={field1+'b'+id_fix} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
               </td>
 
               <td onClick={eclick} >
-                <div id={field2+id.replace(/\,/g,'_')}>{e}</div>
-                <input size={8} className={'form-control'} type='text'id={field2+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={echange}value={this.state.frequency.end_time} onBlur={eblur}></input>
+                <div id={field2+id_fix}>{e}</div>
+                <input size={8} className={'form-control'} type='text'id={field2+'b'+id_fix} style={{display:'none'}} onChange={echange}value={this.state.frequency.end_time} onBlur={eblur}></input>
               </td>
 
               <td onClick={hclick} >
-                <div id={field3+id.replace(/\,/g,'_')}>{h/60 + ' min'}</div>
-                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id.replace(/\,/g,'_')} type='text'onChange={hchange} value={this.state.headwaybuffer} onBlur={hblur}></input>
+                <div id={field3+id_fix}>{h/60 + ' min'}</div>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id_fix} type='text'onChange={hchange} value={this.state.headwaybuffer} onBlur={hblur}></input>
               </td>
 
               <td onClick={iclick} >
-                <div id={field4+id.replace(/\,/g,'_')}>{this.state.idle + ' min'}</div>
-                <input size={4} className={'form-control'} style={{display:'none'}} id={field4+'b'+id.replace(/\,/g,'_')} type='text'onChange={ichange} value={this.state.idlebuffer} onBlur={iblur}></input>
+                <div id={field4+id_fix}>{this.state.idle + ' min'}</div>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field4+'b'+id_fix} type='text'onChange={ichange} value={this.state.idlebuffer} onBlur={iblur}></input>
               </td>
 
               <td>{Math.round(this._totalTimeMin()) + 'mins'}</td>
