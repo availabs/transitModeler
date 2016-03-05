@@ -131,7 +131,7 @@ var Map = React.createClass({
                         return {
                             color:'yellow',
                             opacity: 0.5,
-                            weight:5,
+                            weight:7,
                             className:'routingPath'
                         };
                     },

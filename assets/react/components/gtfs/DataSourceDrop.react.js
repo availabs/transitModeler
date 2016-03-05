@@ -16,6 +16,10 @@ var MarketAreaNew = React.createClass({
             gtfsSelection:this.props.marketarea.origin_gtfs,
         };
     },
+    componentWillReceiveProps : function(nextProps){
+	if(nextProps.currentDataSource !== this.state.gtfsSelection)
+	    this.setState({gtfsSelection:nextProps.currentDataSource});
+    },
     updateData : function(e,selection){
       if(selection && this.isMounted()){
         this.props.setDataSource(selection.id);

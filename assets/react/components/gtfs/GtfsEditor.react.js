@@ -79,7 +79,6 @@ var MarketAreaNew = React.createClass({
             currentTrip:null,
             stopColl:initStops([]),
             graph:new Graph(),
-            buffStops:null,
             edited:false,
             tracker:new EditTracker(),
             TripObj:undefined,
@@ -337,28 +336,100 @@ var MarketAreaNew = React.createClass({
         this.setState({routingGeo:graph.toFeatureCollection(),lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
     },
     cleanEdits : function(){
-      var partialState = {},scope=this;
+      var scope=this,partialState={};
       this.state.stopColl.merge(); //merge changes with the original data
       this.state.stopColl.clean(); //remove edited and new flags
       var route = this.state.routeColl.filter(function(d){
         return d.isNew || d.isEdited();
       }).forEach(function(d){
-        //editing props directly to make it obvious instead of subtly through references
+        //editing props directly to make it obvious 
+	//instead of subtly through references
         d.isNew = undefined;
         d.clean();
       });
-      partialState = this.getInitialState();
-      if(!this.props.datasources[this.state.currentGtfs].settings.readOnly){
-        partialState.tracker = new EditTracker(); //scrap the edit last edit tracker
-        partialState.TripObj = this.state.TripObj;
+     
+	partialState = this.state;
+	//scrap the edit last edit tracker	
+        partialState.tracker = new EditTracker(); 
         partialState.TripObj.isNew = false;
-        partialState.frequencies = this.state.frequencies;
-        partialState.routingGeo = this.state.routingGeo;
-        partialState.deltas = this.state.deltas;
-        partialState.lengths = this.state.lengths;
         partialState.edited = false;
-        partialState.saved=true;
-      }
+	partialState.isCreating = false;
+	partialState.isNewtrip = false;
+	partialState.needEdit = false;
+	partialState.editInfo = {};
+	partialState.tripChange = true;
+	partialState.killFrequencies = [];
+	var temp;
+	if(partialState.frequencies.length === 0)
+	{
+	    //remove the trip
+	    var sched = partialState.schedules[partialState.currentRoute];
+	    var deadT = sched
+	                .trips.splice(partialState.currentTrip,1)[0];
+	    if(partialState.schedules[partialState.currentRoute]
+		.trips.length === 0 )
+	    {   //if no trips left in route wait
+		partialState.currentTrip = null;
+		partialState.TripObj = undefined;
+	    }
+	    else
+	    {
+		
+		//set the current trip to the next available
+
+		var ix = 0
+		for(var i=0; i < sched.trips.length; i++)
+		{
+		    if(sched.trips[i].service_id ===
+			deadT.service_id)
+		    {
+			ix = i;
+			break;
+		    }
+		}		
+		partialState.currentTrip = ix;
+		    
+		var T = new Trip(null);
+		temp = sched.trips[partialState.currentTrip];
+		T.setId(temp.id);
+		T.setStops(JSON.parse(JSON.stringify(temp.stops)));
+		T.setRouteId(temp.route_id);
+		T.setIntervals(temp.intervals);
+		T.setStartTimes(temp.start_times);
+		T.setStopTimes(temp.stop_times);
+		T.setHeadSign(temp.headsign);
+		T.setIds(temp.tripids);
+		T.setServiceId(temp.service_id);
+		T.setDirectionId(temp.direction_id);
+		partialState.TripObj = T;
+		partialState.graph = new Graph();
+		partialState.currentService = temp.service_id;
+		SailsWebApi.getFrequencyData(temp.tripids,
+					     partialState.currentGtfs);
+		var ids = temp.stops;
+		var waypoints = ids.map(function(id){
+		    var stp = scope._getStop(id);
+		    if(!stp)
+		    {
+			console.log(id);
+		    }
+		    try
+		    {
+			return stp.getPoint();
+		    }
+		    catch(e)
+		    {
+			console.log(id);
+		    }
+		});
+		var noStops = !waypoints.reduce(function(a,b){return a&&b;});
+		if( noStops )
+		{
+		    return;
+		}	
+		SailsWebApi.getRoutingGeo(waypoints);
+	    }
+	}
       this.setState(partialState);
     },
     componentDidMount : function(){
@@ -840,7 +911,9 @@ var MarketAreaNew = React.createClass({
                       <Datasources
                         data={this.props.datasources}
                         marketarea={this.props.marketarea}
-                        setDataSource={this.setGtfs}/>
+                        setDataSource={this.setGtfs}
+	                currentDataSource={this.state.currentGtfs}
+	                />
 
                        <Databox
                            schedules = {scheds}
