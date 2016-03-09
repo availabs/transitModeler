@@ -2,7 +2,7 @@
 'use strict';
 
 var turf = require('turf');
-
+var _ = require('lodash');
 module.exports = {
 
 	point2polyIntersect:function(points,polys){
@@ -40,5 +40,17 @@ module.exports = {
 			return point.geometry.coordinates;
 		else
 			return [];
+	},
+
+        poly2RouteStopIntersect : function(points,poly){
+	    var geoJ = {type:"FeatureCollection",features:[poly]};
+	    var insiders = turf.within(points,geoJ);
+	    
+	    var lines = insiders.features.map(function(d){
+		return d.properties.line;
+	    });
+	    
+	    return _.uniq(lines);
+	    
 	},
 };
