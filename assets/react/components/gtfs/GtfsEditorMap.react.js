@@ -37,12 +37,12 @@ var GtfsEditorMap = React.createClass({
             tooltip:{
                 x:0,
                 y:0,
-                display:'none'
+                display:'none',
             },
 
         };
     },
-
+    stopOrder:{},
     processLayers:function(){
         var scope = this,
             emptyGeojson = {type:'FeatureCollection',features:[]},
@@ -52,9 +52,16 @@ var GtfsEditorMap = React.createClass({
             routingGeo = emptyGeojson,
             counties = emptyGeojson;
 
+
         //console.log('processLayers, diplay tracts',this.props.displayTracts);
         if(this.props.stops){
             stops = this.props.stops;
+	    this.stopOrder = {};
+	    var scope = this;
+	    stops.features.forEach(function(d,i){
+		scope.stopOrder[d.properties.stop_id] = i;
+		scope.stopOrder.max = i;
+	    });
         }
         if(this.props.tracts){
             tracts = this.props.tracts;
@@ -225,6 +232,7 @@ var GtfsEditorMap = React.createClass({
 
             <div>
                 <LeafletMap
+	            stopOrder={this.stopOrder}
                     layers={this.processLayers()}
                     ToolTip={this.state.tooltip}
                     mapId={this.props.mapId}

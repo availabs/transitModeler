@@ -13,13 +13,16 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     _      = require('lodash'),
     ActionTypes = Constants.ActionTypes,
     CHANGE_EVENT = 'change',
-
+    njTractMap   = require('../../geo/states/34/tractMap.js'),
+    
     //--Stores
     MarketareaStore = require('./MarketAreaStore'),
     DatasourcesStore= require('./DatasourcesStore'),
     //--Utils
     sailsWebApi = require('../utils/sailsWebApi.js'),
+    Geoprocessing = require('../utils/geoprocessing'),
     topojson =require('topojson');
+
 var countyFipsLength = 5;
 var _stateTracts = {type:'FeatureCollection',features:[]},
     _stateCounties = {type:'FeatureCollection',features:[]},
@@ -32,6 +35,20 @@ var _stateTracts = {type:'FeatureCollection',features:[]},
     _loading = {},
     _tempLoading=false,
     _maRoutes = {};
+
+function setStateSettings(tracts){
+    tracts.features.forEach(function(d){
+	var id = d.properties.geoid;
+	if(njTractMap[id]){
+	    d.properties.pop2020_growth = njTractMap[id].pop2020_growth;
+	    d.properties.emp2020_growth = njTractMap[id].emp2020_growth;
+	}
+	else{
+	    d.properties.pop2020_growth = 0;
+	    d.properties.emp2020_growth = 0;
+	}
+    });
+}
 
 var GeodataStore = assign({}, EventEmitter.prototype, {
 
@@ -206,6 +223,7 @@ function saveAndReset(data,agency){
   _tempCounties={};
   _tempCountyMap={};
 }
+
 GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
@@ -221,11 +239,16 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
       GeodataStore.emitChange();
     break;
 
+    case ActionTypes.REMOVE_GEO_ROUTE:
+       GeodataStore.emitChange();
+    break;
+
     case ActionTypes.RECEIVE_RAW_MA_TRACTS:
 
       console.log(action.type,action);
       if(action.geoType==='tracts'){
         _maTracts[action.id] = topojson.feature(action.geoData,action.geoData.objects.objs);
+	setStateSettings(_maTracts[action.id]);
         receiveTracts(action.geoData);
       }
 
@@ -276,8 +299,9 @@ GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
       sailsWebApi.update('marketarea',action.data,function(data){
         saveAndReset(data,action.agency);
+	action.finish(data);
         GeodataStore.emitChange();
-        action.finish(data);
+
       });
     break;
 

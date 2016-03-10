@@ -110,7 +110,7 @@ function getFieldNames(filename){
 }
 function makeCsv(schema,filename){
   var sql = 'COPY (SELECT '+getFieldNames(filename).toString()+' FROM \"'+schema+'\".'+filename+') TO STDOUT WITH DELIMITER \',\' CSV HEADER';
-  var script = 'echo '+filename+' && psql -h lor.availabs.org -d transitModeler -U postgres -c "'+sql+'" -o '+dirname+filename+'.txt';
+  var script = 'echo '+filename+' && psql -h lor.availabs.org -d gtfsgeocensus -U postgres -c "'+sql+'" -o '+dirname+filename+'.txt';
   return script;
 }
 

@@ -28,8 +28,8 @@ module.exports.routes = {
 
   '/data/acs/:file' : 'MarketAreaController.acsDownload',
   '/acs/geoJsonToShp' : 'MarketAreaController.geoJsonToShp',
-  '/acs/load':'DataSourceController.loadACSData',
-  '/acs/delete/:id':'DataSourceController.deleteACS',
+    //'/acs/load':'DataSourceController.loadACSData',
+    //'/acs/delete/:id':'DataSourceController.deleteACS',
 
   //------GTFS Routes------------------------------
   //routes Geo :id is datasource id for gtfs
@@ -52,5 +52,7 @@ module.exports.routes = {
   '/triptable/:id/modelrun':'TriptableController.getModelRun',
 
   //---------Gtfs Upload----------------------------
-  '/gtfs/upload':'UploadsController.upload'
+  '/gtfs/upload':'UploadsController.upload',
+  //---------MarketArea update override-------------
+  'POST /marketarea/:id' : 'MarketAreaController.update'
 };

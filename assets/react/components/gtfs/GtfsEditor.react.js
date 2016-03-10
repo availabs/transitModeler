@@ -79,7 +79,6 @@ var MarketAreaNew = React.createClass({
             currentTrip:null,
             stopColl:initStops([]),
             graph:new Graph(),
-            buffStops:null,
             edited:false,
             tracker:new EditTracker(),
             TripObj:undefined,
@@ -94,6 +93,7 @@ var MarketAreaNew = React.createClass({
             lengths:[],
             routeColl:initRoutes(this.props.schedules),
             frequencies:null,
+	    killFrequencies:null,
         };
     },
     editCheckConfirm : function(obj){
@@ -153,8 +153,22 @@ var MarketAreaNew = React.createClass({
       }
     },
     setTrip:function(ix){
+	var scope = this;
         if(!this.editCheckConfirm(this))
             return false;
+	if(this.state.frequencies && this.state.TripObj){
+	    var freqids = this.state.frequencies.filter(function(d){
+		return d.edited;
+	    }).map(function(d){return d.trip_id;});
+	    
+	    if(freqids.length > 0 ){
+		freqids.forEach(function(id){
+		    scope.state.TripObj.removeTripId(id);
+		});
+	    }
+	    this.state.TripObj.isEdited = false;
+	}
+	
         var T = new Trip(this.state.TripObj),
         temp = this.state.schedules[this.state.currentRoute].trips[ix],
         editInfo = {};
@@ -167,6 +181,7 @@ var MarketAreaNew = React.createClass({
         T.setHeadSign(temp.headsign);
         T.setIds(temp.tripids);
         T.setServiceId(temp.service_id);
+        T.setDirectionId(temp.direction_id);
         GtfsActionsCreator.setTrips(temp.tripids);
         if(this.state.isCreating){
           $('#tooltip2').tooltip('show');
@@ -176,6 +191,8 @@ var MarketAreaNew = React.createClass({
         if(T.getStops().length === 0)
             this.setState({TripObj:T,
               currentTrip:ix,
+	      currentRoute:this.state.currentRoute,
+              currentService: this.state.currentService,
               graph:new Graph(),
               edited:true,
               isNewTrip:true,
@@ -187,6 +204,8 @@ var MarketAreaNew = React.createClass({
             this.setState({
               TripObj:T,
               currentTrip:ix,
+	      currentRoute:this.state.currentRoute,
+              currentService: this.state.currentService,
               graph:new Graph(),
               edited:false,
               tripChange:true,
@@ -256,13 +275,15 @@ var MarketAreaNew = React.createClass({
                                 this.state.TripObj,
                                 route);
       var reqObj = saveObj.getReqObj();
-      console.log('Request Object', reqObj);
+      
       if(this.state.frequencies){
         var changedFrequencies = this.state.frequencies.filter(function(d){
           return d.edited;
         });
         reqObj.frequencies = changedFrequencies;
+	reqObj.killFrequencies= this.state.killFrequencies;
       }
+      console.log('Request Object', reqObj);
       reqObj.maId = this.props.marketarea.id;
       reqObj.gtfsId = this.state.currentGtfs;
       return reqObj;
@@ -315,28 +336,100 @@ var MarketAreaNew = React.createClass({
         this.setState({routingGeo:graph.toFeatureCollection(),lengths:routing_geo.getAllLengths(),deltas:routing_geo.getAllDeltas(),graph:graph});
     },
     cleanEdits : function(){
-      var partialState = {},scope=this;
+      var scope=this,partialState={};
       this.state.stopColl.merge(); //merge changes with the original data
       this.state.stopColl.clean(); //remove edited and new flags
       var route = this.state.routeColl.filter(function(d){
         return d.isNew || d.isEdited();
       }).forEach(function(d){
-        //editing props directly to make it obvious instead of subtly through references
+        //editing props directly to make it obvious 
+	//instead of subtly through references
         d.isNew = undefined;
         d.clean();
       });
-      partialState = this.getInitialState();
-      if(!this.props.datasources[this.state.currentGtfs].settings.readOnly){
-        partialState.tracker = new EditTracker(); //scrap the edit last edit tracker
-        partialState.TripObj = this.state.TripObj;
+     
+	partialState = this.state;
+	//scrap the edit last edit tracker	
+        partialState.tracker = new EditTracker(); 
         partialState.TripObj.isNew = false;
-        partialState.frequencies = this.state.frequencies;
-        partialState.routingGeo = this.state.routingGeo;
-        partialState.deltas = this.state.deltas;
-        partialState.lengths = this.state.lengths;
         partialState.edited = false;
-        partialState.saved=true;
-      }
+	partialState.isCreating = false;
+	partialState.isNewtrip = false;
+	partialState.needEdit = false;
+	partialState.editInfo = {};
+	partialState.tripChange = true;
+	partialState.killFrequencies = [];
+	var temp;
+	if(partialState.frequencies.length === 0)
+	{
+	    //remove the trip
+	    var sched = partialState.schedules[partialState.currentRoute];
+	    var deadT = sched
+	                .trips.splice(partialState.currentTrip,1)[0];
+	    if(partialState.schedules[partialState.currentRoute]
+		.trips.length === 0 )
+	    {   //if no trips left in route wait
+		partialState.currentTrip = null;
+		partialState.TripObj = undefined;
+	    }
+	    else
+	    {
+		
+		//set the current trip to the next available
+
+		var ix = 0
+		for(var i=0; i < sched.trips.length; i++)
+		{
+		    if(sched.trips[i].service_id ===
+			deadT.service_id)
+		    {
+			ix = i;
+			break;
+		    }
+		}		
+		partialState.currentTrip = ix;
+		    
+		var T = new Trip(null);
+		temp = sched.trips[partialState.currentTrip];
+		T.setId(temp.id);
+		T.setStops(JSON.parse(JSON.stringify(temp.stops)));
+		T.setRouteId(temp.route_id);
+		T.setIntervals(temp.intervals);
+		T.setStartTimes(temp.start_times);
+		T.setStopTimes(temp.stop_times);
+		T.setHeadSign(temp.headsign);
+		T.setIds(temp.tripids);
+		T.setServiceId(temp.service_id);
+		T.setDirectionId(temp.direction_id);
+		partialState.TripObj = T;
+		partialState.graph = new Graph();
+		partialState.currentService = temp.service_id;
+		SailsWebApi.getFrequencyData(temp.tripids,
+					     partialState.currentGtfs);
+		var ids = temp.stops;
+		var waypoints = ids.map(function(id){
+		    var stp = scope._getStop(id);
+		    if(!stp)
+		    {
+			console.log(id);
+		    }
+		    try
+		    {
+			return stp.getPoint();
+		    }
+		    catch(e)
+		    {
+			console.log(id);
+		    }
+		});
+		var noStops = !waypoints.reduce(function(a,b){return a&&b;});
+		if( noStops )
+		{
+		    return;
+		}	
+		SailsWebApi.getRoutingGeo(waypoints);
+	    }
+	}
       this.setState(partialState);
     },
     componentDidMount : function(){
@@ -508,6 +601,7 @@ var MarketAreaNew = React.createClass({
         trip.setRouteId(this.state.TripObj.getRouteId());
         trip.setNew();
         trip.setServiceId(this.state.TripObj.getServiceId());
+	trip.setDirectionId(0);
         trip.setIds(this.state.TripObj.getIds());
         $('#tooltip2').tooltip('destroy');
         // this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
@@ -550,6 +644,20 @@ var MarketAreaNew = React.createClass({
               });
         }
         console.log(id);
+    },
+    _addFreq : function(){
+	if(this.state.currentRoute && this.state.currentService && 
+	   this.state.currentTrip !== null){
+	    var freq_id = idGen('Trip');
+	    var freq = this.createNewFreq(freq_id);
+	    this.state.TripObj.addTripId(freq_id);
+	    this.state.TripObj.isEdited = true;
+	    var partialState= this.state;
+	    partialState.frequencies = partialState.frequencies || [];
+	    partialState.frequencies.push(freq);
+	    partialState.edited=true;
+	    this.setState(partialState);
+	}
     },
     _addTrip : function(formObj){
         if(!this.editCheckConfirm(this)){
@@ -629,12 +737,16 @@ var MarketAreaNew = React.createClass({
     },
     changeTrip : function(tInfo){
       var trip = this.state.TripObj;
-      if(trip.getHeadSign !== tInfo.headsign){
+      if(trip.getHeadSign() !== tInfo.headsign){
           trip.setHeadSign(tInfo.headsign);
           trip.isEdited = true;
           this.setState({edited:true,TripObj:trip});
       }
-
+     if(trip.getDirectionId() !== tInfo.direction_id){
+	 trip.setDirectionId(tInfo.direction_id);
+	 trip.isEdited = true;
+	 this.setState({edited:true,TripObj:trip});
+     }
     },
     setRouteEdit : function(id){
       var info = {},route = this.state.routeColl.filter(function(d){return d.getId()===id;})[0];
@@ -730,6 +842,17 @@ var MarketAreaNew = React.createClass({
         this.setState({tripChange:false});
       }
     },
+    deleteFreq : function(freq){
+	var partialState = this.state;
+	partialState.killFrequencies = partialState.killFrequencies || [];
+	partialState.killFrequencies.push(freq);
+	partialState.frequencies = 
+	             partialState.frequencies.filter(function(d){
+			 return d.trip_id !== freq.trip_id;
+		     });
+	partialState.edited= true;
+	this.setState(partialState);
+    },
     render: function() {
         var scope = this;
         var routesGeo = check(this.props.routesGeo);
@@ -760,7 +883,6 @@ var MarketAreaNew = React.createClass({
         });
         return (
         	<div>
-
                 <div className="row">
                 	<div className="col-lg-9">
 
@@ -781,13 +903,17 @@ var MarketAreaNew = React.createClass({
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}
+	                    addFreq={this._addFreq}
+	                    deleteFreq={this.deleteFreq}
                             notifyChange={this.freqChange}/>
                     </div>
                     <div className="col-lg-3">
                       <Datasources
                         data={this.props.datasources}
                         marketarea={this.props.marketarea}
-                        setDataSource={this.setGtfs}/>
+                        setDataSource={this.setGtfs}
+	                currentDataSource={this.state.currentGtfs}
+	                />
 
                        <Databox
                            schedules = {scheds}

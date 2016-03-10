@@ -118,6 +118,7 @@ module.exports = {
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
 	      if (err || !ma) {res.send('{status:"error",message:"'+err || 'no ma' +'"}',500); return console.log(err || 'no ma');}
 	        var states = {};
+
 			console.log(ma);
 			var findState = function(id){
 				console.log(id);
@@ -130,11 +131,11 @@ module.exports = {
 				findState(geoid);
 			});
 			var sql = Object.keys(states).map(function(sid){
-					censusTable = 'acs5_'+sid+'_'+req.param('year')+'_tracts';
+					censusTable = 'acs_5_year.acs5_'+sid+'_'+req.param('year')+'_tracts';
 					return "SELECT * FROM "+censusTable+" where geoid in ('"+states[sid].join("','")+"')";
 			}).join(' UNION ');
 			console.log(sql);
-			MarketArea.query(sql,{},function(err,data){
+			Ctpp.query(sql,{},function(err,data){
 				if(err){ return console.log(err,sql);}
 				res.json({census:data.rows});
 			});
@@ -385,153 +386,153 @@ module.exports = {
 		    var sql = states.map(function(fips){
 			return "SELECT from_tract,to_tract, est, se " +
 			"FROM ctpp_"+fips+"_2010_tracts " +
-			"WHERE to_tract in " + tracts + " or from_tract in "+tracts;
+			"WHERE type='8' AND (to_tract in " + tracts + " or from_tract in "+tracts+")";
 		    }).join(' Union ');
-		    
-		    
+
+
 		    Ctpp.query(sql, {}, function(error, data) {
 			if (error) {
 			    console.log("error executing "+sql, error);
 			    res.send({status: 500, message: 'internal error'}, 500);
 			    return;
 			}
-			
+
 			res.send(data.rows);
 		    })
 		});
 	},
 	//---------------------ACS Create Delete-----------------------------------------
-	deleteACS:function(req,res){
-		var user = req.session.User;
-		Datasource.findOne(req.param('id')).populate('groups').exec(function(err,found){
-			if(err){
-				console.log(err);
-				res.send(err,500);
-			}
-			// var query = 'DROP TABLE public."'+found.tableName+'"';
-			found.groups.remove(user.userGroup.id);
-			found.save(function(err){
-				if(err){
-					console.log(err);
-					res.send(err,500);
-				}
-				var message = 	{groupname:user.group,
-													 actiondesc:'deleted ' + found.tableName,
-													 actiontitle:'deleted '+found.type,
-													 maid:-1,
-													 userid:user.id,
-												 };
-					UserAction.create(message).exec(function(err,data){
-						if(err){
-							console.log(err,data);
-						}
-					});
-					res.json({'message':'Record '+found.id+' deleted.'});
-			});
+	// deleteACS:function(req,res){
+	// 	var user = req.session.User;
+	// 	Datasource.findOne(req.param('id')).populate('groups').exec(function(err,found){
+	// 		if(err){
+	// 			console.log(err);
+	// 			res.send(err,500);
+	// 		}
+	// 		// var query = 'DROP TABLE public."'+found.tableName+'"';
+	// 		found.groups.remove(user.userGroup.id);
+	// 		found.save(function(err){
+	// 			if(err){
+	// 				console.log(err);
+	// 				res.send(err,500);
+	// 			}
+	// 			var message = 	{groupname:user.group,
+	// 												 actiondesc:'deleted ' + found.tableName,
+	// 												 actiontitle:'deleted '+found.type,
+	// 												 maid:-1,
+	// 												 userid:user.id,
+	// 											 };
+	// 				UserAction.create(message).exec(function(err,data){
+	// 					if(err){
+	// 						console.log(err,data);
+	// 					}
+	// 				});
+	// 				res.json({'message':'Record '+found.id+' deleted.'});
+	// 		});
 
-			// Datasource.query(query,{} ,function(err, result) {
-			// 	if(err) { console.error('error running query:',query, err); }
+	// 		// Datasource.query(query,{} ,function(err, result) {
+	// 		// 	if(err) { console.error('error running query:',query, err); }
 
-				// Datasource.destroy(found.id).exec(function(err,destroyed){
-				// 	if(err) { console.log(err); res.json({error:err}); }
+	// 			// Datasource.destroy(found.id).exec(function(err,destroyed){
+	// 			// 	if(err) { console.log(err); res.json({error:err}); }
 
 
-				// });
+	// 			// });
 
-			// });
+	// 		// });
 
-		});
+	// 	});
 
-	},
-	loadACSData:function(req,res){
-		var user = req.session.User;
-		var state=req.param('state'),
-		dataSource=req.param('dataSource'),
-		year=req.param('startYear'),
-		sumlevel=req.param('sumLevel');
-		var message = {groupname:user.group,
-											 actiondesc:'loaded acs_'+state+'_'+year+'_'+sumlevel,
-											 actiontitle:'loaded acs',
-											 maid:-1,
-											 userid:user.id,
-										 };
-		console.log('Datasource.loadData',state,dataSource,year,sumlevel);
+	// },
+	// loadACSData:function(req,res){
+	// 	var user = req.session.User;
+	// 	var state=req.param('state'),
+	// 	dataSource=req.param('dataSource'),
+	// 	year=req.param('startYear'),
+	// 	sumlevel=req.param('sumLevel');
+	// 	var message = {groupname:user.group,
+	// 										 actiondesc:'loaded acs_'+state+'_'+year+'_'+sumlevel,
+	// 										 actiontitle:'loaded acs',
+	// 										 maid:-1,
+	// 										 userid:user.id,
+	// 									 };
+	// 	console.log('Datasource.loadData',state,dataSource,year,sumlevel);
 
-		Datasource //Check to see if this data set has been loaded
-		.find({ stateFips:state}).populate('groups')
-		.exec(function(err,data){
-			console.log(err,data);
-			data = data.filter(function(d){
-				return d.stateFips == state && d.settings[0].year == year &&
-								d.settings[0].level == sumlevel;
-			});
+	// 	Datasource //Check to see if this data set has been loaded
+	// 	.find({ stateFips:state}).populate('groups')
+	// 	.exec(function(err,data){
+	// 		console.log(err,data);
+	// 		data = data.filter(function(d){
+	// 			return d.stateFips == state && d.settings[0].year == year &&
+	// 							d.settings[0].level == sumlevel;
+	// 		});
 
-			if(data.length > 0 ){// the data source does exist, refuse to load.
-				var flashMessage = [{
-					name:"Data Exists",
-					message: "This dataset has already been loaded"
-				}];
+	// 		if(data.length > 0 ){// the data source does exist, refuse to load.
+	// 			var flashMessage = [{
+	// 				name:"Data Exists",
+	// 				message: "This dataset has already been loaded"
+	// 			}];
 
-				req.session.flash = {
-					err: flashMessage
-				};
-				var inGroup = data[0].groups.filter(function(d){return d.id === user.userGroup.id;});
-				if(inGroup.length > 0){
-						res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
-				}else{
-					data[0].groups.add(user.userGroup.id);
-					data[0].save(function(err){
-						console.log('MADE IT TO SAVE');
-						if(err){
-							console.log(err);
-							res.json({responseText:'Error adding ACS data'});
-						}else{
-							UserAction.create(message).exec(function(err,data){
-																 if(err){console.log(err,data);}
-															 });
-							res.json({responseText:'Successfully added ACS data'});
-						}
-					});
-				}
-			}else{//the data source doesn't exists
+	// 			req.session.flash = {
+	// 				err: flashMessage
+	// 			};
+	// 			var inGroup = data[0].groups.filter(function(d){return d.id === user.userGroup.id;});
+	// 			if(inGroup.length > 0){
+	// 					res.json({responseText:'ACS dataset already exists.'+state+' '+year+'.'});
+	// 			}else{
+	// 				data[0].groups.add(user.userGroup.id);
+	// 				data[0].save(function(err){
+	// 					console.log('MADE IT TO SAVE');
+	// 					if(err){
+	// 						console.log(err);
+	// 						res.json({responseText:'Error adding ACS data'});
+	// 					}else{
+	// 						UserAction.create(message).exec(function(err,data){
+	// 															 if(err){console.log(err,data);}
+	// 														 });
+	// 						res.json({responseText:'Successfully added ACS data'});
+	// 					}
+	// 				});
+	// 			}
+	// 		}else{//the data source doesn't exists
 
-				Job.create({
-					isFinished:false,
-					type:'load ACS',
-					info:[{'state':state,'dataSource':dataSource,'year':year,'sumlevel':sumlevel}],
-					status:'Started',
-					creator:user.id,
-					group:user.userGroup.id,
-				})
-				.exec(function(err,job){
-					if(err){console.log('create job error',err);
-						req.session.flash = {
-							err: err
-						};
-						res.json({responseText:'ACS Job Create Error'});
-						return;
-					}
-					sails.sockets.blast('job_created',job);
+	// 			Job.create({
+	// 				isFinished:false,
+	// 				type:'load ACS',
+	// 				info:[{'state':state,'dataSource':dataSource,'year':year,'sumlevel':sumlevel}],
+	// 				status:'Started',
+	// 				creator:user.id,
+	// 				group:user.userGroup.id,
+	// 			})
+	// 			.exec(function(err,job){
+	// 				if(err){console.log('create job error',err);
+	// 					req.session.flash = {
+	// 						err: err
+	// 					};
+	// 					res.json({responseText:'ACS Job Create Error'});
+	// 					return;
+	// 				}
+	// 				sails.sockets.blast('job_created',job);
 
-					var flashMessage = [{
-						name:"Test",
-						message: "job created "+job.id,
-					}];
+	// 				var flashMessage = [{
+	// 					name:"Test",
+	// 					message: "job created "+job.id,
+	// 				}];
 
-					spawnACSJob(job,user,message);
+	// 				spawnACSJob(job,user,message);
 
-					req.session.flash = {
-						err: flashMessage
-					};
+	// 				req.session.flash = {
+	// 					err: flashMessage
+	// 				};
 
-					res.json({responseText:'ACS Job Created'});
-					return;
+	// 				res.json({responseText:'ACS Job Created'});
+	// 				return;
 
-				});
-			}
+	// 			});
+	// 		}
 
-		});//Check for data source
-	},
+	// 	});//Check for data source
+	// },
 
 	deleteGtfs : function(req,res){
 		var victimId = parseInt(req.param('id')); //get the id of the gtfs set to be deleted
@@ -616,110 +617,110 @@ module.exports = {
 };
 
 //--------------------------------------------------------
-function spawnACSJob(job,user,message){
-	var terminal = require('child_process').spawn('bash');
-	var current_progress = 0;
-	var settings = {
-	 		dataSource: job.info[0].dataSource,
-  	 		year:job.info[0].year,
-  	 		level:job.info[0].sumlevel
-  	 	},
-  	 	acsEntry = {
-				tableName:'',
-				type:'acs',
-		  	stateFips:job.info[0].state,
-			 	settings:[settings],
-	  	};
+// function spawnACSJob(job,user,message){
+// 	var terminal = require('child_process').spawn('bash');
+// 	var current_progress = 0;
+// 	var settings = {
+// 	 		dataSource: job.info[0].dataSource,
+//   	 		year:job.info[0].year,
+//   	 		level:job.info[0].sumlevel
+//   	 	},
+//   	 	acsEntry = {
+// 				tableName:'',
+// 				type:'acs',
+// 		  	stateFips:job.info[0].state,
+// 			 	settings:[settings],
+// 	  	};
 
-  	terminal.stdout.on('data', function (data) {
-	    data = data+'';
-	    if(data.indexOf('tableName') !== -1){
-	    	console.log('table-name',data.split(":")[1]);
-	    	acsEntry.tableName = data.split(":")[1];
-	    }
-	    else if(data.indexOf('status') !== -1){
-	    	console.log('status',data.split(":")[1]);
-	    	Job.update({id:job.id},{status:data.split(":")[1],progress:0})
-    		.exec(function(err,updated_job){
-    			if(err){ console.log('job update error',error); }
-    			sails.sockets.blast('job_updated',updated_job);
-    		});
-	    	current_progress =0;
-	    }
-	    else if(data.indexOf('progress') !== -1){
+//   	terminal.stdout.on('data', function (data) {
+// 	    data = data+'';
+// 	    if(data.indexOf('tableName') !== -1){
+// 	    	console.log('table-name',data.split(":")[1]);
+// 	    	acsEntry.tableName = data.split(":")[1];
+// 	    }
+// 	    else if(data.indexOf('status') !== -1){
+// 	    	console.log('status',data.split(":")[1]);
+// 	    	Job.update({id:job.id},{status:data.split(":")[1],progress:0})
+//     		.exec(function(err,updated_job){
+//     			if(err){ console.log('job update error',error); }
+//     			sails.sockets.blast('job_updated',updated_job);
+//     		});
+// 	    	current_progress =0;
+// 	    }
+// 	    else if(data.indexOf('progress') !== -1){
 
-	    	if(data.split(":")[1] !== current_progress){
-	    		current_progress = data.split(":")[1]
-	    		console.log(current_progress);
-	    		Job.update({id:job.id},{progress:current_progress})
-    			.exec(function(err,updated_job){
-    				if(err){ console.log('job update error',error); }
-    				sails.sockets.blast('job_updated',updated_job);
-    			});
-	    	}
-	    }
-	    else{
-	    	console.log('error probably',data)
-	    }
-	});
+// 	    	if(data.split(":")[1] !== current_progress){
+// 	    		current_progress = data.split(":")[1]
+// 	    		console.log(current_progress);
+// 	    		Job.update({id:job.id},{progress:current_progress})
+//     			.exec(function(err,updated_job){
+//     				if(err){ console.log('job update error',error); }
+//     				sails.sockets.blast('job_updated',updated_job);
+//     			});
+// 	    	}
+// 	    }
+// 	    else{
+// 	    	console.log('error probably',data)
+// 	    }
+// 	});
 
-	terminal.on('exit', function (code) {
-		code = code*1;
-	    console.log('child process exited with code ' + code);
-	    if(code === 0){
+// 	terminal.on('exit', function (code) {
+// 		code = code*1;
+// 	    console.log('child process exited with code ' + code);
+// 	    if(code === 0){
 
-	    	Job.findOne(job.id).exec(function(err,newJob){
-	    		if(err){ console.log('Job check err',err);}
+// 	    	Job.findOne(job.id).exec(function(err,newJob){
+// 	    		if(err){ console.log('Job check err',err);}
 
-	    		if(newJob.status != 'Cancelled'){
+// 	    		if(newJob.status != 'Cancelled'){
 
-			    	Datasource.create(acsEntry)
-				    .exec(function(err,newEntry){
-				    	if(err){ console.log('Datasource create error',err);}
-							newEntry.groups.add(user.userGroup.id);
-							newEntry.save(function(err){
-								if(err){console.log(err);}
-								Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-								.exec(function(err,updated_job){
-								if(err){ console.log('job update error',err); }
-								UserAction.create(message).exec(function(err,data){
-									if(err){console.log(err,data);}
-								});
-								sails.sockets.blast('job_updated',updated_job);
-							});
-						});
-					});
-				}else{
-					console.log('Exit from Job Cancel');
-				}
-			});
+// 			    	Datasource.create(acsEntry)
+// 				    .exec(function(err,newEntry){
+// 				    	if(err){ console.log('Datasource create error',err);}
+// 							newEntry.groups.add(user.userGroup.id);
+// 							newEntry.save(function(err){
+// 								if(err){console.log(err);}
+// 								Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+// 								.exec(function(err,updated_job){
+// 								if(err){ console.log('job update error',err); }
+// 								UserAction.create(message).exec(function(err,data){
+// 									if(err){console.log(err,data);}
+// 								});
+// 								sails.sockets.blast('job_updated',updated_job);
+// 							});
+// 						});
+// 					});
+// 				}else{
+// 					console.log('Exit from Job Cancel');
+// 				}
+// 			});
 
-		}else{
-			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Failure'})
-			.exec(function(err,updated_job){
-				if(err){ console.log('job update error',error); }
-				sails.sockets.blast('job_updated',updated_job);
-			});
-		}
-	});
+// 		}else{
+// 			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Failure'})
+// 			.exec(function(err,updated_job){
+// 				if(err){ console.log('job update error',error); }
+// 				sails.sockets.blast('job_updated',updated_job);
+// 			});
+// 		}
+// 	});
 
-	setTimeout(function() {
-		console.log('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
-	    	+' '+job.info[0].state
-	    	+' '+job.info[0].dataSource
-	    	+' '+job.info[0].year
-	    	+'\n');
-	    terminal.stdin.write('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
-	    	+' '+job.info[0].state
-	    	+' '+job.info[0].dataSource
-	    	+' '+job.info[0].year
-	    	+'\n');
+// 	setTimeout(function() {
+// 		console.log('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
+// 	    	+' '+job.info[0].state
+// 	    	+' '+job.info[0].dataSource
+// 	    	+' '+job.info[0].year
+// 	    	+'\n');
+// 	    terminal.stdin.write('php -f php/loadacs.php '+database.host+' '+database.port+' '+database.database+' '+database.user+' '+database.password+' '
+// 	    	+' '+job.info[0].state
+// 	    	+' '+job.info[0].dataSource
+// 	    	+' '+job.info[0].year
+// 	    	+'\n');
 
-	    Job.update({id:job.id},{pid:terminal.pid}).exec(function(err,updated_job){
-	    	if(err){ console.log('job update error',error); }
-			sails.sockets.blast('job_updated',updated_job);
-	    })
+// 	    Job.update({id:job.id},{pid:terminal.pid}).exec(function(err,updated_job){
+// 	    	if(err){ console.log('job update error',error); }
+// 			sails.sockets.blast('job_updated',updated_job);
+// 	    })
 
-	    terminal.stdin.end();
-	}, 1000);
-}
+// 	    terminal.stdin.end();
+// 	}, 1000);
+// }

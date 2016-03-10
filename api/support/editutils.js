@@ -7,10 +7,10 @@ var Feature = require('./feature.js');
 function updateStopTimes(datafile,trips,deltas){
 	var map = ['trips','deltas','file'],template = 'Select update_st_times(?,?,\'?\')';
 	var sqlTimeUpdate = new dbhelper(template,{
-												trips:formatStringList(trips),
-												deltas:formatNumList(deltas),
-												file:datafile
-											});
+	    trips:formatStringList(trips),
+	    deltas:formatNumList(deltas),
+	    file:datafile
+	});
 	sqlTimeUpdate.setMapping(map);
 	var sql = sqlTimeUpdate.getQuery();
 	console.log(sql);
@@ -87,9 +87,27 @@ var Util = {
 		console.log('datafile',datafile,'routeid',routeId);
 		return "SELECT update_route_geom('"+routeId+"'::TEXT,'"+datafile+"'::TEXT);";
 	},
+        addStopsToTrips:function(datafile,ids,trips,cb){
+	    if(ids.length <= 0) cb(undefined,{});
+
+	    var	template2 = 'SELECT add_stop_to_stop_times(\'?\',?,?,\'?\')',
+	        map2 = ['stop_id','sequence','trips','file'];
+	    
+	    var tripids = formatStringList(trips);
+	    var objs = [];
+	    ids.forEach(function(d,i){
+		objs.push({stop_id:d,sequence:i+1,trips:tripids,file:datafile});
+	    });
+	    var dbhelp = new dbhelper(template2,objs);
+	    dbhelp.setMapping(map2);
+	    var sql = dbhelp.getQuery();
+	    return sql;
+	    
+	    
+	    
+	},
 	addDelStops:function(datafile,featlist,trips,deltas,cb){
 		if(featlist.length <=0) cb(undefined,{});
-
 
 			var sql = '';
 
@@ -142,8 +160,8 @@ var Util = {
 	},
 
 	putTrip: function(datafile,trip){
-		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\',\'?\')',
-		map =['trip_id','headsign','route_id','service_id','shape_id','file'],sql ='';
+		var template = 'SELECT create_or_update_trip(\'?\',\'?\',\'?\',\'?\',\'?\',?,\'?\')',
+		map =['trip_id','headsign','route_id','service_id','shape_id','direction_id','file'],sql ='';
 
 		var data = [];
 		trip.trip_ids.forEach(function(d){ //every trip associated with this Group
@@ -154,6 +172,7 @@ var Util = {
 					route_id:trip.route_id,
 					shape_id:trip.id,
 					headsign:trip.headsign,
+			                direction_id:trip.direction_id,
 				});
 		});
 		dbhelp = new dbhelper(template,data);
@@ -175,8 +194,12 @@ var Util = {
 		console.log(sql);
 		return sql;
 	},
-
-	putData:function(agencyId,featlist,trips,deltas,route_id,route,shape,trip,freqs,maId,cb){
+        propogateFreqTrips : function(datafile,trip,freqs){
+	    console.log(trip);
+	    console.log(freqs);
+	    return '';
+	},
+	putData:function(agencyId,featlist,trips,deltas,route_id,route,shape,trip,freqs,freqKills,maId,cb){
 		var db = this;
 		Datasource.findOne(agencyId).exec(function(err,agency){
 			// debugger;
@@ -207,11 +230,22 @@ var Util = {
 				sql += db.putShape(datafile,route_id,trips,shape,trip,dbhelper); //and store the new shape of the trip
 			}
 			if(freqs && freqs.length > 0){
-				sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
+			    
+			        sql += db.putFrequencies(datafile,freqs); //if any of the frequency data was changed commit it
+			    if(trip.isEdited && !trip.isNew){
+				console.log(trip);
+				console.log(freqs);
+				var ids = freqs.map(function(d){return d.trip_id});
+				sql += db.addStopsToTrips(datafile,trip.stops,ids);		
+			    }
+			}
+		        if(freqKills && freqKills.length > 0){
+			    //destroy the frequencies set to be deleted
+			        sql += db.delFrequencies(datafile,freqKills);
 			}
 
 			var populateRoutesGeo = function(datafile,route_id){
-				Datasource.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
+				Agencies.query(db.updateRouteGeo(datafile,route_id),{},function(err2,data2){
 						if(err){ console.log(err2);}
 						cb(err,data2);
 				});
@@ -219,7 +253,8 @@ var Util = {
 
 			// sql += db.updateRouteGeo(datafile,route_id);
 			sql = 'BEGIN; ' + sql + ' COMMIT;'; //Wait to commit to avoid bad db state
-      Datasource.query(sql,{},function(err, data){ //execute the combined query;
+		        console.log(sql);
+      Agencies.query(sql,{},function(err, data){ //execute the combined query;
 				if(err){
 					console.log(err);
 				}
@@ -269,6 +304,19 @@ var Util = {
 			sql += updateStopTimes(datafile,trips,deltas); //update the arrivals & departures of the necessary trips
 															//based on the time deltas.
 			return sql;
+	},
+        delFrequencies : function(datafile,frequencies,cb){
+	    if(frequencies.length === 0){cb(null);return}
+
+	    var template = 'Select delete_freq(\'?\',\'?\');';
+	    var map = ['trip_id','file'];
+	    var data = frequencies.map(function(d){
+		return { trip_id:d.trip_id, file:datafile };
+	    });
+	    var dbhelp = new dbhelper(template,data);
+	    dbhelp.setMapping(map);
+	    var sql = dbhelp.getQuery();
+	    return sql;
 	},
 	putFrequencies : function(datafile,frequencies,cb){
 		if(frequencies.length === 0){

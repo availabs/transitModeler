@@ -155,6 +155,7 @@ module.exports = {
 		var shape = reqobj.shape;
 		var maId = reqobj.maId;
 		var freqs = reqobj.frequencies || [];
+	        var freqKills = reqobj.killFrequencies || [];
 		if(typeof agency === 'undefined'){
 			res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500);
 		}
@@ -166,7 +167,7 @@ module.exports = {
 			debugger;
 			if(err){ console.log(err); return;}
 			//console.log(data);
-			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,maId,function(err,data){
+			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,freqKills,maId,function(err,data){
 				if(err){
 					console.log(err);
 					res.json(err);
@@ -260,6 +261,7 @@ module.exports = {
 	},
 
 	backupSource   : function(req,res){
+		var user = req.session.User;
 		var name = req.body.name,
 		fips = req.body.fips || [],
 		settings = req.body.settings || {},
@@ -318,7 +320,7 @@ module.exports = {
 					//Do the cloning
 					var names = {clone:name,source:source},
 					config = {fips:fips,settings:settings};
-					spawnGtfsClone(job,names,config,savedata);
+					spawnGtfsClone(job,names,config,savedata,user);
 					req.session.flash={
 						err:flashMessage
 					};
@@ -353,16 +355,23 @@ module.exports = {
 };
 
 
-function spawnGtfsClone(job,names,config,savedata){
+function spawnGtfsClone(job,names,config,savedata,user){
 	var exec = require('child_process').exec;
 	var current_progress = 0;
 	var backupName = 'gtfs_edit_'+names.clone.toLowerCase();//set the name of the gtfs file
 	//First put the entry in the datasource table;
+
+	var DS = {
+		type:'gtfs',
+		tableName:backupName,
+		stateFips:config.fips,
+		settings:[config.settings],
+	};
 	console.log('uploaded settings',config.settings);
-	var sql = 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
-	sql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now());';
-	sql += 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
-	sql += 'SELECT clone_schema(\''+names.source+'\',\''+backupName+'\');'; //clone the source schema
+	// var DSsql = 'INSERT INTO datasource(type,"tableName","stateFips",settings,"createdAt","updatedAt") Values ';
+	// DSsql += '(\'gtfs\',\''+backupName+'\',\''+config.fips+'\',\''+JSON.stringify(config.settings)+'\',now(),now());';
+	var schemaSQL = 'DROP SCHEMA IF EXISTS "'+backupName+'" CASCADE;'; //destroy the schema if it already exists
+	schemaSQL += 'SELECT clone_schema(\''+names.source+'\',\''+backupName+'\');'; //clone the source schema
 	//Add this entry to the datasources table
 
 	var onFinish = function(){
@@ -375,7 +384,7 @@ function spawnGtfsClone(job,names,config,savedata){
 		});
 	};
 
-	var updateDatasource = function(data1,cb){
+	var updateDatasource = function(data1,cb,newDS){
 		var query2 = 'SELECT * FROM datasource WHERE "tableName" = \''+backupName+'\'';
 		Datasource.query(query2,{},function(err,data){
 			if(err){
@@ -388,44 +397,57 @@ function spawnGtfsClone(job,names,config,savedata){
 			{
 				settings = settings[0];
 			}
-
+			var agency_name = data1.rows[0].agency_name;
+			var newAgency = {
+				tablename:backupName,
+				agencyname: agency_name + '_'+names.clone.toLowerCase(),
+			};
 			settings.started = data1.rows[0].min;
-			settings.agency = data1.rows[0].agency_name;
-			console.log(settings);
-			var query3 = 'UPDATE datasource SET settings=\''+JSON.stringify([settings])+'\''+
-										' WHERE id='+data.rows[0].id+';';
-			console.log(query3);
-			Datasource.query(query3,{},function(err,data){
-				if(err)
-					console.log(err);
-				else
-					console.log(data);
-				cb();
+			settings.agency = agency_name;
+
+
+			Agencies.create(newAgency).exec(function(err,agData){
+				if(err) console.log(err);
+				settings.agencyid = agData.id;
+				console.log('old settings',newDS.settings);
+				console.log('new settings',settings);
+				newDS.settings[0] = settings;
+				console.log('attempt',newDS.settings);
+				newDS.groups.add(user.userGroup.id);
+				newDS.save(function(err){
+					if(err) console.log(err);
+					console.log(newDS);
+					cb();
+				});
 			});
 		});
 	};
 
+
 	//console.log(sql);
-	Datasource.query(sql,{},function(err,data){//run the queries
+	Agencies.query(schemaSQL,{},function(err,data){
+		if(err){console.log(err); return;}
+		Datasource.create(DS).exec(function(err,newDS){//run the queries
+			if(err){ console.log(err); return; }
+			var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+backupName+'".calendar as cal, "'+backupName+'".agency as agency GROUP BY agency.agency_name';
+			Agencies.query(query,{},function(err,data){
+				if(err){
+					query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
+					Agencies.query(query,{},function(err,data){
+						if(err){
+							console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
+						}
+						updateDatasource(data,onFinish,newDS);
+					});
+				}
+				else{
+					updateDatasource(data,onFinish,newDS);
+				}
+			});
 
-		if(err){ console.log(err); return; }
-		var query = 'SELECT min(cal.start_date),agency.agency_name FROM "'+backupName+'".calendar as cal, "'+backupName+'".agency as agency GROUP BY agency.agency_name';
-		Agencies.query(query,{},function(err,data){
-			if(err){
-				query = 'SELECT min(cal.date),agency.agency_name FROM "'+gtfsEntry.tableName+'".calendar_dates as cal, "'+gtfsEntry.tableName+'".agency as agency GROUP BY agency.agency_name';
-				Agencies.query(query,{},function(err,data){
-					if(err){
-						console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
-					}
-					updateDatasource(data,onFinish);
-				});
-			}
-			else{
-				updateDatasource(data,onFinish);
-			}
 		});
-
 	});
+
 }
 
 function save(job,backupName,data){

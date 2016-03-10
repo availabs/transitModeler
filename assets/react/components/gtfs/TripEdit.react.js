@@ -11,6 +11,7 @@ var MarketAreaNew = React.createClass({
         return {
             id:this.props.trip.getId(),
             headsign:this.props.trip.getHeadSign(),
+	    direction_id:this.props.trip.getDirectionId(),
             editing:false,
         };
     },
@@ -24,6 +25,12 @@ var MarketAreaNew = React.createClass({
             partialState[field] = e.target.value;
             scope.setState(partialState);
         };
+    },
+    _selectDirection : function(e){
+	var partialState={};
+	console.log(e);
+	partialState.direction_id = parseInt(e.target.value);
+	this.setState(partialState);
     },
     _editAction : function(){
       this.setState({editing:true});
@@ -56,6 +63,9 @@ var MarketAreaNew = React.createClass({
 
                 <h4>HeadSign: {this.state.headsign}
                 </h4>
+
+	        <h4>Direction: {this.state.direction_id?'Inbound':'Outbound'}
+	        </h4>
                 <button className={classes} onClick={this._editAction}>
                     {'edit'}
                 </button>
@@ -70,8 +80,23 @@ var MarketAreaNew = React.createClass({
 
 
                 <label>HeadSign: </label>
+	        <br/>
                 <input type="text" onChange={this._onChange('headsign')} value={this.state.headsign}/>
                 <br/>
+	        <label> Direction(0/1): </label> 
+	        <label className='radio-inline'>Out</label> 
+	        <input onClick={this._selectDirection} 
+	               type='radio' value='0' 
+	               name='direction_id'
+	               checked={this.state.direction_id===0}
+	         />
+	        <label className='radio-inline'>In</label> 
+                <input onClick={this._selectDirection} 
+	               type='radio' value='1' 
+	               name='direction_id'
+	               checked={this.state.direction_id===1}
+	         />
+	        <br/>
                 <button className={classes} onClick={this._setAction}>{'set'}</button>
                 <button className={classes} onClick={this._cancel}>{'cancel'}</button>
             </div>

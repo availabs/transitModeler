@@ -484,6 +484,12 @@ var Trip = function(T){
 	Trip.prototype.setHeadSign = function(hs){
 		this.headsign = hs;
 	};
+        Trip.prototype.getDirectionId = function(){
+	        return this.direction_id;
+	};
+        Trip.prototype.setDirectionId = function(id){
+	        this.direction_id = id;
+	};
 	Trip.prototype.setIds = function(ids){
 		this.trip_ids = ids;
 	};
@@ -525,6 +531,11 @@ var Trip = function(T){
 	Trip.prototype.addTripId = function(tid){
 		this.trip_ids.push(tid);
 	};
+        Trip.prototype.removeTripId = function(tid){
+	    var ix = this.trip_ids.indexOf(tid);
+	    if(ix >= 0)
+		this.trip_ids.splice(ix,1);
+	}
 	Trip.prototype.addStop = function(sid,ix){
 		this.stops.splice(ix,0,sid);
 	};
