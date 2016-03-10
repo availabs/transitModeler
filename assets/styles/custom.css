@@ -85,7 +85,26 @@ body {
   margin-left:-5px;
   margin-top: -5px;
 }
+.divMarkerRed{
+  background-color:#DA1010;
+  border-style:solid;
+  border-color:gray;
+  border-width:3px;
+  border-radius:10px;
+  margin-left:-5px;
+  margin-top: -5px;
 
+}
+.divMarkerGreen{
+  background-color:#10DA10;
+  border-style:solid;
+  border-color:gray;
+  border-width:3px;
+  border-radius:10px;
+  margin-left:-5px;
+  margin-top: -5px;
+
+}
 .stop{
   background-color:#FFF;
   border-style:solid;

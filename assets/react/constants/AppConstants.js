@@ -78,6 +78,7 @@ module.exports = {
     RECEIVE_FAREBOXS:null,
     DELETE_DATASOURCE:null,
     DELETE_ACS:null,
+    REMOVE_GEO_ROUTE:null,
 
     SET_GTFS: null,
     REFRESH_DATASOURCES:null,

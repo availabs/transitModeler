@@ -12,7 +12,11 @@ var React = require('react'),
     colorbrewer = require('colorbrewer'),
     Stop = require('./Gtfsutils').Stop,
     topojson = require('topojson'),
+    _  = require('lodash'),
     newStopId = require('../utils/randomId');
+
+require('leaflet-polylinedecorator');
+
 
 var map = null,
     layers = {},
@@ -68,13 +72,28 @@ var Map = React.createClass({
     _setStopOptions : function(map){
         var scope = this;
         return {
-
+	
                     pointToLayer: function (d, latlng) {
                         var options = {
                             icon:divmarker,
                             draggable:true,
-                        },
-                        obj = L.marker(latlng, options);
+                        };
+			var id = d.properties.stop_id;
+			if(scope.props.stopOrder[id] === 0)
+			{
+			    options.icon =  L.divIcon({
+				className:'divMarkerGreen',
+				iconSize:[13,13],
+			    });
+			}else if(scope.props.stopOrder[id] === 
+			         scope.props.stopOrder.max)
+			{
+			    options.icon = L.divIcon({
+				className:'divMarkerRed',
+				iconSize:[13,13],
+			    })
+			}    
+                        var obj = L.marker(latlng, options);
                         obj.on('dragend',function(){
                               // map.removeLayer(layers.paths);
                               obj.feature.geometry.coordinates[0] = obj._latlng.lng;
@@ -99,7 +118,6 @@ var Map = React.createClass({
                               }else{
                                 scope.props.editStop(f.properties.stop_id);
                               }
-
                             });
 
                     },
@@ -112,8 +130,8 @@ var Map = React.createClass({
                     style:function(feature){
                         return {
                             color:'yellow',
-                            opacity: 1,
-                            weight:10,
+                            opacity: 0.5,
+                            weight:7,
                             className:'routingPath'
                         };
                     },
@@ -132,6 +150,69 @@ var Map = React.createClass({
                                 e.target.setStyle({opacity:1})
                             }
                         });
+		      var latlngs = feat.geometry.coordinates;
+		      console.log(feat.geometry.type);
+			var zoom = map.getZoom();
+			
+			
+			var basePixelSize = 11
+			var normPixSize = Math.pow(2,zoom - basePixelSize)
+			console.log('current pixelsize ::',normPixSize);
+			latlngs.forEach(function(d,i) {
+			if(Array.isArray(d[0])){
+			  
+			  if(d.length == 1){
+			    return;
+			  }
+			}
+			var buf = _.cloneDeep(d);
+			buf.forEach(function(d){
+			  var temp = d[0];
+			  d[0] = d[1];
+			  d[1] = temp;
+			});
+			//put the arrows along the mid points of the 
+			//line segments
+			var ix = Math.floor((buf.length-1)/2);
+			var p1 = buf[ix];
+			var p2 = buf[ix+1];
+			var dirvec = [];
+			dirvec.push(p1[1] - p2[1]);
+			dirvec.push(p2[0] - p1[0]);
+			var length = Math.sqrt(
+			  dirvec[0]*dirvec[0] + dirvec[1]*dirvec[1]
+			);
+			
+			var scale = 0.001;
+			dirvec = 
+			     dirvec.map(function(d){return scale*d/length;});
+			
+			var p3 =[];
+			p3[0] = (p1[0]+p2[0])/2 + dirvec[0];
+			p3[1] = (p1[1]+p2[1])/2 + dirvec[1];
+			p2[0] = p2[0] + dirvec[0];
+			p2[1] = p2[1] + dirvec[1];
+			
+			var arrowHead =
+			           L.polylineDecorator([p3,p2]).addTo(map);
+			
+			  arrowHead.setPatterns([
+			      {offset:0,
+			       pixelSize:normPixSize,
+			       endOffset:'20%', 
+			       symbol: L.Symbol.arrowHead({
+				   pixelSize:normPixSize,
+				   polygon:false,
+				   tail:true,
+				   pathOptions: {stroke:true}
+			       })
+			      }
+			  ]);
+			  
+			      layer.addLayer(arrowHead).addTo(map);
+		      });
+		
+		       
                       },
                 }
     },

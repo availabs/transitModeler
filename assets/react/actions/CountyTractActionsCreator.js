@@ -22,4 +22,12 @@ module.exports = {
 
   },
 
+  removeRoute : function(aid,rid){
+      AppDispatcher.handleViewAction({
+	  type:ActionTypes.REMOVE_GEO_ROUTE,
+	  agency: aid,
+	  route: rid,
+      });
+  },
+
 };

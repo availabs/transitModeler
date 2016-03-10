@@ -116,28 +116,29 @@ module.exports = {
 
 	    //Allow user to specify census table
 	    MarketArea.findOne(req.param('marketareaId')).exec(function(err,ma){
-	      if (err) {res.send('{status:"error",message:"'+err+'"}',500); return console.log(err);}
+	      if (err || !ma) {res.send('{status:"error",message:"'+err || 'no ma' +'"}',500); return console.log(err || 'no ma');}
 	        var states = {};
-					console.log(ma);
-					var findState = function(id){
-						console.log(id);
-						var sid = (id+'').substr(0,2);
-						states[sid] = states[sid] || [];
-						states[sid].push(id);
-					};
-					ma.zones.forEach(function(geoid){
-						console.log(geoid);
-						findState(geoid);
-					});
-					var sql = Object.keys(states).map(function(sid){
-							censusTable = 'acs_5_year.acs5_'+sid+'_'+req.param('year')+'_tracts';
-							return "SELECT * FROM "+censusTable+" where geoid in ('"+states[sid].join("','")+"')";
-					}).join(' UNION ');
-					console.log(sql);
-					Ctpp.query(sql,{},function(err,data){
-						if(err){ return console.log(err,sql);}
-						res.json({census:data.rows});
-					});
+
+			console.log(ma);
+			var findState = function(id){
+				console.log(id);
+				var sid = (id+'').substr(0,2);
+				states[sid] = states[sid] || [];
+				states[sid].push(id);
+			};
+			ma.zones.forEach(function(geoid){
+				console.log(geoid);
+				findState(geoid);
+			});
+			var sql = Object.keys(states).map(function(sid){
+					censusTable = 'acs_5_year.acs5_'+sid+'_'+req.param('year')+'_tracts';
+					return "SELECT * FROM "+censusTable+" where geoid in ('"+states[sid].join("','")+"')";
+			}).join(' UNION ');
+			console.log(sql);
+			Ctpp.query(sql,{},function(err,data){
+				if(err){ return console.log(err,sql);}
+				res.json({census:data.rows});
+			});
 	    });
 
  	},

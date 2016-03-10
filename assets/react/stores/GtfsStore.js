@@ -155,6 +155,14 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     }
   }
 
+  function _sendDataToServer(){
+      if(_uploadGtfs.name){ //this has slightly different format
+          _putAndCloneGtfsData(_uploadGtfs,gtfsId);
+      }else{
+          _putGtfsData(_uploadGtfs,gtfsId);
+      }
+  }
+
   function _killVictimGtfs(){
       if(_victimid){
         delete  _eGtfsStopsGeo[_victimid];
@@ -387,16 +395,6 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
         _editResponse = null;         //reset the response variable for latter
       return retval;
     }
-    else if(!_editResponse && _uploadGtfs && Object.keys(_uploadGtfs).length > 0){
-      gtfsId = _editGtfs;
-      if(_uploadGtfs.name){ //this has slightly different format
-          _putAndCloneGtfsData(_uploadGtfs,gtfsId);
-      }else{
-          _putGtfsData(_uploadGtfs,gtfsId);
-      }
-      _uploadGtfs = {};
-      return _editResponse;
-    }
     return undefined;
   },
 
@@ -482,7 +480,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.SET_EDITOR_SAVE:
         _setUploadGtfs(action.data);
-        GtfsStore.emitChange();
+        _sendDataToServer();
     break;
 
     case ActionTypes.SET_TRIPS:
@@ -554,8 +552,8 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.RECEIVE_EDITOR_RESPONSES:
         _editResponse = action.data;
         //console.log('Receive Upload Response:',action.data);
-        _killVictimGtfs();
-        _resetRoutesAndStops();
+        //_killVictimGtfs();
+        //_resetRoutesAndStops();
         GtfsStore.emitChange();
     break;
 

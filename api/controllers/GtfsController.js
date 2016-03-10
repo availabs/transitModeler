@@ -155,6 +155,7 @@ module.exports = {
 		var shape = reqobj.shape;
 		var maId = reqobj.maId;
 		var freqs = reqobj.frequencies || [];
+	        var freqKills = reqobj.killFrequencies || [];
 		if(typeof agency === 'undefined'){
 			res.send('{status:"error",message:"Missing parameter:id. (Agency)"}',500);
 		}
@@ -166,7 +167,7 @@ module.exports = {
 			debugger;
 			if(err){ console.log(err); return;}
 			//console.log(data);
-			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,maId,function(err,data){
+			db.putData(agency,featList,trips,deltas,route_id,route,shape,trip,freqs,freqKills,maId,function(err,data){
 				if(err){
 					console.log(err);
 					res.json(err);

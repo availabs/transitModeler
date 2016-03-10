@@ -36,6 +36,7 @@ var TripSchedule = React.createClass({
             timeDeltas:null,
             lengths:null,
             units:'mi',
+	    frequency:null,
         };
     },
     _totaltime :function(){
@@ -89,6 +90,13 @@ var TripSchedule = React.createClass({
         this.setState({lengths:nextProps.lengths});
       }
     },
+
+    addFreq : function(){
+	this.props.addFreq();
+    },
+    deleteAction : function(freq){
+	    this.props.deleteFreq(freq);
+    },
     notifyChange : function(change){
       var isEdited;
       var editList = this.state.frequencies.map(function(f){
@@ -104,11 +112,13 @@ var TripSchedule = React.createClass({
       this.props.notifyChange(isEdited);
     },
     render: function() {
-        if(this.state.frequencies &&  Object.keys(this.state.frequencies).length > 0){
+        if(this.state.frequencies &&  Object.keys(this.state.frequencies).length >= 0){
           var scope = this;
           var tables = this.state.frequencies.sort(function(d1,d2){return diffSecs(d1.start_time,d2.start_time);}).map(function(d){
+	      console.log(d);
               return (
                 <GroupBox
+		  deleteAction={scope.deleteAction}
                   frequency={d}
                   deltas={scope.state.timeDeltas}
                   lengths = {scope.state.lengths}
@@ -120,6 +130,7 @@ var TripSchedule = React.createClass({
                 <table className="table">
                   <thead>
                     <tr>
+
                       <th>{'First Departure'}</th>
                       <th>{'Last Departure'}</th>
                       <th>{'Headway'}</th>
@@ -127,16 +138,29 @@ var TripSchedule = React.createClass({
                       <th>{'RunTime'}</th>
                       <th>{'Distance'}</th>
                       <th>{'Buses'}</th>
+		      <th></th>
                     </tr>
                   </thead>
-                  {tables.reverse()}
+                  <tbody>
+	      {tables.reverse()}
+	         
+	          <tr>
+		    <th> 
+		      <button className='btn' onClick={this.addFreq}>
+		      <i className='glyphicon glyphicon-plus'> </i> 
+                      </button>
+		    </th>
+	          </tr>
+	       </tbody>
               </table>
+
               </section>
           );
         }else{
           return (<div></div>);
         }
-    }
+    },
+    
 });
 
 module.exports = TripSchedule;

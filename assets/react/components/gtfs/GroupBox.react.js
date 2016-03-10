@@ -119,11 +119,14 @@ var TripSchedule = React.createClass({
     fieldBlur : function(field){
       var scope = this;
       return function(e){
-        console.log(e);
-        $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_')).show();
+          console.log(e);
+          $('#'+field+scope.state.frequency.trip_id.replace(/\,/g,'_'))
+	      .show();
 
-        $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_')).hide();
-
+          $('#'+field+'b'+scope.state.frequency.trip_id.replace(/\,/g,'_'))
+	      .hide();
+	  
+	  scope.props.notifyChange(scope.state.frequency.edited);
       };
     },
     _parseNum : function(str){
@@ -141,11 +144,16 @@ var TripSchedule = React.createClass({
         str = val.toString();
       return {val:val,string:str};
     },
+    deleteAction : function(){
+	this.props.deleteAction(this.state.frequency);
+    },
     _onChange : function(field){
         var scope = this;
         return function(e){
             var partialState = {},valstr;
-            if(scope.state.frequency[field] || scope.state.frequency[field] === 0){
+            if(scope.state.frequency[field] !== undefined || 
+	       scope.state.frequency[field] !== null || 
+	       scope.state.frequency[field] === 0){
               partialState.frequency = scope.state.frequency;
               if(field === 'headway_secs'){
                 valstr = scope._parseNum(e.target.value);
@@ -161,7 +169,7 @@ var TripSchedule = React.createClass({
               }else{
                 partialState.frequency.edited = undefined;
               }
-              scope.props.notifyChange(partialState.frequency.edited);
+              //scope.props.notifyChange(partialState.frequency.edited);
               scope.setState(partialState);
             }else{
                 if(field === 'idle'){
@@ -183,53 +191,105 @@ var TripSchedule = React.createClass({
           e = this.state.frequency.end_time,
           id= this.state.frequency.trip_id,
           h = this.state.frequency.headway_secs,
+	  field0 = 'trip_id',
           field1 = 'start_time',field2='end_time',
           field3='headway_secs',field4='idle';
-      var sclick = this.fieldClick(field1),
+      var idclick= this.fieldClick(field0),
+	  sclick = this.fieldClick(field1),
           eclick = this.fieldClick(field2),
           hclick = this.fieldClick(field3),
           iclick = this.fieldClick(field4),
+	  idblur= this.fieldBlur(field0),
           sblur = this.fieldBlur(field1),
           eblur = this.fieldBlur(field2),
           hblur = this.fieldBlur(field3),
           iblur = this.fieldBlur(field4),
+	  idchange=this._onChange(field0),
           schange= this._onChange(field1),
           echange= this._onChange(field2),
           hchange= this._onChange(field3),
           ichange= this._onChange(field4);
+      var id_fix = id.replace('/\,/g','_');
       var style={overflow:'hidden'};
+
+	/*
+	   <td>
+	         <div id={field0+id_fix}>{id}</div>
+	         <input size={140} className='form-control' type='text'id={field0+'b'+id_fix} style={{display:'none'}} onChange={idchange}
+	                value={id} onBlur={idblur} />
+	   
+	      </td>
+	 */
       return(
 
-        <tbody>
+        
             <tr>
+	      
               <td onClick={sclick}>
-                <div id={field1+id.replace(/\,/g,'_')}>{s}</div>
-                <input size={8} className={'form-control'} type='text'id={field1+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
+                <div id={field1+id_fix}>{s}</div>
+                <input size={8} className={'form-control'} type='text'id={field1+'b'+id_fix} style={{display:'none'}} onChange={schange} value={this.state.frequency.start_time} onBlur={sblur}></input>
               </td>
 
               <td onClick={eclick} >
-                <div id={field2+id.replace(/\,/g,'_')}>{e}</div>
-                <input size={8} className={'form-control'} type='text'id={field2+'b'+id.replace(/\,/g,'_')} style={{display:'none'}} onChange={echange}value={this.state.frequency.end_time} onBlur={eblur}></input>
+                <div id={field2+id_fix}>{e}</div>
+                <input size={8} className={'form-control'} type='text'id={field2+'b'+id_fix} style={{display:'none'}} onChange={echange}value={this.state.frequency.end_time} onBlur={eblur}></input>
               </td>
 
               <td onClick={hclick} >
-                <div id={field3+id.replace(/\,/g,'_')}>{h/60 + ' min'}</div>
-                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id.replace(/\,/g,'_')} type='text'onChange={hchange} value={this.state.headwaybuffer} onBlur={hblur}></input>
+                <div id={field3+id_fix}>{h/60 + ' min'}</div>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field3+'b'+id_fix} type='text'onChange={hchange} value={this.state.headwaybuffer} onBlur={hblur}></input>
               </td>
 
               <td onClick={iclick} >
-                <div id={field4+id.replace(/\,/g,'_')}>{this.state.idle + ' min'}</div>
-                <input size={4} className={'form-control'} style={{display:'none'}} id={field4+'b'+id.replace(/\,/g,'_')} type='text'onChange={ichange} value={this.state.idlebuffer} onBlur={iblur}></input>
+                <div id={field4+id_fix}>{this.state.idle + ' min'}</div>
+                <input size={4} className={'form-control'} style={{display:'none'}} id={field4+'b'+id_fix} type='text'onChange={ichange} value={this.state.idlebuffer} onBlur={iblur}></input>
               </td>
 
               <td>{Math.round(this._totalTimeMin()) + 'mins'}</td>
               <td>{Math.round(this._totalDistance(this.state.units)*10)/10 +' '+ this.state.units}</td>
               <td>{this._totalruns()}</td>
+	      <td><a data-toggle="modal" className='btn btn-danger'
+	           data-target={"#deleteModal"+id} data-backdrop="false">
+	           <i className='glyphicon glyphicon-trash'></i>
+	          </a>
+	      </td>
+	      <td>{this.deleteModal()}</td>
             </tr>
-          </tbody>
+          
       );
     },
+    deleteModal:function(){
+	if(!this.state.frequency){
+	    return <div></div>;
+	}
+	var freq = this.state.frequency;
+        var text = <h4>Are you sure you want to delete the run from {freq.start_time} till {freq.end_time}?</h4>;
+        var deleteButton = <button type="button" className="btn btn-info" onClick={this.deleteAction} data-dismiss="modal">Delete</button>;
+        
+        return (
+            <div id={"deleteModal"+freq.trip_id} className="modal fade" tabIndex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div className="modal-dialog">
+                    <div className="modal-content">
 
+                        <div className="modal-header">
+                            <button type="button" className="close" data-dismiss="modal"  aria-hidden="true">×</button>
+                            <h4 className="modal-title" id="myModalLabel2">Trip Frequency</h4>
+                        </div>
+                        <div className="modal-body">
+                             {text}
+                        </div>
+
+                        <div className="modal-footer">
+                           <br />
+                            <button type="button" className="btn btn-danger" data-dismiss="modal" >Cancel</button>
+                            {deleteButton}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        );
+    },
 });
 
 module.exports = TripSchedule;
