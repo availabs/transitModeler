@@ -129,11 +129,13 @@ var MarketAreaNew = React.createClass({
     },
     _onChange : function(){
       var ma = MarketAreaStore.getCurrentMarketArea();
-      var sma = this.state.marketarea;
-      Object.keys(ma).forEach(function(d){
-        sma[d] = (ma[d])?ma[d]:sma[d];
-      });
-      this.setState({marketarea:sma});
+      if(ma){
+	  var sma = this.state.marketarea;
+	  Object.keys(ma).forEach(function(d){
+              sma[d] = (ma[d])?ma[d]:sma[d];
+	  });
+	  this.setState({marketarea:sma});
+      }
     },
     componentWillUnmount:function(){
       GeoDataStore.removeChangeListener(this._onGeoChange);
@@ -491,6 +493,9 @@ var MarketAreaNew = React.createClass({
             countyTracts.features.forEach(function(d,i){
                 if(tractsFilterMap[d.properties.geoid]){
                     d.properties.type = 0;
+		    tracts.features.push(d);
+		}else if(!tractsFilterMap[d.properties.geoid]){
+		    d.properties.type = 1;
 		    tracts.features.push(d);
 		}
             });
