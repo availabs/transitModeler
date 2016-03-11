@@ -134,7 +134,7 @@ var CtppMap = React.createClass({
                                 className: 'route route_'+feature.properties.short_name,
                                 weight:7,
                                 opacity:0.3,
-                                color : scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name] : '#000'
+                                color : (scope.props.routeColors && scope.props.routeColors[feature.properties.short_name]) ? scope.props.routeColors[feature.properties.short_name] : '#000'
                                 //feature.properties.color ? feature.properties.color : '#000'
                             };
                         },

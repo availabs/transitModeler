@@ -188,6 +188,7 @@ var cacheData = function(req,MA,res){
   //fetch counites
   Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
     var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
+    res.send(MA.toJSON());
     console.log(url);
     request(url,function(err,resp,data){
       if(err){console.log('Error Getting Counties');}
@@ -200,7 +201,7 @@ var cacheData = function(req,MA,res){
           if(err){console.log('Error Getting Tracts',err);}
           console.log(data);
           fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
-            res.send(MA.toJSON());
+            console.log("No Errors updated geo files for:",MA.id);
           });
         });
       });

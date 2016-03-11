@@ -57,7 +57,7 @@ var CensusMap = React.createClass({
             return geo.features.map(function(feature){
                 if( tractData[feature.properties.geoid] ){
                      var total = 0;
-                    category.forEach(function(val){ total += tractData[feature.properties.geoid][val] });
+                    category.forEach(function(val){ total += tractData[feature.properties.geoid]?tractData[feature.properties.geoid][val]:0 });
                     return (tractData[feature.properties.geoid][activeVariable]/total)*100;
                 }
                 return 0
@@ -119,7 +119,7 @@ var CensusMap = React.createClass({
             tractData = this.props.censusData.getTractData();
 
         var total = 0;
-        category.forEach(function(val){ total += tractData[props.geoid][val] });
+        category.forEach(function(val){ total += (tractData[props.geoid])?tractData[props.geoid][val]:0 });
         var rows= category.map(function(cen_var,i){
 
             var row =   '<tr>'+
@@ -270,7 +270,7 @@ var CensusMap = React.createClass({
                             className: 'route route_'+feature.properties.short_name,
                             weight:7,
                             opacity:0.3,
-                            color : scope.props.routeColors[feature.properties.short_name] ? scope.props.routeColors[feature.properties.short_name] : '#000'
+                            color : (scope.props.routeColors && scope.props.routeColors[feature.properties.short_name]) ? scope.props.routeColors[feature.properties.short_name] : '#000'
                         };
                     },
 

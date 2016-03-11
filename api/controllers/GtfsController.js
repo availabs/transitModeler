@@ -455,13 +455,13 @@ function save(job,backupName,data){
 	Datasource.find( {tableName:backupName},function(err,result){
 
 		var agency=result[0].id,deltas=data.deltas,maId = data.maId,route = new RouteObj(data.route),
-		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.freqs;
+		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.frequencies,freqKills=data.killFrequencies;
 		var featList = data.data
 		.map(function(d){
 				return new Stop(d.stop);
 			});
 		console.log("PUTTING DATA");
-		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,maId,function(err,data){
+		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,freqKills,maId,function(err,data){
 			if(err){
 				console.log(err);
 				Job.update({id:job.id},{isFinished:true,finised:Data(),status:'Failure',progress:100})
