@@ -82,7 +82,11 @@ module.exports = {
 					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
 					//console.log(sql);
 			Agencies.query(sql,{},function(err,data){
-				if(err) console.log('error',err);
+				if(err)
+				    {
+					console.log(err);
+					res.send('{status:"error",message:"Upload Failed"}',500);
+				    }
 
 					var Routes = {};
 					var trips = {};

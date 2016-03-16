@@ -17,16 +17,29 @@ var MarketAreaNew = React.createClass({
       };
     },
     componentWillReceiveProps : function(nextProps){
-      var nextState = this.state;
-      if(nextProps.route.trips && (nextProps.route.trips !== this.props.route.trips) ){
-          nextState.trips = nextProps.route.trips;
-      }
+	var nextState = this.state;
+	if(nextProps.route.trips && 
+	   (nextProps.route.trips !== this.props.route.trips) )
+	{
+            nextState.trips = nextProps.route.trips;
+	}
 
       this.setState(nextState);
 
     },
+    componentDidMount : function(){
+
+    },
+    componentWillUnmount : function(){
+
+    },
     _crtTripButton : function(length){
-      if(length >= 0 && !this.props.isCreating){
+	var scope =this;
+	if(!this.state.trips) return <span></span>
+	var trips = Object.keys(this.state.trips)
+	                  .map(function(d){return scope.state.trips[d].isNew});
+	var existsNew = trips.reduce(function(a,b){ return a || b });
+      if(length >= 0 && !existsNew && !this.props.isCreating){
         return (
             <CreationForm
               values={{Headsign:'HeadSign'}}
@@ -43,22 +56,49 @@ var MarketAreaNew = React.createClass({
     },
     editButton : function(ix){
       if(this.props.currentTrip !== null){
-        return (<button onClick={this.editTripClick} type="button" width={'75%'} className="btn btn-danger">
-          <i className="fa fa-pencil"></i> {' Edit Trip'}
-        </button>);
+        return (<button 
+	                onClick={this.editTripClick} 
+	                type="button" 
+	                width={'75%'} 
+	                className="btn btn-danger">
+                    <i className="fa fa-pencil"></i> 
+	              {'Edit Trip'}
+                 </button>);
       }
       else{
         return (<div></div>);
       }
     },
+    drawTripButton : function(tripid){
+	var scope = this;
+	if(tripid)
+	{
+	    var classes = "btn btn-lg btn-block btn-default active ";
+	    return (<button  
+		style={{fontSize:'10px'}} 
+		  id={'newTrip'} 
+		  className={classes}
+		  onClick={scope.props.onTripSelect.bind(null,tripid)}>
+		  
+		  {'Click to Drop Points'}
+		  
+		  </button>);
+	}
+	else
+	{
+	    return <span></span>;
+	}
+    },
     render: function() {
         var buttons = <span/>,scope=this;
+	var trip_id;
         if(this.props.route && this.props.route.trips){
           //if the current route is defined and we have a list of trips
           //render buttons to be able to select them.
-          buttons = scope.state.trips.map(function(trip,i){
+          buttons = Object.keys(scope.state.trips).map(function(tripid){
             var classes = "btn btn-lg btn-block";
-            if(scope.props.currentTrip === i){
+	    var trip = scope.state.trips[tripid];
+            if(scope.props.currentTrip === tripid){
               classes+=' active';
             }
             if(trip.direction_id===0){
@@ -66,20 +106,17 @@ var MarketAreaNew = React.createClass({
             }else if(trip.direction_id === 1){
               classes+=' btn-primary';
             }
-            if(scope.props.isCreating && !scope.props.editing){
-              return (
-              <button id={'tooltip'} data-toggle={'tooltip'} data-placement={'left'}
-                data-original-title={'Click Me to Begin'} style={{fontSize:'10px'}} className={classes}
-              onClick={scope.props.onTripSelect.bind(null,i)}>
-                                {trip.headsign }
-              </button>
-            );
+	      console.log('trip : ',trip);
+            if(scope.props.isCreating && !scope.props.editing && 
+	       trip.isNew){
+		   trip_id = tripid;
+		   return <span></span>
             }
             return (
               <div>
               <div className='input-group-btn'>
               <button style={{fontSize:'10px'}} width={'75%'} className={classes}
-              onClick={scope.props.onTripSelect.bind(null,i)}>
+              onClick={scope.props.onTripSelect.bind(null,tripid)}>
                           {trip.headsign}
               </button>
               </div>
@@ -94,19 +131,20 @@ var MarketAreaNew = React.createClass({
         return (
             <section className="widget">
                 <div className="body no-margin" style={divstyle}>
+	            {Array.isArray(buttons) ? 'Service Headsigns':''}
                     {buttons}
-                    {scope._crtTripButton(buttons.length)}
+
                 </div>
                 <div>
+	          {scope.drawTripButton(trip_id)}
+	          {scope._crtTripButton(buttons.length)}
                   {scope.editButton()}
                 </div>
             </section>
         );
     },
     componentDidUpdate : function(){
-      if(this.props.isCreating){
-        $('#tooltip.active').tooltip('show');
-      }
+
     },
 });
 
