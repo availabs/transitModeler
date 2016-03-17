@@ -116,7 +116,7 @@ var ModelRunSelector = React.createClass({
 
 							</div>
 		        </div>
-		        <div className='col-xs-4'>
+		        <div className='col-xs-2'>
 		            {this.props.loading ?  loading :'' }
 	           	</div>
 	    	</div>
