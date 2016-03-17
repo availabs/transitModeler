@@ -66,7 +66,7 @@ var FarezoneSelector = React.createClass({
 	    <div className='row' style={{width:this.props.width || '100%',
 			 float:'left',padding:'0'}}>
 	    <div className="input-group input-group">
-	    <div className='col-md-8'>
+	   
             <Select2Component
             id='FilterSelector'
             dataSet={filterSelect}
@@ -76,16 +76,13 @@ var FarezoneSelector = React.createClass({
             placeholder={'Farezone filters'}
             val={scope.props.selection}
             />
-	    </div>
 	    
 	    {(scope.props.selection && scope.props.selection.length > 0) ? 
-	     (<div className='col-md-4' style={{padding:'0'}}><button
-	         className={'btn btn-danger'}
-	         onClick={this.clear}
-	         > 
-	         <i className='glyphicon glyphicon-remove'> </i>
-	         </button></div>)
-		    : (<div></div>)
+	     (<span className='input-group-addon' >
+		 <a onClick={this.clear}> 
+	          <i className='glyphicon glyphicon-remove'> </i>
+	         </a></span>)
+		    : (<span></span>)
 	    }
 	    </div>
 	    </div>
