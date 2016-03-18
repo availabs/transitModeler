@@ -109,7 +109,7 @@ var GtfsEditorMap = React.createClass({
         return {
 
             routingLayer:{
-                id:routingLayerId++,
+                id:routingLayerId,
                 geo:routingGeo,
                 options:{
                   bringToFront:true,

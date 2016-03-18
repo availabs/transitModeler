@@ -361,6 +361,13 @@ var MarketAreaNew = React.createClass({
 	var temp;
 	if(partialState.frequencies.length === 0)
 	{
+	    if(Object.keys(partialState.schedules).length === 0)
+	    {
+		var dataset = partialState.currentGtfs;
+		partialState = scope.getInitialState();
+		partialState.currentGtfs = dataset;
+	    }
+	    
 	    //remove the trip
 	    var sched = partialState.schedules[partialState.currentRoute];
 	    var deadT = sched
@@ -368,14 +375,16 @@ var MarketAreaNew = React.createClass({
 	    if(partialState.schedules[partialState.currentRoute]
 		.trips.length === 0 )
 	    {   //if no trips left in route wait
-		partialState.currentTrip = null;
-		partialState.TripObj = undefined;
+		//remove the route from the schedule
+		var dataset = partialState.currentGtfs;
+		delete partialState.schedules[partialState.currentRoute]; 
+		partialState = scope.getInitialState();
+		partialState.currentGtfs = dataset;
 	    }
 	    else
 	    {
 		
 		//set the current trip to the next available
-
 		var ix = 0
 		for(var i=0; i < sched.trips.length; i++)
 		{
@@ -387,7 +396,6 @@ var MarketAreaNew = React.createClass({
 		    }
 		}		
 		partialState.currentTrip = ix;
-		    
 		var T = new Trip(null);
 		temp = sched.trips[partialState.currentTrip];
 		T.setId(temp.id);
