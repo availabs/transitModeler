@@ -42,6 +42,10 @@ var GtfsDisplay = React.createClass({
     setDataset   : function(dataset){
       this.setState({currentData:dataset});
     },
+    gtfsdownload : function(name){
+	location.href = '/datasources/gtfs/generate?name='+name;
+    },
+    
     renderCurrentData: function(){
         var scope = this;
         //console.log(this.props.datasources.gtfs);
@@ -54,7 +58,15 @@ var GtfsDisplay = React.createClass({
                 <tr>
                     <td>{dataset.settings.agency}</td>
                     <td>{(new Date(dataset.settings.started)).toLocaleDateString()}</td>
-                    <td>{dataset.tableName}</td>
+                    <td>
+		             {dataset.tableName}
+		    </td>
+		    <td>
+		<a onClick={scope.gtfsdownload.bind(null,dataset.tableName)}>
+		     <i className={'btn btn-default '+
+				  'glyphicon glyphicon-download-alt'}></i>
+		</a>
+		    </td>
                     <td>
                       {scope.renderButton(dataset) }
                     </td>
@@ -83,6 +95,7 @@ var GtfsDisplay = React.createClass({
                             <td>Agency</td>
                             <td>Origin Date</td>
                             <td>TableName</td>
+	                    <td></td>
                             <td></td>
                         </tr>
                     </thead>
@@ -142,11 +155,11 @@ var GtfsDisplay = React.createClass({
             <div className="content container">
                 <h2 className="page-title">GTFS<small>General Transit Feed Specification</small></h2>
                 <div className="row">
-                    <div className="col-lg-6">
+                    <div className="col-lg-4">
                         {this.renderDataController()}
 
                     </div>
-                    <div className="col-lg-6">
+                    <div className="col-lg-8">
                         {this.renderCurrentData()}
 
                     </div>

@@ -335,26 +335,27 @@ module.exports = {
 	},
 
 	downloadGtfs   : function(req,res){
-		var tableName = req.param('name');
-		exec('node ./api/support/gtfsExport.js ' + tableName ,function(err,sout,serr){
-			if(err){
+	    var tableName = req.param('name');
+	    req.session.User.isDownloading = true;
+	    exec('node ./api/support/gtfsExport.js ' + tableName ,function(err,sout,serr){
+		if(err){
+		    console.log(err);
+		    res.send('{status:"Error", message:"Internal Server Failure"}',500);
+		}else{
+		    //if(sout) console.log('stdout : ',sout);
+		    if(serr){
+			console.log('stderr : ',serr);
+			res.send('{status:"Error", message:"Internal Server Failure"}',500);
+		    }
+		    else{
+			console.log('generated');
+			res.download('./api/support/gtfsFiles/gtfsFiles.zip',tableName + '.zip',function(err){
+			    if(err)
 				console.log(err);
-				res.send('{status:"Error", message:"Internal Server Failure"}',500);
-			}else{
-				//if(sout) console.log('stdout : ',sout);
-				if(serr){
-					console.log('stderr : ',serr);
-					res.send('{status:"Error", message:"Internal Server Failure"}',500);
-				}
-				else{
-					console.log('generated');
-					res.download('./api/support/gtfsFiles/gtfsFiles.zip','gtfs.zip',function(err){
-						if(err)
-							console.log(err);
-					});
-				}
-			}
-		});
+			});
+		    }
+		}
+	    });
 	}
 };
 
