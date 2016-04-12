@@ -480,11 +480,13 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract
 			// );
 			//add the to the regression riders the indicator variable times
 			var census = tract_forcasts && tract_forcasts[tractPair.home_tract][cv.name] ? tract_forcasts[tractPair.home_tract][cv.name]  : acs_data.acs[tractPair.home_tract][cv.name]
+			console.log('test', census, cv.coef, cv.name)
 			regressionRiders += census*cv.coef;
 
 		});
 		//the regression ratio = # of riders divided by those in the current tract that take the bus to work.
 		regRatio= regressionRiders / acs_data.acs[tractPair.home_tract].bus_to_work;
+		console.log('rr comp', regressionRiders, acs_data.acs[tractPair.home_tract].bus_to_work)
 		console.log('RR', regressionRiders);
 
 		// console.log('regression check:',tractPair.home_tract,regressionRiders,'/', acs_data.acs[tractPair.home_tract].bus_to_work,'=',regRatio);
