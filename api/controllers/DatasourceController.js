@@ -291,9 +291,9 @@ module.exports = {
 	    	if(err){console.log('find datasource error',err);}
 			var routes = JSON.stringify(route_id).replace(/\"/g,"'").replace("[","(").replace("]",")");
 			var sql = 'SELECT distinct ST_AsGeoJSON(stops.geom) stop_geom,stops.stop_id,stops.stop_code,stops.stop_name,stops.stop_desc,'+
-								'stops.zone_id,stops.stop_url,R.route_short_name '+
+								'stops.zone_id,stops.stop_url,R.route_short_name,a.fare_zone '+
 								'FROM "'+mgtfs.tableName+'".stops '+
-								//'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
+								'LEFT OUTER JOIN fare_zones AS a on stops.stop_code = a.stop_num '+
 								'JOIN "'+mgtfs.tableName+'".stop_times AS ST on ST.stop_id = stops.stop_id ' +
 								'JOIN "'+mgtfs.tableName+'".trips AS T on T.trip_id = ST.trip_id '+
 								'JOIN "'+mgtfs.tableName+'".routes AS R on R.route_id = T.route_id '+
@@ -312,18 +312,19 @@ module.exports = {
                 var stops =[];
                 data.rows.forEach(function(stop){
                   if(stops.indexOf(stop) == -1){
-                    var Feature = {};
-                    Feature.type="Feature";
-                    Feature.geometry = JSON.parse(stop.stop_geom);
-                    Feature.properties = {};
-                    Feature.properties.stop_code = stop.stop_code;
+                      var Feature = {};
+                      Feature.type="Feature";
+                      Feature.geometry = JSON.parse(stop.stop_geom);
+                      Feature.properties = {};
+                      Feature.properties.stop_code = stop.stop_code;
                     // Feature.properties.fare_zone = stop.fare_zone;
-                    Feature.properties.line = stop.route_short_name;
-                    Feature.properties.stop_id = stop.stop_id;
-										Feature.properties.stop_desc = stop.stop_desc;
-										Feature.properties.stop_url = stop.stop_url;
-										Feature.properties.stop_name = stop.stop_name;
-										Feature.properties.zone_id = stop.zone_id;
+                      Feature.properties.line = stop.route_short_name;
+                      Feature.properties.stop_id = stop.stop_id;
+		      Feature.properties.stop_desc = stop.stop_desc;
+		      Feature.properties.stop_url = stop.stop_url;
+		      Feature.properties.stop_name = stop.stop_name;
+		      Feature.properties.zone_id = stop.zone_id;
+		      Feature.properties.fare_zone = stop.fare_zone;
                     stopsCollection.features.push(Feature);
                   }
 

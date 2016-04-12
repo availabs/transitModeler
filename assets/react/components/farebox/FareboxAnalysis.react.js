@@ -508,6 +508,10 @@ var FareboxAnalysis = React.createClass({
           retval.settings = d;
           return retval;
         });
+	var StopData = scope.props.stopsGeo.features.reduce(function(acc,b){
+	    acc.data[b.properties.stop_code] = ' FZ: '+b.properties.fare_zone;
+	    return acc;
+	},{data:{}});
         console.log('DATASOURCES',this.props.datasources);
         return (
     	   <div>
@@ -519,7 +523,7 @@ var FareboxAnalysis = React.createClass({
                             routes={routes}
                             gtfsSettings={(this.props.datasources[this.props.marketarea.origin_gtfs])?this.props.datasources[this.props.marketarea.origin_gtfs].settings : {}}
                             tracts ={this.props.tracts}
-                            stopFareZones={true}/>
+	                    stopsData={StopData}/>
                          <section className="widget">
                            FareZones
                            <FareboxRoutes

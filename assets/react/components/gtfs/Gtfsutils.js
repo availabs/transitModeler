@@ -12,10 +12,14 @@ var Stops = function(){
 	this.ids  =	[];
 };
 	Stops.prototype.addStop = function(stop){
-		if(!stop.getId)
+	    try{
+	        if(!stop.getId)
 			stop = new Stop(stop);
 		this.ids.push(stop.getId());
 		this.list.push(stop);
+	    }catch(e){
+		console.log(stop);
+	    }
 	};
 	Stops.prototype.overwrite = function(stop,old){
 		var ix = this.ids.indexOf(stop.getId());
@@ -158,9 +162,13 @@ var StopsPair = function(){
 		}
 	};
 	StopsPair.prototype.cloneStop = function(id){
-		if(this.main.hasStop(id)){
-			return this.main.getStop(id).cloneCopy();
-		}
+	    if(this.main.hasStop(id)){
+		return this.main.getStop(id).cloneCopy();
+	    }
+	    else if(this.temp.hasStop(id))
+	    {
+		return this.temp.getStop(id);
+	    }
 	};
 	StopsPair.prototype.merge = function(){
 		var scope = this;

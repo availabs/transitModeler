@@ -184,8 +184,7 @@ var MarketAreaNew = React.createClass({
         T.setDirectionId(temp.direction_id);
         GtfsActionsCreator.setTrips(temp.tripids);
         if(this.state.isCreating){
-          $('#tooltip2').tooltip('show');
-          $('#tooltip.active').tooltip('destroy');
+
         }
         this.state.stopColl.scrap();
         if(T.getStops().length === 0)
@@ -255,7 +254,7 @@ var MarketAreaNew = React.createClass({
         var stop = this.state.stopColl.cloneStop(tempStop.getId());
         stop.setPoint(tempStop.getPoint());
         stop.setEdited();
-        this.state.stopColl.addTemp(stop);
+        this.state.stopColl.addTemp(stop,stop.getId());
         this.setState({edited:true,stopColl:this.state.stopColl});
     },
     _buildSave:function(){
@@ -362,6 +361,13 @@ var MarketAreaNew = React.createClass({
 	var temp;
 	if(partialState.frequencies.length === 0)
 	{
+	    if(Object.keys(partialState.schedules).length === 0)
+	    {
+		var dataset = partialState.currentGtfs;
+		partialState = scope.getInitialState();
+		partialState.currentGtfs = dataset;
+	    }
+	    
 	    //remove the trip
 	    var sched = partialState.schedules[partialState.currentRoute];
 	    var deadT = sched
@@ -369,14 +375,16 @@ var MarketAreaNew = React.createClass({
 	    if(partialState.schedules[partialState.currentRoute]
 		.trips.length === 0 )
 	    {   //if no trips left in route wait
-		partialState.currentTrip = null;
-		partialState.TripObj = undefined;
+		//remove the route from the schedule
+		var dataset = partialState.currentGtfs;
+		delete partialState.schedules[partialState.currentRoute]; 
+		partialState = scope.getInitialState();
+		partialState.currentGtfs = dataset;
 	    }
 	    else
 	    {
 		
 		//set the current trip to the next available
-
 		var ix = 0
 		for(var i=0; i < sched.trips.length; i++)
 		{
@@ -388,7 +396,6 @@ var MarketAreaNew = React.createClass({
 		    }
 		}		
 		partialState.currentTrip = ix;
-		    
 		var T = new Trip(null);
 		temp = sched.trips[partialState.currentTrip];
 		T.setId(temp.id);
@@ -506,7 +513,10 @@ var MarketAreaNew = React.createClass({
     componentWillUpdate:function(nextProps, nextState){
         //if the selected trip isn't null and isnt the same as the last trip
         var stopTraj;
-        if(nextState.currentTrip !== null && (nextState.currentTrip !== this.state.currentTrip)) {
+        if(nextState.currentTrip !== null && 
+	   (nextState.currentTrip !== this.state.currentTrip) &&
+	   (nextState.currentRoute !== null)
+	){
             var route = nextState.schedules[nextState.currentRoute],
             trip = route.trips[nextState.currentTrip];
             stopTraj = trip.stops;
@@ -603,9 +613,9 @@ var MarketAreaNew = React.createClass({
         trip.setServiceId(this.state.TripObj.getServiceId());
 	trip.setDirectionId(0);
         trip.setIds(this.state.TripObj.getIds());
-        $('#tooltip2').tooltip('destroy');
+
         // this.state.schedules[this.state.currentRoute].trips[this.state.currentTrip] = trip; //change trip entry in the schedule structure;
-        this.setState({isNewTrip:false,stopColl:buffStops,TripObj:trip,tripChange:true,edited:true});
+        this.setState({isNewTrip:false,stopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
     },
     _addRoute : function(formObj){
         var id = idGen("Route"),shortname=formObj['New Route'],
@@ -660,9 +670,14 @@ var MarketAreaNew = React.createClass({
 	}
     },
     _addTrip : function(formObj){
+	
         if(!this.editCheckConfirm(this)){
           return false;
         }
+	
+	
+
+
         var service_id = this.state.currentService,
         trip_id        = idGen('Trip'),
         headsign       = formObj.Headsign,
@@ -684,10 +699,12 @@ var MarketAreaNew = React.createClass({
                 tripids:[trip_id],
                 service_id:service_id,
                 isNew:true,
+		
             };
 
             var loc = schedules[this.state.currentRoute].trips.push(trip) - 1;
-            freq = this.createNewFreq(trip.tripids[0]);
+            var freq = this.createNewFreq(trip.tripids[0]);
+	    trip.intervals.push(freq);
             this.setState({isCreating:true,routingGeo:emptyGeojson,schedules:schedules,frequencies:[freq],currentTrip:loc});
         }
     },
@@ -810,12 +827,11 @@ var MarketAreaNew = React.createClass({
       if( this.state.currentRoute && this.state.currentService ){
         collection.id = this.state.currentRoute;
         collection.trips = this.state.schedules[this.state.currentRoute].trips
-                                     .filter(function(t){
-                                       if(t.service_id === scope.state.currentService)
-                                          return true;
-                                      else
-                                          return false;
-                                     });
+                                     .reduce(function(prev,cur,i){
+                                       if(cur.service_id === scope.state.currentService)
+                                          prev[i] = cur;
+					  return prev;
+                                     },{});
       }
       return collection;
     },

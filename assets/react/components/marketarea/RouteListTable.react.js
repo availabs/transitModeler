@@ -37,7 +37,7 @@ var RouteListTable= React.createClass({
           rows = routes.filter(function(d){
             return scope.props.rfilter(d);
           }).map(function(route,i){
-            var color = (colors[route])?colors[route]:'#000';
+            var color = (colors && colors[route])?colors[route]:'#000';
             var divStyle = {
                 "width":'10px',
                 "backgroundColor" : color,

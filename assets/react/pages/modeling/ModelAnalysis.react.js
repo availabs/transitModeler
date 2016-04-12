@@ -64,6 +64,7 @@ var MarketAreaIndex = React.createClass({
             model_runs:ModelRunStore.getModelRuns(),
             model_id:null,
             farebox:FareboxStore.getFarebox(this.props.marketarea.id),
+	    fareSelect:[],
             fareboxDates:[],
         };
     },
@@ -228,8 +229,8 @@ var MarketAreaIndex = React.createClass({
         return {zones:Farezones,colors:zoneMap};
 
     },
-    setFarezoneFilter : function(filter,dates){
-      this.setState({fareFilter:filter,fareboxDates:dates});
+    setFarezoneFilter : function(filter,dates,id){
+      this.setState({fareFilter:filter,fareboxDates:dates,fareSelect:id});
     },
     _getTimeData : function(){
       var scope = this;
@@ -395,7 +396,8 @@ var MarketAreaIndex = React.createClass({
           <section className="widget">
             <div className="body no-margin" style={{overflow:'hidden'}}>
               <div className="row">
-                <div className="col-lg-8" style={{paddingTop:10}}>
+
+                <div className="col-lg-6" style={{paddingTop:10}}>
 
                   <ModelRunSelector
                     marketarea={this.props.marketarea}
@@ -405,22 +407,23 @@ var MarketAreaIndex = React.createClass({
                     />
 
                 </div>
-                <div className="col-lg-4" >
-
-
-
+                <div className="col-lg-6" >
                     <div className="row">
-                      <div className='col-xs-6'>
+                      <div className='col-xs-4'>
                         {this._fareboxButton()}
                       </div>
-                      <div className='col-xs-6' style={{paddingTop:10}}>
+                      <div className='col-xs-8' style={{paddingTop:10}}>
                         <FarezoneFilterSelection
                             zones={this._getFareZones(this.props.stopsGeo).zones}
-                            onSelection ={this.setFarezoneFilter}
-                            width={'40%'}
+                            
+	                    selection={this.state.fareSelect}
+	                    onSelection ={this.setFarezoneFilter}
+                            
                         />
                       </div>
+	             
                     </div>
+
 
 
                 </div>

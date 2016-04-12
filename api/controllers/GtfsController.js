@@ -82,7 +82,11 @@ module.exports = {
 					+'Group By T2.direction_id,T2.shape_id,T2.service_id,T2.stops,T2.route_id,T2.route_short_name,T2.trip_headsign;';
 					//console.log(sql);
 			Agencies.query(sql,{},function(err,data){
-				if(err) console.log('error',err);
+				if(err)
+				    {
+					console.log(err);
+					res.send('{status:"error",message:"Upload Failed"}',500);
+				    }
 
 					var Routes = {};
 					var trips = {};
@@ -331,26 +335,27 @@ module.exports = {
 	},
 
 	downloadGtfs   : function(req,res){
-		var tableName = req.param('name');
-		exec('node ./api/support/gtfsExport.js ' + tableName ,function(err,sout,serr){
-			if(err){
+	    var tableName = req.param('name');
+	    req.session.User.isDownloading = true;
+	    exec('node ./api/support/gtfsExport.js ' + tableName ,function(err,sout,serr){
+		if(err){
+		    console.log(err);
+		    res.send('{status:"Error", message:"Internal Server Failure"}',500);
+		}else{
+		    //if(sout) console.log('stdout : ',sout);
+		    if(serr){
+			console.log('stderr : ',serr);
+			res.send('{status:"Error", message:"Internal Server Failure"}',500);
+		    }
+		    else{
+			console.log('generated');
+			res.download('./api/support/gtfsFiles/gtfsFiles.zip',tableName + '.zip',function(err){
+			    if(err)
 				console.log(err);
-				res.send('{status:"Error", message:"Internal Server Failure"}',500);
-			}else{
-				//if(sout) console.log('stdout : ',sout);
-				if(serr){
-					console.log('stderr : ',serr);
-					res.send('{status:"Error", message:"Internal Server Failure"}',500);
-				}
-				else{
-					console.log('generated');
-					res.download('./api/support/gtfsFiles/gtfsFiles.zip','gtfs.zip',function(err){
-						if(err)
-							console.log(err);
-					});
-				}
-			}
-		});
+			});
+		    }
+		}
+	    });
 	}
 };
 
@@ -455,13 +460,13 @@ function save(job,backupName,data){
 	Datasource.find( {tableName:backupName},function(err,result){
 
 		var agency=result[0].id,deltas=data.deltas,maId = data.maId,route = new RouteObj(data.route),
-		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.freqs;
+		shape=data.shape,trips=data.trip_ids,trip=data.trip,route_id=trip.route_id,freqs=data.frequencies,freqKills=data.killFrequencies;
 		var featList = data.data
 		.map(function(d){
 				return new Stop(d.stop);
 			});
 		console.log("PUTTING DATA");
-		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,maId,function(err,data){
+		db.putData(agency,featList,trips,deltas,trip.route_id,route,shape,trip,freqs,freqKills,maId,function(err,data){
 			if(err){
 				console.log(err);
 				Job.update({id:job.id},{isFinished:true,finised:Data(),status:'Failure',progress:100})

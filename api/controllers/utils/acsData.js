@@ -152,7 +152,7 @@ acs_data = {
   '12_00pmpt': {"value":0,"vars":['b08132_059e'],"name":'Public Transportation - 12:00 p.m. to 3:59 p.m.'},
   '4_00pmpt': {"value":0,"vars":['b08132_060e'],"name":'Public Transportation - 4:00 p.m. to 11:59 p.m.'},
   // 'aland': {"value":0,"vars":['aland'],'name':"Land Area (sq Meters)"},
-  // 'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
+  'employment_density':{"value":0,"vars":[],'name':"Employment Density (sq Mi)"},
   // 'population_density':{"value":0,"vars":[],'name':"Population Density (sq Mi)"},
 },
 categories : {
@@ -196,7 +196,7 @@ update_data:function(tracts){
         acs_data.acs[tract.geoid][census_var] = value;
         acs_data.census_vars[census_var].value += acs_data.acs[tract.geoid][census_var];
       }
-       //acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159)),
+       acs_data.acs[tract.geoid]['employment_density'].value  = (acs_data.acs[tract.geoid].employment/(acs_data.acs[tract.geoid].aland*0.000000386102159));
        //acs_data.acs[tract.geoid]['population_density'].value  = (acs_data.acs[tract.geoid].total_population/(acs_data.acs[tract.geoid].aland*0.000000386102159))
     });
   }

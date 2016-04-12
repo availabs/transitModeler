@@ -169,13 +169,18 @@ RETURNS void AS $$
 						INTO rec
 						USING route_id;
 		RAISE NOTICE 'IDS : %',rec.shapes::character varying[];
-		--using the array of shape ids from the trips table we create lines from their point lists and then multilines from those lines
-		EXECUTE format(E'SELECT ST_Multi(ST_COLLECT(array_agg(T.LINE))) as GEO FROM (SELECT ST_MakeLine(array_agg(geom ORDER BY shape_pt_sequence)) as Line FROM %I.shapes WHERE shape_id IN (\'' ||array_to_string(rec.shapes,E'\',\'') || E'\') GROUP BY shape_id) as T',schema)
+		IF rec.shapes IS NOT NULL THEN
+		   --using the array of shape ids from the trips table we create lines from their point lists and then multilines from those lines
+		   EXECUTE format(E'SELECT ST_Multi(ST_COLLECT(array_agg(T.LINE))) as GEO FROM (SELECT ST_MakeLine(array_agg(geom ORDER BY shape_pt_sequence)) as Line FROM %I.shapes WHERE shape_id IN (\'' ||array_to_string(rec.shapes,E'\',\'') || E'\') GROUP BY shape_id) as T',schema)
 									INTO dbug;
-		EXECUTE format('UPDATE %I.routes SET geom=$1 where route_id=$2',schema)
+		   EXECUTE format('UPDATE %I.routes SET geom=$1 where route_id=$2',schema)
 						USING dbug.GEO,route_id;
-		END;
-		$$ LANGUAGE plpgsql;
+		ELSE
+			EXECUTE format('UPDATE %I.routes SET geom=NULL where route_id=$1',schema)
+					       USING route_id;
+		END IF;
+	END;
+$$ LANGUAGE plpgsql;
 --THESE CREATE AND UPDATES ARE ONLY GOOD FOR basic pipelining to get imperitive data
 --For functionality, must be updated for full featured data
 CREATE OR REPLACE FUNCTION create_or_update_route(route_id TEXT, short_name TEXT,type INT, schema TEXT)

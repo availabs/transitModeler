@@ -269,8 +269,8 @@ var MarketAreaMap = React.createClass({
                 geo:stops,
                 options:{
                     pointToLayer: function (d, latlng) {
-
-                        var r = scope.props.stopsData ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
+			var stopsData = scope.props.stopsData;
+                        var r = (stopsData && stopsData.scale) ?  scope.props.stopsData.scale(scope.props.stopsData.data[d.properties.stop_code]) : 2;
                         if(isNaN(r)){
                             r = 2;
                         }else if(scope.props.largeStops){
@@ -302,8 +302,16 @@ var MarketAreaMap = React.createClass({
                           console.log(feature.properties);
                         },
                         mouseover : function(e){
-                          var classColor = (feature.properties.color)?feature.properties.color:(scope.props.mode === 'stop_alighting' ? "#0a0" :'#a00');
+                          var classColor;
+			      if(feature.properties.color)
+				  classColor = feature.properties.color;
+			      else if(scope.props.mode === 'stop_alighting') 
+				  classColor =  "#0a0"; 
+			      else
+				  classColor = '#a00';
+			  
                           var label = feature.properties.stop_id + ' ';
+
                           if(scope.props.stopsData && scope.props.stopsData.data[feature.properties.stop_code])
                               label += scope.props.stopsData.data[feature.properties.stop_code];
 

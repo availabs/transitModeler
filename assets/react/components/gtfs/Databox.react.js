@@ -91,6 +91,7 @@ var MarketAreaNew = React.createClass({
         return (
             <section className="widget">
                 <div className="body no-margin" >
+	           {'Current Route'}
                     <Select2Component
                       id="gtfsSelector"
                       dataSet={selectRouteData}
@@ -99,6 +100,8 @@ var MarketAreaNew = React.createClass({
                       onSelection={this.updateGtfs}
                       placeholder={'Select a Route'}
                       val={this.state.selection} />
+	            <br/>
+	            {'Current Service'}
                     <Select2Component
                       id="serviceSelector"
                       dataSet={serviceData}

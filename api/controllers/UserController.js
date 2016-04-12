@@ -101,12 +101,12 @@ module.exports = {
 							if (err) return next(err);
 
 							// Inform other sockets (e.g. connected sockets that are subscribed) that this user is now logged in
-							User.publishUpdate(user.id, {
-								loggedIn: true,
-								id: user.id,
-								userName: user.userName,
-								action: ' has logged in.'
-							});
+							// User.publishUpdate(user.id, {
+							// 	loggedIn: true,
+							// 	id: user.id,
+							// 	userName: user.userName,
+							// 	action: ' has logged in.'
+							// });
 
 							req.session.User.userGroup = result;
 							console.info('UserGroup',result);

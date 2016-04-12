@@ -179,13 +179,29 @@ var Map = React.createClass({
 			var dirvec = [];
 			dirvec.push(p1[1] - p2[1]);
 			dirvec.push(p2[0] - p1[0]);
+			while (dirvec[0] === 0 && dirvec[1] === 0)
+			{
+			    if(ix === 0)
+				return;
+
+			    p1 = buf[--ix];
+			    dirvec[0] = p1[1] - p2[1];
+			    dirvec[1] = p2[0] - p1[0];
+			}
+			
 			var length = Math.sqrt(
 			  dirvec[0]*dirvec[0] + dirvec[1]*dirvec[1]
 			);
 			
 			var scale = 0.001;
 			dirvec = 
-			     dirvec.map(function(d){return scale*d/length;});
+			     dirvec.map(function(d){
+
+				 var value= scale*d/length;
+				 if(isNaN(value))
+				     console.log('NaN',d,ix,feat);
+				 return value
+			     });
 			
 			var p3 =[];
 			p3[0] = (p1[0]+p2[0])/2 + dirvec[0];
@@ -195,7 +211,7 @@ var Map = React.createClass({
 			
 			var arrowHead =
 			           L.polylineDecorator([p3,p2]).addTo(map);
-			
+			try{
 			  arrowHead.setPatterns([
 			      {offset:0,
 			       pixelSize:normPixSize,
@@ -208,7 +224,10 @@ var Map = React.createClass({
 			       })
 			      }
 			  ]);
-			  
+			}catch ( e )
+			    {
+				console.log(e,normPixSize,p2,p3);
+			    }
 			      layer.addLayer(arrowHead).addTo(map);
 		      });
 		

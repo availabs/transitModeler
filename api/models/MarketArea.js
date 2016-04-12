@@ -6,9 +6,9 @@
 * @docs        :: http://sailsjs.org/#!documentation/models
 */
 
-var request = require('request');
-var tractApp = require('../../appconfig').tractApp;
-var fs = require('fs');
+// var request = require('request');
+// var tractApp = require('../../appconfig').tractApp;
+// var fs = require('fs');
 module.exports = {
   migrate:'safe',
   attributes: {

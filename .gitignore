@@ -118,3 +118,4 @@ nbproject
 *test*
 api/support/pg.js
 api/support/gtfsFiles
+*.org*
