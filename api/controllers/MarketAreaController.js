@@ -22,7 +22,7 @@ function getCensusData(marketarea,table,cb){
     });
 }
 
-module.exports = {
+var api = {
 
 	acsDownload : function(req,res){
 		var filename = req.param('file');
@@ -149,7 +149,7 @@ module.exports = {
 		  return res.send(JSON.stringify(err),500);
 	      }
 	      console.log(MA[0]);
-	      cacheData(req,MA[0],res);
+	      api.cacheData(req,MA[0],res);
 	  });
       }
       else{
@@ -168,44 +168,48 @@ module.exports = {
           MA.users.add(req.session.User.id);
           MA.save(console.log);
           // create marketarea cache
-          cacheData(req,MA,res);
+          api.cacheData(req,MA,res);
       });
     }else{
       res.send('Authentication Error');
     }
 
   },
-};
-var cacheData = function(req,MA,res){
-  var groupname = req.session.User.group;
-  var path = 'assets/geo/groups/'+groupname;
-  if(!fs.existsSync(path)){
-    fs.mkdirSync(path);
-  }
-  //Create get queries for the api requests
-  var countyQ = '?'+MA.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
-  var tractQ  = '?'+MA.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
-  //fetch counites
-  Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
-    var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
-    res.send(MA.toJSON());
-    console.log(url);
-    request(url,function(err,resp,data){
-      if(err){console.log('Error Getting Counties');}
-      console.log(data);
-      fs.writeFile(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
-        //fetch tracts
-        var url = tractApp+'tract/county'+tractQ;
-        console.log(url);
-        request(url,function(err,resp,data){
-          if(err){console.log('Error Getting Tracts',err);}
-          console.log(data);
-          fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
-            console.log("No Errors updated geo files for:",MA.id);
-          });
-        });
-      });
-    });
-  });
 
+    cacheData:  function(req,MA,res){
+	var groupname = req.session.User.group;
+	var path = 'assets/geo/groups/'+groupname;
+	if(!fs.existsSync(path)){
+	    fs.mkdirSync(path);
+	}
+	//Create get queries for the api requests
+	var countyQ = '?'+MA.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
+	var tractQ  = '?'+MA.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
+	//fetch counites
+	Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
+	    var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
+	    if(res)
+		res.send(MA.toJSON());
+	    console.log(url);
+	    request(url,function(err,resp,data){
+		if(err){console.log('Error Getting Counties');}
+		console.log(data);
+		fs.writeFile(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
+		    //fetch tracts
+		    var url = tractApp+'tract/county'+tractQ;
+		    console.log(url);
+		    request(url,function(err,resp,data){
+			if(err){console.log('Error Getting Tracts',err);}
+			console.log(data);
+			fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
+			    console.log("No Errors updated geo files for:",MA.id);
+			});
+		    });
+		});
+	    });
+	});
+	
+    },
 };
+
+module.exports = api;
