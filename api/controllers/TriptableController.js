@@ -114,10 +114,10 @@ module.exports = {
 				}
 				MAs = 'AND "marketareaId" in (\''+MAs.join("','")+'\')';
 				var sql = 'SELECT id,name,description,"user",info FROM triptable where "isFinished" = true '+MAs;
-				console.log('finished models',sql);
+				//console.log('finished models',sql);
 				Triptable.query(sql,{},function(err,data){
 					if(err){
-						console.log('tt query',sql,err);
+						//console.log('tt query',sql,err);
 						res.json({message:'tt query Error',error:err,sql:sql});
 						return;
 					}
@@ -147,7 +147,7 @@ module.exports = {
 		//console.log('loading model run data')
 		//get data from Model RUn
 		var sql = 'SELECT user,info FROM triptable where "id" = '+id;
-		console.log('finished models',sql);
+		//console.log('finished models',sql);
 		Triptable.query(sql,{},function(err,data){
 			if(err){
 				console.log('tt query',sql,err);
@@ -486,8 +486,8 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract
 		});
 		//the regression ratio = # of riders divided by those in the current tract that take the bus to work.
 		regRatio= regressionRiders / acs_data.acs[tractPair.home_tract].bus_to_work;
-		console.log('rr comp', regressionRiders, acs_data.acs[tractPair.home_tract].bus_to_work)
-		console.log('RR', regressionRiders);
+		// console.log('rr comp', regressionRiders, acs_data.acs[tractPair.home_tract].bus_to_work)
+		// console.log('RR', regressionRiders);
 
 		// console.log('regression check:',tractPair.home_tract,regressionRiders,'/', acs_data.acs[tractPair.home_tract].bus_to_work,'=',regRatio);
 	}
@@ -502,10 +502,10 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract
 	// census tract
 	var ridershipRatio = time.intime.am/acs_data.acs[tractPair.home_tract].public_transportation_to_work;
 	var output = tractPair.bus_total * Math.abs(regRatio);
-	console.log('Ridership Ratio WITH',ridershipRatio, output * ridershipRatio);
-	console.log('Ridership Ratio WITHOUT', ridershipRatio, output/ridershipRatio);
-	console.log('Regression Ratio WITH',regRatio,output);
-	console.log('Regression Ratio WITHOUT',regRatio,output/regRatio);
+	// console.log('Ridership Ratio WITH',ridershipRatio, output * ridershipRatio);
+	// console.log('Ridership Ratio WITHOUT', ridershipRatio, output/ridershipRatio);
+	// console.log('Regression Ratio WITH',regRatio,output);
+	// console.log('Regression Ratio WITHOUT',regRatio,output/regRatio);
 
 	return Math.round(output*1); //*ridershipRatio
 }
