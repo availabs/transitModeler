@@ -29,6 +29,7 @@ var _stateTracts = {type:'FeatureCollection',features:[]},
     _tempCountyTracts={},
     _tempCounties={},
     _tempCountyMap={},
+    _tempCountyRouteMap={},
     _geoidMap = {},
     _maTracts = {},
     _maCounties = {},
@@ -86,7 +87,12 @@ var GeodataStore = assign({}, EventEmitter.prototype, {
     var tracts = {type:'FeatureCollection',features:[]};
     if(Object.keys(_tempCountyMap).length ===0)
       return tracts;
-    var counties = rids.reduce(function(a,b){return _.union(a,_tempCountyMap[aid][b]);},[]);
+    var counties = rids.reduce(function(a,b){
+	if(_tempCountyMap[aid] && _tempCountyMap[aid][b])
+	    return _.union(a,_tempCountyMap[aid][b]);
+	else
+	    return a;
+    },[]);
     counties.filter(function(x){return _tempCountyTracts[x];}).map(function(cid){
         if(_tempCountyTracts[cid]){
           Object.keys(_tempCountyTracts[cid]).reduce(function(a,tid){
@@ -206,13 +212,19 @@ function processCounties(data,agency){
   var counties = topojson.feature(data,data.objects.objs);
   counties.features.forEach(function(county){
     var rid = county.properties.route;
-    _tempCounties[county.properties.geoid] = county;
+    var cid = county.properties.geoid;
+    _tempCounties[cid] = county;
     _tempCountyMap[agency] = _tempCountyMap[agency] || {};
     _tempCountyMap[agency][rid] = _tempCountyMap[agency][rid] || [];
-
+    _tempCountyRouteMap[cid] = _tempCountyRouteMap[cid] || [];
     if(_tempCountyMap[agency][rid].indexOf(county.properties.geoid) <0 ){
-      _tempCountyMap[agency][rid].push(county.properties.geoid);
+      _tempCountyMap[agency][rid].push(cid);
     }
+    if(_tempCountyRouteMap[cid].indexOf(rid) < 0)
+    {
+	  _tempCountyRouteMap[cid].push(rid);
+    }
+    
   });
 }
 

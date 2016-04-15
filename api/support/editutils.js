@@ -3,6 +3,12 @@
 var dbhelper = require('./batchmod.js');
 var gtfshelper = require('./gtfsorm.js');
 var Feature = require('./feature.js');
+var request = require('request');
+var tractApp = require('../../appconfig').tractApp;
+var fs = require('fs');
+var cacheData = require('../controllers/MarketAreaController').cacheData;
+
+
 
 function updateStopTimes(datafile,trips,deltas){
 	var map = ['trips','deltas','file'],template = 'Select update_st_times(?,?,\'?\')';
@@ -259,13 +265,22 @@ var Util = {
 					console.log(err);
 				}
 				if(maId && trip.isNew){
+<<<<<<< HEAD
 					MarketArea.findOne({id:maId}).exec(function(err,ma){//get the market area from db
 						if(err) console.log(err);
+=======
+					MarketArea.findOne({id:maId}).populate('users').exec(function(err,ma){//get the market area from db
+						if(err)console.log(err);
+						console.log(ma,maId);
+>>>>>>> 6cb4a20173a84febe0f36eb3aef6f6746fb42d92
 						if(route.getRouteShortName()){
 							ma.routes.push(route.getRouteShortName());//update add the new route_id to the list
 							MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
-								if(err)console.log(err);
-								populateRoutesGeo(datafile,route_id);
+							    if(err)console.log(err);
+							    populateRoutesGeo(datafile,route_id);
+							    cacheData({session:{User:ma.users[0]}},ma);
+							        
+							        
 							});
 						}
 						else{

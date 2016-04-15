@@ -332,8 +332,9 @@ var MarketAreaNew = React.createClass({
             var dsid = newState.marketarea.origin_gtfs;
             SailsWebApi.getRoutesGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setRoutesGeo);
             SailsWebApi.getStopsGeo(-1,newState.marketarea.origin_gtfs,newState.marketarea.routes,this.setStopsGeo);
-	    SailsWebApi.getRouteCounties(this.props.datasources.gtfs[dsid].settings.agencyid,route);
-            SailsWebApi.getRouteTracts(this.props.datasources.gtfs[dsid].settings.agencyid,route,_.union(newState.tractsFilter,newState.outerTractsFilter) );
+	    SailsWebApi.getRouteCounties(this.props.datasources.gtfs[dsid].settings.agencyid,newState.marketarea.routes);
+            SailsWebApi.getRouteTracts(this.props.datasources.gtfs[dsid].settings.agencyid,newState.marketarea.routes,
+				       _.union(newState.tractsFilter,newState.outerTractsFilter) );
             this.setState(newState);
         }
     },
