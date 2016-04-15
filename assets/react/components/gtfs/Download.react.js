@@ -22,7 +22,7 @@ var MarketAreaNew = React.createClass({
       this.setState({disabled:true});
     },
     render: function() {
-      var classes = "btn btn-lg btn-block";
+      var classes = "btn btn-lg btn-block btn-danger";
         return (
             <section className="widget">
                 <div className="body no-margin" >
