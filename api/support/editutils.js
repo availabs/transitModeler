@@ -268,6 +268,7 @@ var Util = {
 					MarketArea.findOne({id:maId}).populate('users').exec(function(err,ma){//get the market area from db
 						if(err)console.log(err);
 						console.log(ma,maId);
+
 						if(route.getRouteShortName()){
 							ma.routes.push(route.getRouteShortName());//update add the new route_id to the list
 							MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
