@@ -265,14 +265,10 @@ var Util = {
 					console.log(err);
 				}
 				if(maId && trip.isNew){
-<<<<<<< HEAD
-					MarketArea.findOne({id:maId}).exec(function(err,ma){//get the market area from db
-						if(err) console.log(err);
-=======
 					MarketArea.findOne({id:maId}).populate('users').exec(function(err,ma){//get the market area from db
 						if(err)console.log(err);
 						console.log(ma,maId);
->>>>>>> 6cb4a20173a84febe0f36eb3aef6f6746fb42d92
+
 						if(route.getRouteShortName()){
 							ma.routes.push(route.getRouteShortName());//update add the new route_id to the list
 							MarketArea.update({id:ma.id},{routes:ma.routes}).exec(function(err,recs){
