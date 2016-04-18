@@ -129,7 +129,7 @@ var CtppOverview = React.createClass({
 
             var ctppColumns = [
                 {key:'key',name:'Tract'},
-                {key:'value',name:'Num Trips'},
+                {key:'value',name:'Number of Bus to Work Trips'},
             ];
 
         return (

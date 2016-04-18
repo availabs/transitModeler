@@ -111,11 +111,11 @@ var SurveyGraph = React.createClass({
                 d3.select('#SurveyGraph_'+scope.props.groupName+' svg')
                     .datum(data)
                     .call(chart);
-
-                //console.log('render graph',scope.processData())
-                // if(scope.processData()[0].values.length > 10) {
-                //  d3.selectAll('.nv-x text').attr('transform','translate(15,20)rotate(45)');
-                // }
+//d3.selectAll('#adtchart svg .nv-x .tick text').text('')
+                console.log('render graph',scope.processData())
+                //if(scope.processData()[0].values.length > 10) {
+                 d3.selectAll('#SurveyGraph_'+scope.props.groupName+' svg .nv-x text').remove();
+                //}
 
                 nv.utils.windowResize(chart.update);
             });
