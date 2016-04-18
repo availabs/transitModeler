@@ -34,7 +34,7 @@ var FutureForecast = React.createClass({
 
         return (
             <div >
-                <label className="col-sm-4 control-label">Future Forecase</label>
+                <label className="col-sm-4 control-label">Future Forecast</label>
                 <div className="col-sm-8">
                     <div className="btn-group">
                         <a type="button" className={mpoClass} value="forecastType,mpo" onClick={this._setOption}>MPO 2020 Forecast</a>
