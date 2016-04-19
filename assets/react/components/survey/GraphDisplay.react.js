@@ -28,7 +28,7 @@ var SurveyFilters = React.createClass({
       elements = this.props.items.map(function(d,i){
         return (
         <div className={"col-md-4"} onClick={scope.clickAction.bind(null,i)}>
-          <h4><span>{d.settings.label}</span></h4>
+          <h4><span>{d.settings.label === 'Full' ? 'Daily Ridership By Route' : d.settings.label}</span></h4>
           {d()}
         </div>
         );

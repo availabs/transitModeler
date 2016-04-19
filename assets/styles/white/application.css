@@ -22148,9 +22148,9 @@ svg .title {
 .nvtooltip {
   padding: 5px;
   position: absolute;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 1);
   color: #666666;
-  border: none;
+  border: 1px solid #666666;
   z-index: 10000;
   font-family: inherit;
   -moz-box-shadow: none;

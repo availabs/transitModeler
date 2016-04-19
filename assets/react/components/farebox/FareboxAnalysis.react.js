@@ -512,7 +512,7 @@ var FareboxAnalysis = React.createClass({
 	    acc.data[b.properties.stop_code] = ' FZ: '+b.properties.fare_zone;
 	    return acc;
 	},{data:{}});
-        console.log('DATASOURCES',this.props.datasources);
+        //console.log('DATASOURCES',this.props.datasources);
         return (
     	   <div>
                 <div className="row">
