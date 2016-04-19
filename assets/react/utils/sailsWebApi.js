@@ -246,21 +246,21 @@ module.exports = {
   },
 
   getCtpp: function(marketareaId){
-    io.socket.get('/datasources/ctpp/'+marketareaId,function(data){
+    d3.json('/datasources/ctpp/'+marketareaId,function(data){
       //console.log('sailsWebApi / getCtpp',marketareaId,data)
       ServerActionCreators.receiveCtpp(marketareaId,data);
     });
   },
 
   getLodes: function(marketareaId){
-    io.socket.get('/datasources/lodes/'+marketareaId,function(data){
+    d3.json('/datasources/lodes/'+marketareaId,function(data){
       //console.log('sailsWebApi / getCtpp',marketareaId,data)
       ServerActionCreators.receiveLodes(marketareaId,data);
     });
   },
 
   getGtfsRoutes: function(tablename,gtfs_id,cb){
-    io.socket.get( '/dataSources/gtfs/routes/'+tablename,function(data){
+    d3.json( '/dataSources/gtfs/routes/'+tablename,function(data){
       ServerActionCreators.receiveDataWithId('gtfs_route', gtfs_id, data);
       if(cb){
         cb( gtfs_id, data);
@@ -352,7 +352,7 @@ module.exports = {
   // Sails Rest Route
   //---------------------------------------------------
   get : function(type,id,cb){
-    io.socket.get('/'+type+'/'+id,function(data){
+    d3.json('/'+type+'/'+id,function(data){
       ServerActionCreators.receiveDataWithId(type,id,data);
       if(cb){cb(data);}
     });
