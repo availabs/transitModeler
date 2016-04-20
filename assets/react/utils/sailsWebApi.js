@@ -418,7 +418,7 @@ module.exports = {
     }else{
       url += '/'+model+'/'+data.id;
     }
-    io.socket.put(url,data,function(resData){
+    d3.json(url).send('PUT',JSON.stringify(data),function(err,resData){
       var type = (model.options) ? model.returnType:model;
       //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);

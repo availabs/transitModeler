@@ -915,13 +915,15 @@ var MarketAreaNew = React.createClass({
                             tripChange={this.state.tripChange}
                             editStop = {this.editStopAction}
                             onRouteClick={this.routeClick}/>
-                        <TripSchedule
+	                <section className='widget'>            
+                          <TripSchedule
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}
 	                    addFreq={this._addFreq}
 	                    deleteFreq={this.deleteFreq}
                             notifyChange={this.freqChange}/>
+                         </section>
                     </div>
                     <div className="col-lg-3">
                       <Datasources
