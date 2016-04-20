@@ -93,7 +93,7 @@ var GtfsEditorMap = React.createClass({
 
         }
 
-	if(this.props.isCreating !== prevCreationState)
+	if(this.props.isCreating)
 	{
 	    prevCreationState = this.props.isCreating;
 	    tractlayerID++;

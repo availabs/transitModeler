@@ -42,7 +42,7 @@ var TripSchedule = React.createClass({
         };
     },
     _totalTime :function(){
-      if(this.state.timeDeltas){
+      if(this.state.timeDeltas && this.state.timeDeltas.length){
         var scope=this,totalTime = this.state.timeDeltas.reduce(function(p,c){return p+c+(scope.state.idle*60);});
         return totalTime;
       }else{
