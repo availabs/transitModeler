@@ -78,7 +78,7 @@ var api = {
 			var ogr = ogr2ogr(finalGeo);
 			var data = geoData.json;
 			ogr.format('shp').exec(function(er,buf){
-				console.log('ogr format',er,buf);
+				//console.log('ogr format',er,buf);
 				if(er) return res.json({errors: er.message.replace('\n\n','').split('\n')});
 				console.log(process.cwd());
 				var writeFunc = function(){
@@ -126,7 +126,7 @@ var api = {
             console.log(err);
             return res.send(JSON.stringify(err),500);
           }
-          console.log(user.marketareas.map(function(d){return d.id;}));
+          //console.log(user.marketareas.map(function(d){return d.id;}));
           var ma = user.marketareas.filter(function(d){
             return d.id === parseInt(req.param('id'));
           });
@@ -140,15 +140,15 @@ var api = {
 
   update : function(req,res){
       if(req.session.User){
-	  console.log('Attempted Update',req.body);
-	  console.log(MarketArea.update);
+	 
+	 
 	  MarketArea.update(req.body.id,req.body).exec(function(err,MA){
-	      console.log('CAN U HEAR ME?');
+	     
 	      if(err){
 		  console.log(err);
 		  return res.send(JSON.stringify(err),500);
 	      }
-	      console.log(MA[0]);
+	 
 	      api.cacheData(req,MA[0],res);
 	  });
       }
@@ -193,16 +193,16 @@ var api = {
 	    console.log(url);
 	    request(url,function(err,resp,data){
 		if(err){console.log('Error Getting Counties');}
-		console.log(data);
+		
 		fs.writeFile(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
 		    //fetch tracts
 		    var url = tractApp+'tract/county'+tractQ;
-		    console.log(url);
+		
 		    request(url,function(err,resp,data){
 			if(err){console.log('Error Getting Tracts',err);}
-			console.log(data);
+		
 			fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
-			    console.log("No Errors updated geo files for:",MA.id);
+			    
 			});
 		    });
 		});

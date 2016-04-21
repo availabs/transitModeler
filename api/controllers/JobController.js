@@ -9,7 +9,7 @@ module.exports = {
     find : function(req,res){
       var user = req.session.User;
       var where = {skip:req.param('skip')||0,sort:req.param('sort'),limit:req.param('limit')};
-      console.log(user);
+      //console.log(user);
       if(user.admin && user.userGroup.type==='sysAdmin'){
         Jobs.find(where).exec(function(e,data){
           if(e){
@@ -20,7 +20,7 @@ module.exports = {
           }
         });
       } else if(user.admin){
-        console.log('made it to admin space');
+        //console.log('made it to admin space');
         Usergroup.findOne(user.userGroup.id).populate('jobs',where).exec(function(err,group){
           if(err){
             console.log(err);

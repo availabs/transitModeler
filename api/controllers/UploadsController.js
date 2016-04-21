@@ -58,7 +58,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeoc
                   tableName:gtfsEntry.tableName,
                   settings:[{readOnly:true,uploaded:true,started:data.min,agency:data.agency_name,agencyid:agdata.id}],
                 };
-                console.log(ds);
+                //console.log(ds);
                 Datasource.create(ds).exec(function(err,newEntry){
                   if(err){console.log('Error Creating DataSource',err);}
                   newEntry.groups.add(user.userGroup.id);
@@ -160,7 +160,7 @@ var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeoc
 
 module.exports = {
   upload:function(req,res){
-    console.log(req.file());
+    //console.log(req.file());
     var user = req.session.User;
     dirname = path.resolve(sails.config.appPath,'/assets/images');
     req.file('files').upload({dirname:'assets/data/gtfs', maxBytes:500000000},
@@ -172,7 +172,7 @@ module.exports = {
 
           }
 
-        console.log(files);
+        //console.log(files);
         var now = new Date();
         var schemaName = "gtfs_"+now.getFullYear()+''+now.getMonth()+''+now.getDate()+'_'+now.getHours()+'_'+now.getMinutes();
 
