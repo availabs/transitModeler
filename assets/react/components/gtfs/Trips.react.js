@@ -106,6 +106,9 @@ var MarketAreaNew = React.createClass({
             }else if(trip.direction_id === 1){
               classes+=' btn-primary';
             }
+	    else{
+	      classes+=' btn-info';
+	    }
 	      console.log('trip : ',trip);
             if(scope.props.isCreating && !scope.props.editing && 
 	       trip.isNew){
@@ -116,7 +119,7 @@ var MarketAreaNew = React.createClass({
               <div>
               <div className='input-group-btn'>
               <button style={{fontSize:'10px'}} width={'75%'} className={classes}
-              onClick={scope.props.onTripSelect.bind(null,tripid)}>
+		onClick={(trip.direction_id===0 || trip.direction_id === 1)?scope.props.onTripSelect.bind(null,tripid):null}>
                           {trip.headsign}
               </button>
               </div>

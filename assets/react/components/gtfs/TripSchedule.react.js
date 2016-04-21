@@ -126,7 +126,7 @@ var TripSchedule = React.createClass({
               );
           });
           return (
-              <section className="widget">
+              <div>
                 <table className="table">
                   <thead>
                     <tr>
@@ -154,7 +154,7 @@ var TripSchedule = React.createClass({
 	       </tbody>
               </table>
 
-              </section>
+              </div>
           );
         }else{
           return (<div></div>);

@@ -314,11 +314,15 @@ var Map = React.createClass({
 
     render: function() {
         return (
-            <div className="map" id={this.props.mapId}>
-
+	    <div>
+                <div className="map" id={this.props.mapId}>
+	        <div classname='widget'>
+	         {this.layerToggle()}
+	        </div>
+	   
                 // {this._renderLegend()}
-            </div>
-
+                </div>
+	    </div>
         );
     },
     _addStop : function(e){
@@ -335,6 +339,7 @@ var Map = React.createClass({
 
         //stop the layeradd action from firing when initing a trip
         layers.stopsLayer.layer.switchOffLayerAdd();
+	$('.leaflet-container').css('cursor','crosshair');
         function onClick(e){
             console.log(e);
             scope._addStop(e);
@@ -347,6 +352,7 @@ var Map = React.createClass({
                     s.setId(newStopId());
                     return s;
                 });
+		$('.leaflet-container').css('cursor','');
                 scope.props.createTrip(newstops);
                 //once complete resume normal actions
                 layers.stopsLayer.layer.switchOnLayerAdd();
@@ -358,6 +364,45 @@ var Map = React.createClass({
             map.on('click',onClick);
         }
 
+    },
+
+    layerToggle : function(){
+	var displayOptions = {
+	    position:'absolute',
+	    zIndex:100,
+	};
+	return (
+	    <div className="mapOptions" style={displayOptions}>
+	    <div className='btn-group' data-toggle='buttons'>
+	    <label className='btn btn-sm btn-info active'
+	          onClick={this.toggleLayer.bind(null,'routesLayer')}>
+	    <input type='checkbox'/> Routes
+	    </label>
+	    <label className='btn btn-sm btn-info active'
+	          onClick={this.toggleLayer.bind(null,'tractsLayer')}>
+	    <input type='checkbox'/> Tracts
+	    </label>
+	    </div>
+	    </div>
+	);
+    },
+    toggleLayer : function(key){
+	if(layers[key])
+	{
+	    if(map.hasLayer(layers[key].layer))
+	    {
+		map.removeLayer(layers[key].layer);
+	    }
+	    else
+	    {
+		
+		map.addLayer(layers[key].layer);
+		if(key === 'tractsLayer')
+		{
+		    layers[key].layer.bringToBack();
+		}
+	    }
+	 }
     },
     renderMap:function(){
         var scope = this;

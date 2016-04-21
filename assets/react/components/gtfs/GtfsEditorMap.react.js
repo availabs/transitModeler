@@ -63,10 +63,10 @@ var GtfsEditorMap = React.createClass({
 		scope.stopOrder.max = i;
 	    });
         }
-        if(this.props.tracts){
+        if(this.props.tracts && !this.props.isCreating){
             tracts = this.props.tracts;
         }
-        if(this.props.routes){
+        if(this.props.routes && !this.props.isCreating){
             routes = this.props.routes;
         }
         if(this.props.counties){
@@ -76,20 +76,37 @@ var GtfsEditorMap = React.createClass({
             routingGeo = this.props.routingGeo;
 
         }
-        if(tracts.features.length !== prevTractLength || this.props.isCreating !== prevCreationState){
+        if(tracts.features.length !== prevTractLength){
             tractlayerID++;
             prevTractLength = tracts.features.length;
             prevCreationState = this.props.isCreating;
         }
         if( (routes.features.length !== prevRouteLength) ||
-            !prevRoutes || (prevRoutes !== routes.id)){
-            routeLayerID++;
+            !prevRoutes || (prevRoutes !== routes.id) ){
+        
+	    routeLayerID++;
             prevRouteLength = routes.features.length;
             if(routes && routes.id){
               prevRoutes = routes.id;
             }
+	
 
         }
+
+	if(this.props.isCreating)
+	{
+	    prevCreationState = this.props.isCreating;
+	    tractlayerID++;
+	    prevTractLength = tracts.features.length;
+	    routes = emptyGeojson;
+	    prevRouteLength = routes.features.length;
+	    routeLayerID++;
+	  
+	    stopslayerID++;
+	    stops = emptyGeojson;
+	    routingGeo = emptyGeojson;
+	    
+	}
         // if( (stops.features.length !== prevStopsLength) ||
         //     !prevStops || (prevStops !== stops)  ){
         //     stopslayerID++;
@@ -113,14 +130,14 @@ var GtfsEditorMap = React.createClass({
                 geo:routingGeo,
                 options:{
                   bringToFront:true,
-                  zoomOnLoad:true,
+                  
                 }
             },
             countiesLayer:{
                 id:countyLayerID,
                 geo:counties,
                 options:{
-                    zoomOnLoad:true,
+                   
                     style:function(feature){
                         return {
                             fill:false,
@@ -136,7 +153,7 @@ var GtfsEditorMap = React.createClass({
                 id:tractlayerID,
                 geo:tracts,
                 options:{
-                    zoomOnLoad:true,
+                   
                     bringToBack:true,
                     style:function (feature) {
                         return {
@@ -163,7 +180,7 @@ var GtfsEditorMap = React.createClass({
                 id:routeLayerID,
                 geo:routes,
                 options:{
-                    zoomOnLoad:true,
+                   
                     style:function (feature,i) {
                         return {
                             className: 'route_'+feature.properties.short_name,

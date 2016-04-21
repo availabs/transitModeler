@@ -5,7 +5,7 @@ var Logo = React.createClass({
   render: function() {
     return (
     	<div className="logo">
-        	<h4> <a href="/">Transit Market<br /> Analyst</a></h4>
+        	<h4> <a href="/">Bus Transit Market<br /> Analyst</a></h4>
     	</div>
     );
   }

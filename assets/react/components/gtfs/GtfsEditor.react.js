@@ -618,7 +618,9 @@ var MarketAreaNew = React.createClass({
         this.setState({isNewTrip:false,stopColl:buffStops,TripObj:trip,tripChange:true,edited:true,isCreating:false});
     },
     _addRoute : function(formObj){
-        var id = idGen("Route"),shortname=formObj['New Route'],
+        if(!this.editCheckConfirm(this))
+            return false;
+	var id = idGen("Route"),shortname=formObj['New Route'],
         service_id = idGen('service'),
         rndmtrip,freq;
         if(this.state.schedules[id])
@@ -915,13 +917,15 @@ var MarketAreaNew = React.createClass({
                             tripChange={this.state.tripChange}
                             editStop = {this.editStopAction}
                             onRouteClick={this.routeClick}/>
-                        <TripSchedule
+	                <section className='widget'>            
+                          <TripSchedule
                             frequencies={this.state.frequencies}
                             deltas={this.state.deltas}
                             lengths={this.state.lengths}
 	                    addFreq={this._addFreq}
 	                    deleteFreq={this.deleteFreq}
                             notifyChange={this.freqChange}/>
+                         </section>
                     </div>
                     <div className="col-lg-3">
                       <Datasources
