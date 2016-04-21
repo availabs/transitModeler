@@ -479,7 +479,7 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract
 			// 	acs_data.acs[tractPair.home_tract][cv.name]*cv.coef
 			// );
 			//add the to the regression riders the indicator variable times
-			var census = tract_forcasts && tract_forcasts[tractPair.home_tract][cv.name] ? tract_forcasts[tractPair.home_tract][cv.name]  : acs_data.acs[tractPair.home_tract][cv.name]
+			var census = (tract_forcasts && tract_forcasts[tractPair.home_tract] && tract_forcasts[tractPair.home_tract][cv.name]) ? tract_forcasts[tractPair.home_tract][cv.name]  : acs_data.acs[tractPair.home_tract][cv.name]
 			console.log('test', census, cv.coef, cv.name)
 			regressionRiders += census*cv.coef;
 
