@@ -188,8 +188,7 @@ var api = {
 	//fetch counites
 	Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
 	    var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
-	    if(res)
-		res.send(MA.toJSON());
+
 	    console.log(url);
 	    request(url,function(err,resp,data){
 		if(err){console.log('Error Getting Counties');}
@@ -202,6 +201,9 @@ var api = {
 			if(err){console.log('Error Getting Tracts',err);}
 		
 			fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
+			    console.log("No Errors updated geo files for:",MA.id);
+			    res.send(MA.toJSON());
+
 			    
 			});
 		    });

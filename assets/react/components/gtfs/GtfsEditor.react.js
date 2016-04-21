@@ -873,7 +873,13 @@ var MarketAreaNew = React.createClass({
     },
     render: function() {
         var scope = this;
+	var ma = this.props.marketarea;
         var routesGeo = check(this.props.routesGeo);
+	if(routesGeo && ma && ma.routes)
+	    routesGeo.features = routesGeo.features.filter(function(d){
+		return ma.routes.indexOf(d.properties.short_name)>=0;
+	    });
+	    
         var stopsGeo;
         if(!this.state.TripObj || (this.state.stopColl.getLength() <= 0))
             stopsGeo = emptyGeojson;
