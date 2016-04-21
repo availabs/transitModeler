@@ -65,7 +65,7 @@ var ModelCreate = React.createClass({
 
     parseTracts:function(tracts){
 
-        var parsedTracts =  Object.keys(this.state.modelTracts) === tracts.features.length ?
+        var parsedTracts =  Object.keys(this.state.modelTracts || {}).length === tracts.features.length ?
             this.state.modelTracts : censusUtils.reduceTracts(tracts);
         
 

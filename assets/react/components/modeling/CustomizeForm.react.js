@@ -48,7 +48,16 @@ var CustomizeForm = React.createClass({
           if(scope.props.currentSettings.type === 'regression' && scope.props.currentSettings.regressionId){
             var head = (<tr><td><h4>Regression Variables</h4></td></tr> );
             rows = scope.props.currentSettings.regressionId.censusVariables.map(function(cvar){
-              return <tr><td>{cvar.name}</td><td><RSInput isValid={isValid} isNum={true} bubbleup={scope.bubbleUp} propName={cvar.name} value={scope.props.tractData[settings.geoid][cvar.name]}></RSInput></td></tr>;
+		if(scope.props.tractData && 
+		   scope.props.tractData[settings.geoid])
+              return <tr>
+		<td>{cvar.name}</td>
+		<td><RSInput isValid={isValid} isNum={true} 
+		                               bubbleup={scope.bubbleUp} 
+		                               propName={cvar.name} 
+		value={scope.props.tractData[settings.geoid][cvar.name]}>
+		</RSInput></td>
+		</tr>;
             });
             regression = [head].concat(rows);
           }
