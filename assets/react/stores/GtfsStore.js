@@ -16,7 +16,7 @@ var DataSourceStore = require('./DatasourcesStore');
 var ActionTypes = Constants.ActionTypes;
 var CHANGE_EVENT = 'change';
 var SailsWebApi = require('../utils/sailsWebApi');
-
+var _ = require('lodash');
 var _currentGtfs = null,
     _gtfsDataSets = {}, //by gtfs ID
     _gtfsRoutesGeo={},  //by MA ID
@@ -227,9 +227,13 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     _gtfsRoutesGeo[id] = routes;
   }
   function setStopColors(colormap){
-    _gtfsStopsGeo.features.forEach(function(d){
-      d.farecolor = colormap[parseInt(d.fare_zone).toString()] || '#fff';
-    });
+      var ma = MarketAreaStore.getCurrentMarketArea();
+    if(_gtfsStopsGeo && ma && ma.id){
+	
+	_gtfsStopsGeo[ma.id].features.forEach(function(d){
+	    d.farecolor = colormap[parseInt(d.fare_zone).toString()] || '#fff';
+	});
+    }
   }
 //======================================================
 var GtfsStore = assign({}, EventEmitter.prototype, {
@@ -573,6 +577,12 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         GtfsStore.emitChange();
     break;
 
+    case ActionTypes.UPDATE_MARKETAREA:
+      //When updating a market area check if 
+      //new routes were added to put into the editable routes
+      
+      _updateEditRoutes(action.data);
+      GtfsStore.emitChange();
     case ActionTypes.SET_FARESTOPCOLORS:
       setStopColors(action.data);
     break;
@@ -581,5 +591,37 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
   }
 
 });
+
+function _updateEditRoutes(ma){
+    if(ma && ma.routes && ma.routes.length && Object.keys(_eGtfsRoutesGeo).length > 0)
+    {
+	var routeMap = {};
+	_gtfsRoutesGeo[ma.id].features.forEach(function(d,i){
+	                   routeMap[d.properties.short_name] = i;
+	               });
+	var curEditRoutes = _eGtfsRoutesGeo.features
+	                    .map(function(d){return d.properties.short_name});
+
+	var candidateRoutes = _.difference(ma.routes,curEditRoutes);
+	
+	if(candidateRoutes.length > 0){//if there are routes not in edit
+	                               //copy them from the normal bin
+	    candidateRoutes.forEach(function(d){
+		_eGtfsRoutesGeo.features
+		    .push(_.cloneDeep(_gtfsRoutesGeo[ma.id].features[routeMap[d]]));
+	    });
+
+	    _gtfsStopsGeo[ma.id].features.forEach(function(d){
+		if(candidateRoutes.indexOf(d.properties.line) >= 0)
+		{
+		    _eGtfsStopsGeo.features.push(_.cloneDeep(d));
+		}
+	    });
+
+	    
+	}
+	
+    }
+}
 
 module.exports = GtfsStore;

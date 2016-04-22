@@ -59,11 +59,11 @@ var MarketAreaNew = React.createClass({
             marketarea:{
               id:(pma.id) ? pma.id:'',
               name:(pma.name)?pma.name:'',
-              zones:(pma.zones !== undefined)? pma.zones:[],
-              routes:(pma.routes !== undefined)? pma.routes:[],
-              counties:(pma.counties !== undefined)? pma.counties:[],
+              zones:(pma.zones !== undefined)? _.cloneDeep(pma.zones):[],
+              routes:(pma.routes !== undefined)?_.cloneDeep( pma.routes):[],
+              counties:(pma.counties !== undefined)? _.cloneDeep(pma.counties):[],
               origin_gtfs:(pma.origin_gtfs !== undefined)? pma.origin_gtfs:null,
-              routecolors:(pma.routecolors !== null)? pma.routecolors:{},
+              routecolors:(pma.routecolors !== null)? _.cloneDeep(pma.routecolors):{},
               center : pma.center || [],
               stateFips:pma.stateFips || [],
               geounit:'tracts',
@@ -107,46 +107,41 @@ var MarketAreaNew = React.createClass({
         var routes = this.state.marketarea.routes;
         console.log('tract id',agency,routes);
         var partialState = this.state;
-        var tracts = GeoDataStore.getTempTracts(agency,routes);
-	if(_.isEqual(this.state.tracts,tracts))
-	{
-	    tracts = null;
-	}
-	else
-	{
-            var tractIds = tracts.features.map(function(d){return d.properties.geoid;});
-	    var outerTractsFilter = [],tractsFilter = [];
-	    tractIds.forEach(function(d){ 
-		if(scope.state.marketarea.zones.indexOf(d) === -1)
-		    outerTractsFilter.push(d);
-	        else
-		    tractsFilter.push(d);
-	    });
-	  
-            if(tracts.features.length > 0){
-		partialState.tracts = tracts;
-		partialState.tractsFilter = tractsFilter;
-		partialState.outerTractsFilter = outerTractsFilter;
-            }
-	}
         var counties = GeoDataStore.getTempCounties(agency,routes);
-	if(_.isEqual(this.state.counties,counties))
+	var tracts = GeoDataStore.getTempTracts(agency,routes);
+	if(!_.isEqual(this.state.counties,counties) 
+		|| this.state.countyFilter.length === 0)
 	{
-	      counties = null;
-	}
-	else
-	{
-            var states = _.uniq(counties.features.map(function(d){return d.properties.geoid.substr(0,stateFipsLength);}));
             if(counties.features.length > 0){
+		var states = _.uniq(counties.features.map(function(d){
+		return d.properties.geoid.substr(0,stateFipsLength);
+	    }));
+
+	    var temp = 
+	    scope.calcStopsCounts(scope.state.stopsGeo,counties || null);
 		partialState.counties = counties;
 		partialState.stateFips = states;
+		partialState.countyFilter = temp;
             }
 	}
-        this.setState(partialState,function(){
-                        if(tracts || counties){
-                          scope.setStopsGeo(scope.state.stopsGeo);
-                        }
-                      });
+	var countyFilter = partialState.countyFilter || scope.state.countyFilter;
+	if((!_.isEqual(this.state.tracts,tracts) || 
+	    this.state.tractsFilter.length === 0) && 
+	   countyFilter )
+	{
+	    
+	    if(tracts.features.length > 0)
+	    {
+		var temp = 
+	            scope.calcStopsTracts(scope.state.stopsGeo,
+				 partialState.countyFilter || scope.state.countyFilter,
+				 tracts);
+		partialState.tracts = tracts;
+		partialState.tractsFilter = temp.tractsFilter;
+		partialState.outerTractsFilter = temp.outerTractsFilter;
+	    }
+	}	
+        this.setState(partialState);
       }
     },
     _onChange : function(){
@@ -154,7 +149,7 @@ var MarketAreaNew = React.createClass({
       if(ma){
 	  var sma = this.state.marketarea;
 	  Object.keys(ma).forEach(function(d){
-              sma[d] = (ma[d])?ma[d]:sma[d];
+              sma[d] = (ma[d])?_.cloneDeep(ma[d]):sma[d];
 	  });
 	  this.setState({marketarea:sma});
       }
@@ -175,9 +170,11 @@ var MarketAreaNew = React.createClass({
       if(nextProps.stopsGeo && nextProps.stopsGeo !== this.props.stopsGeo){
           this.setState({stopsGeo:nextProps.stopsGeo});
       }
-      if(this.state.outerTractsFilter.length ===0){
+      if(!this.state.outerTractsFilter || 
+	 this.state.outerTractsFilter.length ===0)
+	{
           this.initTracts();
-      }
+	}
       if(nextProps.routesGeo && (nextProps.routesGeo !== this.props.routesGeo) ){
         this.setRoutesGeo(nextProps.routesGeo);
       }
@@ -187,7 +184,7 @@ var MarketAreaNew = React.createClass({
       if(nextProps.marketarea && nextProps.marketarea !== this.props.marketarea && nextProps.marketarea.id > 0){
         var nma = this.state.marketarea;
         Object.keys(nextProps.marketarea).forEach(function(d){
-          nma[d] = (nextProps.marketarea[d] || Array.isArray(nextProps.marketarea[d])) ? nextProps.marketarea[d]:{};
+          nma[d] = (nextProps.marketarea[d] || Array.isArray(nextProps.marketarea[d])) ? _.cloneDeep(nextProps.marketarea[d]):{};
         });
         var filter = nma.zones.slice(0);
         var cfilter = nma.counties.slice(0);
@@ -234,20 +231,29 @@ var MarketAreaNew = React.createClass({
       });
       return filterTracts;
     },
-    setStopsGeo:function(data){
-      var counties = this.state.counties,tracts = this.state.tracts;
-      if(data && data.features.length > 0 && counties && counties.features.length > 0 &&
-          tracts && tracts.features.length > 0){
+    
+    calcStopsCounts: function(data,counts){
+	var counties = counts || this.state.counties;
+	if(data && data.features.length > 0 && 
+	   counties && counties.features.length > 0)
+	{
 	    console.time('counties');
-            var countyFilter = Geoprocessing.point2polyIntersect(data,counties).keys;
-            console.timeEnd('counties');
+            var countyFilter = 
+	    Geoprocessing.point2polyIntersect(data,counties).keys;
+	    console.timeEnd('counties');
 
-            // var countyFips = this.getCountyFips(countyFilter);
-            // var filterTracts = this.getFilterTracts(countyFips);
-            //
-	    var partialState = this.state;
-	    partialState.countyFilter = countyFilter;
-	    partialState.stopsGeo = data;
+	   
+	   return countyFilter;
+	}
+	return [];
+    },
+
+    calcStopsTracts: function(data,countyFilter,trs){
+	var tracts = trs || this.state.tracts;
+	var retobj = {};
+	if(data && data.features.length > 0 && 
+          tracts && tracts.features.length > 0)
+	{
 	    var equalTracts = _.isEqual(tracts,oldTracts);
 	    var equalStops  = _.isEqual(data,oldStops);
 	    if(!equalTracts || !equalStops)
@@ -259,30 +265,52 @@ var MarketAreaNew = React.createClass({
 		if(!equalStops)
 		{
 		    oldStops = data;
-		    partialState.stopsGeo = data;
+		    retobj.stopsGeo = data;
 		}
 		console.time('tracts');
-		var tractsFilter = Geoprocessing.point2polyIntersect(data,tracts).keys;
+		var tractsFilter = 
+		Geoprocessing.point2polyIntersect(data,tracts).keys;
 		console.timeEnd('tracts');
 		if(this.state.tractsFilter){
-		    tractsFilter = _.union(tractsFilter,this.state.tractsFilter);
+		    tractsFilter = 
+		         _.union(tractsFilter,this.state.tractsFilter);
+		    
 		    tractsFilter = tractsFilter.filter(function(d){
 			return countyFilter.indexOf(d.substr(0,5)) !== -1;
 		    });
 		}
-		// console.log('Finished Processing tracts',new Date());
-		// console.log(tractsFilter,countyFilter);
 		var nonSelectTracts = this.getNonZone(tracts,tractsFilter);
-		partialState.tractsFilter = tractsFilter;
-		partialState.outerTractsFilter = nonSelectTracts;
-	    }  
+		retobj.tractsFilter = tractsFilter;
+		retobj.outerTractsFilter = nonSelectTracts;
 
-	    
+	   }
+	}
+	retobj.tractsFilter = retobj.tractsFilter || [];
+	retobj.outerTractsFilter = retobj.outerTractsFilter || [];
+	return retobj;
+    },
+
+    setStopsGeo:function(data,counts,trs){
+      var counties = counts || this.state.counties,tracts = trs || this.state.tracts;
+      if(data && data.features.length > 0 && counts && counts.features.length > 0 &&
+          tracts && tracts.features.length > 0){
+	    partialState = this.state;
+	    partialState.countyFilter = this.calcStopCounts(data,counts);
+
+	    var temp = 
+	      this.calcStopTracts(data,partialState.countyFilter,tracts);
+	     
+	    Object.keys(temp).forEach(function(d){
+		if(temp[d])
+		    partialState[d] = temp[d];
+	    });
+
             var ma = this.state.marketarea;
             ma.center = Geoprocessing.center(data);
 	    partialState.marketarea = ma;
 	    partialState.isLoading = false;
             this.setState(partialState);
+
         }else {
             console.log('remove last layer');
             this.setState({
@@ -529,7 +557,9 @@ var MarketAreaNew = React.createClass({
 
         var tracts = {type:'FeatureCollection',features:[]};
 	var tractsFilterMap ={};
-        if(this.state.tractsFilter.length > 0 && countyTracts){
+        if(this.state.tractsFilter && 
+	   this.state.tractsFilter.length > 0 && 
+	   countyTracts){
 	    
 	    scope.state.tractsFilter.forEach(function(d){
 		tractsFilterMap[d] = true;
@@ -542,7 +572,8 @@ var MarketAreaNew = React.createClass({
 		}
             });
         }
-	if(this.state.outerTractsFilter.length >0 && countyTracts){
+	if(this.state.outerTractsFilter && 
+	   this.state.outerTractsFilter.length >0 && countyTracts){
 	    var oTractsFilterMap={};
 	    scope.state.outerTractsFilter.forEach(function(d){
 		oTractsFilterMap[d] = d;

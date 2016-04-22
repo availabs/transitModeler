@@ -10,6 +10,7 @@ var fs = require('fs');
 var acs_data = require('./utils/acsData');
 var mkdirp = require('mkdirp');
 var d3     = require('d3');
+var _ = require('lodash');
 var request = require('request');
 var tractApp = require('../../appconfig').tractApp;
 function getCensusData(marketarea,table,cb){
@@ -184,7 +185,7 @@ var api = {
 	}
 	//Create get queries for the api requests
 	var countyQ = '?'+MA.routes.map(function(rid){return 'rid[]='+rid;}).join('&');
-	var tractQ  = '?'+MA.counties.map(function(tid){return 'cid[]='+tid;}).join('&');
+	var tractQ  = '?'+_.uniq(MA.counties).map(function(tid){return 'cid[]='+tid;}).join('&');
 	//fetch counites
 	Datasource.findOne(MA.origin_gtfs).exec(function(err,ds){
 	    var url = tractApp+'agency/'+ds.settings[0].agencyid+'/county/route'+countyQ;
@@ -192,11 +193,12 @@ var api = {
 	    console.log(url);
 	    request(url,function(err,resp,data){
 		if(err){console.log('Error Getting Counties');}
+		fs.writeFile('/tmp/counties.txt',data);
 		
 		fs.writeFile(path+'/'+MA.id+'counties.json',JSON.stringify(JSON.parse(data)),function(err,data){
 		    //fetch tracts
 		    var url = tractApp+'tract/county'+tractQ;
-		
+		    console.log(url);
 		    request(url,function(err,resp,data){
 			if(err){console.log('Error Getting Tracts',err);}
 		

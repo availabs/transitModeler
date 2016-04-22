@@ -12,6 +12,8 @@ var React = require('react'),
     tractlayerID = 0,
     outerTractsLength,
     prevTractLength,
+    prevTractActive = 0,
+    prevTractInActive = 0,
     routeLayerID = 0,
     prevRoutes,
     countyLayerID = 0,
@@ -31,6 +33,28 @@ var tractChange = function(tracts){//check the number of tracts with outer type
   }
   return false;
 };
+
+function updateTracts(tracts){
+    var tractActive = -1*tracts.features.reduce(function(a,b){
+	return a + b.properties.type - 1;
+    },0);
+    var tractInactive = tracts.features.reduce(function(a,b){
+	return a + b.properties.type;
+    },0);
+    
+    var activediff = tractActive - prevTractActive;
+    var inactivediff = tractInactive - prevTractInActive;
+
+    var update =  ((tracts.features.length !== prevTractLength) || 
+		  ((Math.abs(activediff) > 1) ||
+		  (Math.abs(inactivediff) >1)) &&
+		  (activediff + inactivediff) === 0 );
+    prevTractActive = tractActive;
+    prevTractInActive = tractInactive;
+
+    return update;		  
+	   
+}
 
 var MarketAreaMap = React.createClass({
 
@@ -62,7 +86,6 @@ var MarketAreaMap = React.createClass({
             routes = emptyGeojson,
             counties = emptyGeojson,
             survey = emptyGeojson;
-
         //console.log('processLayers, diplay tracts',this.props.survey);
         if(this.props.stops){
             stops = this.props.stops;
@@ -85,8 +108,9 @@ var MarketAreaMap = React.createClass({
             surveyLayerID++;
             prevSurveyLength = survey.features.length;
         }
-
-        if(tracts.features.length !== prevTractLength ){
+	
+	
+        if(updateTracts(tracts)){
             tractlayerID++;
             prevTractLength = tracts.features.length;
         }

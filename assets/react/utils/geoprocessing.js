@@ -52,7 +52,7 @@ module.exports = {
 		//     });
 		// });
 		//console.log('point2polyIntersect lists',conflictlist,geoidList);
-		return {index:conflictlist,keys:geoidList}; //return this index list of polygons and their ids
+		return {index:conflictlist,keys:_.uniq(geoidList)}; //return this index list of polygons and their ids
 	},
 
 	center : function(FeatureCollection){
