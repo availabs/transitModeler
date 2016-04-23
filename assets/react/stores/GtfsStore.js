@@ -34,6 +34,7 @@ var _currentGtfs = null,
     _eGtfsStopsGeo={},
     _eGtfsRoutesGeo={},
     _victimid = '';
+    _editorAddedRoutes={},
     _routingWaypoints = [];
 
 function isEmpty(obj){
@@ -148,8 +149,15 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     }
   }
 //-----EditingData---------------------------------------
+  function _addEditorRoutes(id){
+      
+  }
   function _setUploadGtfs(udata){
     _uploadGtfs = udata;
+    var route = udata.route.properties.route_short_name;
+    var ma = MarketAreaStore.getCurrentMarketArea();
+      _resetRoutes(ma.id);
+	
     if(udata.gtfsId){
       _victimid = gtfsId;
     }
@@ -191,6 +199,8 @@ function _loadRouteSchedule(gtfsId,routes,maId){
     if(!id)
       return;
     delete _gtfsRoutesGeo[id];
+    if(_gtfsDataSets[id] && _gtfsDataSets[id].routes)
+	delete _gtfsDataSets[id].routes;
   }
   function _resetStops(id){
     id = idCheck(id);
@@ -416,7 +426,8 @@ var GtfsStore = assign({}, EventEmitter.prototype, {
     if(_gtfsDataSets[gtfsId]){
 
       if(_gtfsDataSets[gtfsId].routes){
-        return _gtfsDataSets[gtfsId].routes;
+	
+        return _gtfsDataSets[gtfsId].routes
       }
       else if(!_loading){
         //console.log('load stops', maId);
@@ -558,6 +569,7 @@ GtfsStore.dispatchToken = AppDispatcher.register(function(payload) {
         //console.log('Receive Upload Response:',action.data);
         //_killVictimGtfs();
         //_resetRoutesAndStops();
+        
         GtfsStore.emitChange();
     break;
 

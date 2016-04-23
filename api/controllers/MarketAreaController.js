@@ -204,7 +204,8 @@ var api = {
 		
 			fs.writeFile(path+'/'+MA.id+'tracts.json',JSON.stringify(JSON.parse(data)),function(err,data){
 			    console.log("No Errors updated geo files for:",MA.id);
-			    res.send(MA.toJSON());
+			    if(res && res.send)
+				res.send(MA.toJSON());
 
 			    
 			});
