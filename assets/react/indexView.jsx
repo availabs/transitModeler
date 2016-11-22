@@ -43,12 +43,19 @@ var React = require('react'),
 // ---
     sailsWebApi.init(window.User);
 
+var ReactGA = require('react-ga');
 
 var i18n = {
   locales: ["en-US"]
 };
 
+ReactGA.initialize('UA-87841055-1');
 
+function logPageView() {
+    ReactGA.set({ page: window.location.hash });
+    ReactGA.pageview(window.location.hash);
+}
+ReactGA.set({ userId: window.User.username });
 //  --- Routes
 var routes = (
   <Route name="app" path="/" handler={App}>
