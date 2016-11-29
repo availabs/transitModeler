@@ -23,6 +23,10 @@ module.exports = {
   //
   log: {
     level: 'debug'
+  },
+  
+  grunt:{
+   _hookTimeout: 200000
   }
 
 };
