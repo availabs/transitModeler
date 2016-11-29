@@ -231,9 +231,7 @@ function processCounties(data,agency){
 function saveAndReset(data,agency){
   _maTracts[data.id] = GeodataStore.getTempTracts(agency,data.routes); //shift temporary tracts and counties
   _maCounties[data.id] = GeodataStore.getTempCounties(agency,data.routes); //to that marketarea's data
-  _tempCountyTracts={};
-  _tempCounties={};
-  _tempCountyMap={};
+  
 }
 
 GeodataStore.dispatchToken = AppDispatcher.register(function(payload) {

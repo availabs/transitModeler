@@ -47,7 +47,7 @@ module.exports = {
   },
 
   beforeUpdate: function(values, next){
-    console.log('before Job Update',values)
+    //console.log('before Job Update',values)
     //-------------------------------------------
     //If job is killed by user, kill the Process
     //-------------------------------------------
@@ -55,7 +55,7 @@ module.exports = {
       if(values.status == 'Cancelled'){
         //console.log('Job Update Cancelling');
         if(typeof values.pid != 'undefined' && values.pid != null){
-          console.log('Job Update Killing', values.pid);
+          //console.log('Job Update Killing', values.pid);
           values.isFinished = true;
           values.finished = Date();
           kill(values.pid, 'SIGKILL');

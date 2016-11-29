@@ -125,7 +125,7 @@ var frequencybuilder = function(schema,cb){
 					objs.push(obj);
 			});
 		});
-		console.log('Total Trips: ', totalTrips, 'Deleted Trips: ', delTrips, 'Remaining Trips: ', totalTrips - delTrips);
+		//console.log('Total Trips: ', totalTrips, 'Deleted Trips: ', delTrips, 'Remaining Trips: ', totalTrips - delTrips);
 
 		var map = ['table','start','end','headway','trip'],
 		map2 = ['file','trip','file','trip'];
@@ -172,7 +172,7 @@ var frequencybuilder = function(schema,cb){
 			if(err){
 				return console.error('error running query',err);
 			}
-			console.log('total Rows: ',data.rows.length);
+			//console.log('total Rows: ',data.rows.length);
 			fs.writeFileSync('test.txt',JSON.stringify(data));
 			var newquery = handleResponse(data);
 			client.query(newquery,[],function(err,data){
@@ -191,7 +191,7 @@ var frequencybuilder = function(schema,cb){
 // frequencybuilder('gtfs_20141014_13_1_edited');
 if(process.argv[2] && (typeof process.argv[2] ==='string') ){
 	frequencybuilder(process.argv[2],function(err,data){
-		console.log(err,data);
+		//console.log(err,data);
 	});
 }
 

@@ -121,7 +121,7 @@ module.exports = {
 						res.json({message:'tt query Error',error:err,sql:sql});
 						return;
 					}
-					console.log('finished models',data);
+					//console.log('finished models',data);
 					res.send(data.rows);
 				});
 			}
@@ -179,7 +179,7 @@ module.exports = {
 			 		+" where a.run_id = "+req.param('id')
 			 		+"  and mode = 'BUS'and g.fare_zone like 'P%' ";
 			 		sql+="  and a.route in "+routes;
-				console.log(sql);
+				
 				Triptable.query(sql,{},function(err,output){
 					if (err) {
 						res.send('{sql:"'+sql+'",status:"error",message:"'+err+'"}',500);
@@ -246,7 +246,7 @@ module.exports = {
 		var numTripsTotal = 0,
 			tractPairCount  = 0;
 
-		console.log('settings:',triptable.time,triptable.type,'total_zones',triptable.marketarea.zones.length);
+		//console.log('settings:',triptable.time,triptable.type,'total_zones',triptable.marketarea.zones.length);
 		//get the acs tracts
 		getCensusData(tracts,triptable.datasources.acs,function(acs_tracts){
 			//update the acs_tracts with the known data
@@ -258,7 +258,7 @@ module.exports = {
 					//regression model
 					getCTTPTracts(triptable.datasources.ctpp,tracts,function(tractTrips){
 						getODPoints(triptable.od,triptable.datasources.gtfs,tracts,function(ODPoints){
-							console.log('tract Trips',tractTrips.length);
+							//console.log('tract Trips',tractTrips.length);
 							//for each tract pairing
 							tractTrips.forEach(function(tractPair){
 								if(typeof acs_data.acs[tractPair.home_tract] == 'undefined'){
@@ -381,7 +381,7 @@ module.exports = {
 								//done send output
 
 							});
-							console.log('triptable done',output.tt.length,req.session.User.username,numTripsTotal,tractPairCount);
+							//console.log('triptable done',output.tt.length,req.session.User.username,numTripsTotal,tractPairCount);
 
 							userTT[req.session.User.username] = output.tt; // Multiple people logged on to same account could confuse this.
 
@@ -404,7 +404,7 @@ module.exports = {
 	update : function(req,res){
 
 		var model = req.body;
-		console.log(model);
+		//console.log(model);
 
 		model.info = JSON.stringify(model.info);
 		Triptable.update({id:model.id},{name:model.name,description:model.description}).exec(function(err, model){
@@ -480,7 +480,7 @@ function getRegressionTrips(tractPair,time,timeOfDay,marketarea,type,model,tract
 			// );
 			//add the to the regression riders the indicator variable times
 			var census = (tract_forcasts && tract_forcasts[tractPair.home_tract] && tract_forcasts[tractPair.home_tract][cv.name]) ? tract_forcasts[tractPair.home_tract][cv.name]  : acs_data.acs[tractPair.home_tract][cv.name]
-			console.log('test', census, cv.coef, cv.name)
+			//console.log('test', census, cv.coef, cv.name)
 			regressionRiders += census*cv.coef;
 
 		});

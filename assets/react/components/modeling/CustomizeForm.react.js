@@ -61,11 +61,12 @@ var CustomizeForm = React.createClass({
             });
             regression = [head].concat(rows);
           }
+	  var currentTract = scope.props.tractData[settings.geoid];
           //console.log('is there tract data',scope.props.tractData)
           futureForecast = [];
           futureForecast.push( <tr><td><h4 class="page-title"> Forecast </h4></td></tr> );
-          futureForecast.push( <tr><td>Population Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop2020_growth' isValid={isValid}  value={scope.props.tractData[settings.geoid].pop2020_growth || 0}></RSInput></td></tr>);
-          futureForecast.push( <tr><td>Employment Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='emp2020_growth' isValid={isValid} value={scope.props.tractData[settings.geoid].emp2020_growth || 0}></RSInput></td></tr>);
+          futureForecast.push( <tr><td>Population Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='pop2020_growth' isValid={isValid}  value={(currentTract)? (currentTract.pop2020_growth || 0) : 0}></RSInput></td></tr>);
+          futureForecast.push( <tr><td>Employment Growth </td><td style={{textAlign:'center'}}><RSInput isNum={true} bubbleup={scope.bubbleUp} propName='emp2020_growth' isValid={isValid} value={(currentTract)? (currentTract.emp2020_growth || 0) : 0}></RSInput></td></tr>);
           
           return  (
             <div className="row">

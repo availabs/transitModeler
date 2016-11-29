@@ -119,7 +119,7 @@ module.exports = {
 	      if (err || !ma) {res.send('{status:"error",message:"'+err || 'no ma' +'"}',500); return console.log(err || 'no ma');}
 	        var states = {};
 
-			console.log(ma);
+
 			var findState = function(id){
 				console.log(id);
 				var sid = (id+'').substr(0,2);

@@ -151,7 +151,7 @@ module.exports = {
 			});
 		var route = new RouteObj(reqobj.route);
 		//console.log('route obj',route);
-		console.log(featList);
+		
 		var trips = reqobj.trip_ids;
 		var deltas = reqobj.deltas;
 		var errlist=[],datalist=[];
@@ -395,8 +395,8 @@ function spawnGtfsClone(job,names,config,savedata,user){
 			if(err){
 				console.log(err);
 			}
-			console.log(data);
-			console.log(data.rows[0].settings);
+			
+			
 			var settings = JSON.parse(data.rows[0].settings);
 			if(typeof settings.length !== 'undefined')
 			{
@@ -414,10 +414,9 @@ function spawnGtfsClone(job,names,config,savedata,user){
 			Agencies.create(newAgency).exec(function(err,agData){
 				if(err) console.log(err);
 				settings.agencyid = agData.id;
-				console.log('old settings',newDS.settings);
-				console.log('new settings',settings);
+				
 				newDS.settings[0] = settings;
-				console.log('attempt',newDS.settings);
+				
 				newDS.groups.add(user.userGroup.id);
 				newDS.save(function(err){
 					if(err) console.log(err);
