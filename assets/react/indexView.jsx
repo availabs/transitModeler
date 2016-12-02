@@ -55,6 +55,7 @@ function logPageView() {
     ReactGA.set({ page: window.location.hash });
     ReactGA.pageview(window.location.hash);
 }
+console.log("ryan",window.User.username)
 ReactGA.set({ userId: window.User.username });
 //  --- Routes
 var routes = (
@@ -83,5 +84,6 @@ var routes = (
 );
 
 Router.run(routes, function (Handler) {
+  logPageView();
   React.render(<Handler locales={i18n.locales}/>, document.body);
 });
