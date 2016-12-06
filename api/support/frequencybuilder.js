@@ -1,6 +1,7 @@
 var pg = require('pg');
 var fs = require('fs');
-var connString = require('./pg');
+var connString = 'postgres://postgres:transit@lor.availabs.org/transitModeler'
+//require('./pg');
 var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');
 var frequencybuilder = function(schema,cb){

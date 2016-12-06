@@ -11,7 +11,7 @@ module.exports = {
       var where = {skip:req.param('skip')||0,sort:req.param('sort'),limit:req.param('limit')};
       //console.log(user);
       if(user.admin && user.userGroup.type==='sysAdmin'){
-        Jobs.find(where).exec(function(e,data){
+        Job.find(where).exec(function(e,data){
           if(e){
             console.log(e);
             res.send(e,500);
