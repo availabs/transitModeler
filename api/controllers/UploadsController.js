@@ -6,8 +6,8 @@
  */
 var path = require('path');
 var frequencyBuilder = require('../support/frequencybuilder');
-var password='transit';
-var conString = 'postgres://postgres:'+password+'@lor.availabs.org:5432/gtfsgeocensus';
+var password='Jedi21funk';
+var conString = 'postgres://postgres:'+password+'@mars.availabs.org:5432/gtfsgeocensus';
  function spawnJob(job,user){
  	var terminal = require('child_process').spawn('bash');
  	var current_progress = 0;
