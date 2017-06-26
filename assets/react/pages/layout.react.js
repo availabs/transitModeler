@@ -159,7 +159,7 @@ var App = React.createClass({
                     ]
                 },
                 {text:'Job History', icon:'fa fa-cog', action:'jobhistory',type:'Route'},
-                {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/users_guide.pdf'}
+                {text:'User\'s Guide',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/users_guide.pdf'},
                 {text:'Final Report',name:'usersGuide',icon:'glyphicon glyphicon-book',action:'/final_report.pdf'}
             ]
         };
