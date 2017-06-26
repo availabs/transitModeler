@@ -67,13 +67,14 @@ var conString = 'postgres://postgres:'+password+'@mars.availabs.org:5432/gtfsgeo
                       console.log(err);
                     }else{
 			//need to build frequencies for this gtfs dataset
-			frequencyBuilder(gtfsEntry.tableName,function(err,data){
-			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
-                         .exec(function(err,updated_job){
-                           if(err){console.log('job_update error',error);}
-                           sails.sockets.blast('job_updated',updated_job);
-                         });    
-			});
+                      console.log('One step back', gtfsEntry, newJob)
+                			frequencyBuilder(gtfsEntry.tableName,function(err,data){
+                			Job.update({id:job.id},{isFinished:true,finished:Date(),status:'Success'})
+                       .exec(function(err,updated_job){
+                         if(err){console.log('job_update error',error);}
+                         sails.sockets.blast('job_updated',updated_job);
+                       });    
+		                 });
                     }
                   });
                 });
