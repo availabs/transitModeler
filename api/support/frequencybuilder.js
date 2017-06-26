@@ -19,6 +19,7 @@ var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');
 var frequencybuilder = function(schema,cb){
 	console.log('the frequencybuilder', schema)
+	if(schema === '--prod' ) return cb('--prod is not a schma error',null)
 	var dotprod = function(l1,l2){
 		var sum =0;
 		for(var i =0, max = Math.min(l1.length,l2.length); i< max; i++){
