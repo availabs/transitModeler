@@ -205,6 +205,7 @@ var frequencybuilder = function(schema,cb){
 };
 // frequencybuilder('gtfs_20141014_13_1_edited');
 if(process.argv[2] && (typeof process.argv[2] ==='string') ){
+	console.log('this is getting run from here')
 	frequencybuilder(process.argv[2],function(err,data){
 		//console.log(err,data);
 	});
