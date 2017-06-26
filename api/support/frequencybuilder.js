@@ -13,7 +13,7 @@ var fs = require('fs');
 // 	database: connection.database ? connection.database : 'transitModeler'
 // };
 
-var connString = 'postgres://postgres:transit@mars.availabs.org/gtfsgeocensus'
+var connString = 'postgres://postgres:Jedi21funk@mars.availabs.org/gtfsgeocensus'
 //require('./pg');
 var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');
