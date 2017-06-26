@@ -1,6 +1,19 @@
 var pg = require('pg');
 var fs = require('fs');
-var connString = 'postgres://postgres:transit@lor.availabs.org/transitModeler'
+
+// var models = require('../../config/models'),
+// 	connections = require('../../config/connections');
+// 	var connection = connections.connections[models.models.connection];
+
+// var database = {
+// 	host: connection.host ? connection.host : 'mars.availabs.org' ,
+// 	port: connection.port ? connection.port : '5432',
+// 	user: connection.user ? connection.user :'postgres',
+// 	password: connection.password ? connection.password :'transit',
+// 	database: connection.database ? connection.database : 'transitModeler'
+// };
+
+var connString = 'postgres://postgres:transit@mars.availabs.org/gtfsgeocensus'
 //require('./pg');
 var dbhelper = require('./batchmod.js');
 var segFinder = require('./simsegments');

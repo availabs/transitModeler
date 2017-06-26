@@ -14,7 +14,7 @@ var models = require('../../config/models'),
 	//console.log('testing',models.models.connection,connections.connections[models.models.connection])
 
 var database = {
-	host: connection.host ? connection.host : 'lor.availabs.org' ,
+	host: connection.host ? connection.host : 'mars.availabs.org' ,
 	port: connection.port ? connection.port : '5432',
 	user: connection.user ? connection.user :'postgres',
 	password: connection.password ? connection.password :'transit',
