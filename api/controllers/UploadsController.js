@@ -89,6 +89,7 @@ var conString = 'postgres://postgres:'+password+'@mars.availabs.org:5432/gtfsgeo
                   if(err){
                     console.log('ERROR: UPLOADSCONTROLLER - gtfs start date unknown',gtfsEntry.tableName,err);
                   }
+                  console.log('no error upload', data)
                   onFinish(data.rows[0]);
                 });
               }
